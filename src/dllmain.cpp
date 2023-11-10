@@ -1,13 +1,17 @@
 #include "stdafx.h"
+#include <unordered_set>
+
 #include "helper.hpp"
 
-#include "squirrel.h"
+#include "sqpcheader.h"
 #include "sqvm.h"
-#include "sqstate.h"
+
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
 
 #include "resource.h"
+
+#include "emutask.h"
 
 using namespace std;
 
@@ -16,19 +20,22 @@ HMODULE fixModule = 0;
 
 inipp::Ini<char> ini;
 
+EmuTask gEmuTask;
+
 // INI Variables
-int iInjectionDelay;
 bool bDebuggerEnabled;
 int iDebuggerPort;
 bool bDebuggerAutoUpdate;
 bool bSmoothing = true;
+bool bScanline;
+bool bDotMatrix;
 
 // Variables
 string sExeName;
 string sGameName;
 string sExePath;
 string sGameVersion;
-string sFixVer = "0.1";
+string sFixVer = "0.2";
 
 void Logging()
 {
@@ -51,21 +58,19 @@ void ReadConfig()
         ini.parse(iniFile);
     }
 
-    inipp::get_value(ini.sections["MGSM2Fix Parameters"], "InjectionDelay", iInjectionDelay);
-
     inipp::get_value(ini.sections["Squirrel Debugger"], "Enabled", bDebuggerEnabled);
     inipp::get_value(ini.sections["Squirrel Debugger"], "Port", iDebuggerPort);
     inipp::get_value(ini.sections["Squirrel Debugger"], "AutoUpdate", bDebuggerAutoUpdate);
 
     inipp::get_value(ini.sections["Screen"], "Smoothing", bSmoothing);
+    inipp::get_value(ini.sections["Screen"], "Scanline", bScanline);
 
     // Log config parse
-    LOG_F(INFO, "Config Parse: iInjectionDelay: %dms", iInjectionDelay);
-
     LOG_F(INFO, "Config Parse: bDebuggerEnabled: %d", bDebuggerEnabled);
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
     LOG_F(INFO, "Config Parse: bDebuggerAutoUpdate: %d", bDebuggerAutoUpdate);
     LOG_F(INFO, "Config Parse: bSmoothing: %d", bSmoothing);
+    LOG_F(INFO, "Config Parse: bScanline: %d", bScanline);
 
     if (bDebuggerEnabled)
     {
@@ -142,9 +147,9 @@ void SquirrelPatch()
         if (MGS1_SQSharedStateScanResult)
         {
             uint8_t* MGS1_SQSharedStateFlagsPTR = (uint8_t*)(MGS1_SQSharedStateScanResult + 7);
-            uint8_t MGS1_SQSharedStateFlags[] = { true, true };
+            uint8_t MGS1_SQSharedStateFlags[] = { true, false };
             Memory::PatchBytes((uintptr_t)MGS1_SQSharedStateFlagsPTR, (const char*)MGS1_SQSharedStateFlags, sizeof(MGS1_SQSharedStateFlags));
-            LOG_F(INFO, "MGS 1: M2: Patched SQSharedState, exceptions & debug info enabled.");
+            LOG_F(INFO, "MGS 1: M2: Patched SQSharedState, debug info enabled.");
         }
         else if (!MGS1_SQSharedStateScanResult)
         {
@@ -206,48 +211,24 @@ LPVOID Resource(UINT id, LPCSTR type, LPDWORD size)
     return p;
 }
 
-// M2: Forbid smoothing
-HSQOBJECT M2_ForbidSmoothingFunc = { OT_NULL };
-void InvokeForbidSmoothing(HSQUIRRELVM v, const SQChar *src, SQInteger line)
+void FixMain(HSQUIRRELVM v, const SQChar *src, SQInteger line)
 {
-    if (bSmoothing) return;
-    if (M2_ForbidSmoothingFunc._type == OT_WEAKREF) return;
-    if (strcmp(src, "system/script/systemdata_setting_screen.nut") != 0 || line != 15) return;
+    gEmuTask.SetVM(v);
 
-    if (sq_isnull(M2_ForbidSmoothingFunc))
-    {
-        const SQChar* M2_ForbidSmoothingNUT = (SQChar*)Resource(IDR_NUT2, "NUT", NULL);
-        if (!M2_ForbidSmoothingNUT)
-            LOG_F(INFO, "M2: Error loading the smoothing function.");
-        else
-        {
-            if (SQ_FAILED(sq_compilebuffer(v, M2_ForbidSmoothingNUT, (SQInteger)scstrlen(M2_ForbidSmoothingNUT), _SC("M2_FORBID_SMOOTHING"), SQFalse)))
-                LOG_F(INFO, "M2: Error compiling the smoothing function.");
-
-            sq_getstackobj(v, -1, &M2_ForbidSmoothingFunc);
-            sq_addref(v, &M2_ForbidSmoothingFunc);
-            sq_pop(v, 1);
-        }
-    }
-
-    if (!sq_isnull(M2_ForbidSmoothingFunc))
-    {
-        sq_pushobject(v, M2_ForbidSmoothingFunc);
-        sq_pushroottable(v);
-        if (SQ_FAILED(sq_call(v, 1, SQFalse, SQFalse)))
-            LOG_F(INFO, "M2: Error calling the smoothing function.");
-        else
-        {
-            LOG_F(INFO, "M2: Successfully called the smoothing function.");
-            M2_ForbidSmoothingFunc._type = OT_WEAKREF;
-        }
-        sq_pop(v, 1);
-    }
+    gEmuTask.SetSmoothing(bSmoothing);
+    gEmuTask.SetScanline(bScanline);
 }
 
 SQInteger Hook(HSQUIRRELVM v)
 {
-    v->_debughook._type = OT_NULL;
+    SQObjectPtr debughook = v->_debughook;
+    v->_debughook = _null_;
+
+    static bool hooked = false;
+    if (!hooked) {
+        LOG_F(INFO, "M2: Debug hook injected!");
+        hooked = true;
+    }
 
     SQUserPointer up;
     SQInteger event_type, line;
@@ -258,9 +239,9 @@ SQInteger Hook(HSQUIRRELVM v)
     sq_getstring(v, 5, &func);
     sq_getuserpointer(v, -1, &up);
 
-    InvokeForbidSmoothing(v, src, line);
+    FixMain(v, src, line);
 
-    v->_debughook._type = OT_NATIVECLOSURE;
+    v->_debughook = debughook;
     return 0;
 }
 
@@ -299,11 +280,20 @@ void SquirrelSetup()
     // MGS 1: Squirrel setup
     if (sExeName == "METAL GEAR SOLID.exe")
     {
-        while (MGS1_SQVMInstancePTR == 0) {
-            Sleep(1);
-        }
+        unordered_set<HSQUIRRELVM> vm;
+        HSQUIRRELVM v = NULL;
 
-        SquirrelMain((HSQUIRRELVM)MGS1_SQVMInstancePTR);
+        do {
+            v = (HSQUIRRELVM)MGS1_SQVMInstancePTR;
+            while (!v) {
+                Sleep(1);
+                v = (HSQUIRRELVM)MGS1_SQVMInstancePTR;
+            }
+            vm.insert(v);
+            MGS1_SQVMInstancePTR = 0;
+        } while (!_ss(v)->_notifyallexceptions);
+
+        SquirrelMain(*vm.begin());
     }
 }
 
@@ -316,8 +306,6 @@ DWORD __stdcall Main(void*)
     SquirrelPatch();
     ScanFunctions();
     SquirrelHook();
-
-    Sleep(iInjectionDelay);
     SquirrelSetup();
 
     return true; // end thread

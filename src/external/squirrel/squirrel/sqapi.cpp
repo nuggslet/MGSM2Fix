@@ -1132,6 +1132,77 @@ SQRESULT sq_getattributes(HSQUIRRELVM v,SQInteger idx)
 	return sq_throwerror(v,_SC("wrong index"));
 }
 
+SQRESULT sq_getmemberhandle(HSQUIRRELVM v, SQInteger idx, HSQMEMBERHANDLE *handle)
+{
+	SQObjectPtr *o = NULL;
+	_GETSAFE_OBJ(v, idx, OT_CLASS, o);
+	SQObjectPtr &key = stack_get(v, -1);
+	SQTable *m = _class(*o)->_members;
+	SQObjectPtr val;
+	if (m->Get(key, val)) {
+		handle->_static = _isfield(val) ? SQFalse : SQTrue;
+		handle->_index = _member_idx(val);
+		v->Pop();
+		return SQ_OK;
+	}
+	return sq_throwerror(v, _SC("wrong index"));
+}
+
+SQRESULT _getmemberbyhandle(HSQUIRRELVM v, SQObjectPtr &self, const HSQMEMBERHANDLE *handle, SQObjectPtr *&val)
+{
+	switch (sq_type(self)) {
+	case OT_INSTANCE: {
+		SQInstance *i = _instance(self);
+		if (handle->_static) {
+			SQClass *c = i->_class;
+			val = &c->_methods[handle->_index].val;
+		}
+		else {
+			val = &i->_values[handle->_index];
+
+		}
+	}
+					break;
+	case OT_CLASS: {
+		SQClass *c = _class(self);
+		if (handle->_static) {
+			val = &c->_methods[handle->_index].val;
+		}
+		else {
+			val = &c->_defaultvalues[handle->_index].val;
+		}
+	}
+				 break;
+	default:
+		return sq_throwerror(v, _SC("wrong type(expected class or instance)"));
+	}
+	return SQ_OK;
+}
+
+SQRESULT sq_getbyhandle(HSQUIRRELVM v, SQInteger idx, const HSQMEMBERHANDLE *handle)
+{
+	SQObjectPtr &self = stack_get(v, idx);
+	SQObjectPtr *val = NULL;
+	if (SQ_FAILED(_getmemberbyhandle(v, self, handle, val))) {
+		return SQ_ERROR;
+	}
+	v->Push(_realval(*val));
+	return SQ_OK;
+}
+
+SQRESULT sq_setbyhandle(HSQUIRRELVM v, SQInteger idx, const HSQMEMBERHANDLE *handle)
+{
+	SQObjectPtr &self = stack_get(v, idx);
+	SQObjectPtr &newval = stack_get(v, -1);
+	SQObjectPtr *val = NULL;
+	if (SQ_FAILED(_getmemberbyhandle(v, self, handle, val))) {
+		return SQ_ERROR;
+	}
+	*val = newval;
+	v->Pop();
+	return SQ_OK;
+}
+
 SQRESULT sq_getbase(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr *o = NULL;

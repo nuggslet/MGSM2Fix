@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\emutask.cpp" />
     <ClCompile Include="src\external\loguru\loguru.cpp" />
     <ClCompile Include="src\external\squirrel\sqdbg\sqdbgserver.cpp" />
     <ClCompile Include="src\external\squirrel\sqdbg\sqrdbg.cpp" />
@@ -39,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\emutask.h" />
     <ClInclude Include="src\external\loguru\loguru.hpp" />
     <ClInclude Include="src\helper.hpp" />
     <ClInclude Include="src\stdafx.h" />
@@ -47,7 +49,6 @@
     <None Include="MGSM2Fix.ini" />
     <None Include="nut1.bin" />
     <None Include="src\external\squirrel\sqdbg\serialize_state.nut" />
-    <None Include="src\m2_forbid_smoothing.nut" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGSM2Fix.rc" />
