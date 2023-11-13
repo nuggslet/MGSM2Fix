@@ -41,7 +41,7 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 		sq_throwerror(v,_SC("failed to bind the socket"));
 		return NULL;
 	}
-	if(!rdbg->Init()) {
+	if(!rdbg->Init(v)) {
 		delete rdbg;
 		sq_throwerror(v,_SC("failed to initialize the debugger"));
 		return NULL;

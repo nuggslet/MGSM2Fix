@@ -16,9 +16,7 @@ public:
 	bool SetInteger(const SQChar *name, SQInteger value);
 
 	bool SetSmoothing(SQBool enable);
-	bool GetSmoothing(SQBool *enable);
 	bool SetScanline(SQBool enable);
-	bool GetScanline(SQBool *enable);
 
 private:
 	HSQUIRRELVM m_vm;

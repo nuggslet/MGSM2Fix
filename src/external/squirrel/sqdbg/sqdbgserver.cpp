@@ -115,57 +115,57 @@ SQDbgServer::~SQDbgServer()
 		sqdbg_closesocket(_endpoint);
 }
 
-bool SQDbgServer::Init()
+bool SQDbgServer::Init(HSQUIRRELVM v)
 {
 	//creates  an environment table for the debugger
 	
-	sq_newtable(_v);
-	sq_getstackobj(_v,-1,&_debugroot);
-	sq_addref(_v,&_debugroot);
+	sq_newtable(v);
+	sq_getstackobj(v,-1,&_debugroot);
+	sq_addref(v,&_debugroot);
 
 	//creates a emptyslot to store the watches
-	sq_pushstring(_v,_SC("watches"),-1);
-	sq_pushnull(_v);
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,_SC("watches"),-1);
+	sq_pushnull(v);
+	sq_newslot(v,-3, SQFalse);
 
-	sq_pushstring(_v,_SC("beginelement"),-1);
-	sq_pushuserpointer(_v,this);
-	sq_newclosure(_v,beginelement,1);
-	sq_setparamscheck(_v,2,_SC(".s"));
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,_SC("beginelement"),-1);
+	sq_pushuserpointer(v,this);
+	sq_newclosure(v,beginelement,1);
+	sq_setparamscheck(v,2,_SC(".s"));
+	sq_newslot(v,-3, SQFalse);
 
-	sq_pushstring(_v,_SC("endelement"),-1);
-	sq_pushuserpointer(_v,this);
-	sq_newclosure(_v,endelement,1);
-	sq_setparamscheck(_v,2,_SC(".s"));
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,_SC("endelement"),-1);
+	sq_pushuserpointer(v,this);
+	sq_newclosure(v,endelement,1);
+	sq_setparamscheck(v,2,_SC(".s"));
+	sq_newslot(v,-3, SQFalse);
 
-	sq_pushstring(_v,_SC("attribute"),-1);
-	sq_pushuserpointer(_v,this);
-	sq_newclosure(_v,attribute,1);
-	sq_setparamscheck(_v,3,_SC(".ss"));
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,_SC("attribute"),-1);
+	sq_pushuserpointer(v,this);
+	sq_newclosure(v,attribute,1);
+	sq_setparamscheck(v,3,_SC(".ss"));
+	sq_newslot(v,-3, SQFalse);
 
-	sq_pop(_v,1);
+	sq_pop(v,1);
 
 	//stores debug hook and error handler in the registry
-	sq_pushregistrytable(_v);
+	sq_pushregistrytable(v);
 
-	sq_pushstring(_v,SQDBG_DEBUG_HOOK,-1);
-	sq_pushuserpointer(_v,this);
-	sq_newclosure(_v,debug_hook,1);
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,SQDBG_DEBUG_HOOK,-1);
+	sq_pushuserpointer(v,this);
+	sq_newclosure(v,debug_hook,1);
+	sq_newslot(v,-3, SQFalse);
 	
-	sq_pushstring(_v,SQDBG_ERROR_HANDLER,-1);
-	sq_pushuserpointer(_v,this);
-	sq_newclosure(_v,error_handler,1);
-	sq_newslot(_v,-3, SQFalse);
+	sq_pushstring(v,SQDBG_ERROR_HANDLER,-1);
+	sq_pushuserpointer(v,this);
+	sq_newclosure(v,error_handler,1);
+	sq_newslot(v,-3, SQFalse);
 
 	
-	sq_pop(_v,1);
+	sq_pop(v,1);
 
 	//sets the error handlers
-	SetErrorHandlers(_v);
+	SetErrorHandlers(v);
 	return true;
 }
 

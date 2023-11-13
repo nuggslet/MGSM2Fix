@@ -80,7 +80,7 @@ public:
 
 	SQDbgServer(HSQUIRRELVM v);
 	~SQDbgServer();
-	bool Init();
+	bool Init(HSQUIRRELVM v);
 	//returns true if a message has been received
 	bool WaitForClient();
 	bool ReadMsg();

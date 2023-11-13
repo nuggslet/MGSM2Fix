@@ -11,7 +11,20 @@
 #include <string>
 #include <iostream>
 #include <inttypes.h>
+#include <mutex>
 
 #include "external/loguru/loguru.hpp"
 #include "external/inipp/inipp/inipp.h"
 #include "external/length-disassembler/headerOnly/ldisasm.h"
+
+#undef Yield
+#include "sqpcheader.h"
+#include "sqcompiler.h"
+#include "sqvm.h"
+#include "sqarray.h"
+#include "sqtable.h"
+#include "sqclass.h"
+#include "sqclosure.h"
+#include "sqfuncproto.h"
+#include "squserdata.h"
+#include "sqstring.h"
