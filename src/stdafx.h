@@ -28,3 +28,4 @@
 #include "sqfuncproto.h"
 #include "squserdata.h"
 #include "sqstring.h"
+#include "sqstdstring.h"

@@ -691,6 +691,15 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
         TraceNative(v, func, closure, name);
     }
 
+    if (name && strcmp(name, "printf") == 0) {
+        SQChar *print = NULL;
+        SQInteger length = 0;
+        if (SQ_SUCCEEDED(sqstd_format(v, 2, &length, &print))) {
+            print[strcspn(print, "\r\n")] = 0;
+            LOG_F(INFO, "M2: Print: %s", print);
+        }
+    }
+
     FixNativeCall(v, func, closure, name);
 
     return func(v);
