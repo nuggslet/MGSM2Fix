@@ -47,7 +47,7 @@ string sExeName;
 string sGameName;
 string sExePath;
 string sGameVersion;
-string sFixVer = "0.4a";
+string sFixVer = "0.4";
 
 typedef struct {
     bool hooked;
@@ -688,8 +688,18 @@ void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
     }
 }
 
+SQInteger MGS1_PlaySide = 0;
 void AnalogLoop(HSQUIRRELVM v)
 {
+    const SQChar *func;
+    sq_getstring(v, 5, &func);
+
+    if (func && strcmp(func, "set_playside_mgs") == 0) {
+        SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+        SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+        MGS1_PlaySide = _integer(obj);
+    }
+
     gInputHub.SetInteger(_SC("setDirectionMerge"), 0);
     gEmuTask.SetInteger(_SC("setInputDirectionMerge"), 0);
 
@@ -713,10 +723,10 @@ void AnalogLoop(HSQUIRRELVM v)
     };
 
     if (M2_EpiPadStatePTR) {
-        M2_EpiPadStatePTR[0x44] = axisToUint8(xL);
-        M2_EpiPadStatePTR[0x45] = axisToUint8(yL);
-        M2_EpiPadStatePTR[0x46] = axisToUint8(xR);
-        M2_EpiPadStatePTR[0x47] = axisToUint8(yR);
+        M2_EpiPadStatePTR[0x44 + (MGS1_PlaySide * 4)] = axisToUint8(xL);
+        M2_EpiPadStatePTR[0x45 + (MGS1_PlaySide * 4)] = axisToUint8(yL);
+        M2_EpiPadStatePTR[0x46 + (MGS1_PlaySide * 4)] = axisToUint8(xR);
+        M2_EpiPadStatePTR[0x47 + (MGS1_PlaySide * 4)] = axisToUint8(yR);
     }
 }
 
