@@ -389,6 +389,41 @@ void SquirrelHook()
     }
 }
 
+void M2Print(const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    char *buf = (char*) malloc(_vscprintf(fmt, va) + 1);
+    vsprintf(buf, fmt, va);
+    va_end(va);
+
+    buf[scstrcspn(buf, "\r\n")] = 0;
+    LOG_F(INFO, "M2: printf: %s", buf);
+    free(buf);
+}
+
+void M2Hook()
+{
+    // MGS 1: M2 hook
+    if (sExeName == "METAL GEAR SOLID.exe")
+    {
+        uint8_t* MGS1_M2PrintScanResult = Memory::PatternScan(baseModule, "8B 4C 24 04 8D 54 24 08 E8 ?? ?? FF FF 85 C0 74");
+        if (MGS1_M2PrintScanResult)
+        {
+            DWORD32 MGS1_M2PrintAddress = (uintptr_t)MGS1_M2PrintScanResult;
+            int MGS1_M2PrintHookLength = Memory::GetHookLength((char*)MGS1_M2PrintAddress, 4);
+            Memory::DetourFunction32((void*)MGS1_M2PrintAddress, M2Print, MGS1_M2PrintHookLength);
+
+            LOG_F(INFO, "MGS 1: M2: printf hook length is %d bytes.", MGS1_M2PrintHookLength);
+            LOG_F(INFO, "MGS 1: M2: printf hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2PrintAddress);
+        }
+        else if (!MGS1_M2PrintScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: printf pattern scan failed.");
+        }
+    }
+}
+
 const char* ConfigOverride(string *key)
 {
     LOG_F(INFO, "M2: MWinResCfg::Get(\"%s\")", key->c_str());
@@ -573,14 +608,14 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
     {
         SQFunctionProto *proto = _funcproto(_closure(obj)->_function);
         if (proto && sq_isstring(proto->_name)) {
-            trace << _string(proto->_name)->_val;
+            trace << _stringval(proto->_name);
         }
         trace << "()";
         break;
     }
     case OT_NATIVECLOSURE:
         if (sq_isstring(_nativeclosure(obj)->_name))
-            trace << _string(_nativeclosure(obj)->_name)->_val;
+            trace << _stringval(_nativeclosure(obj)->_name);
         trace << hex << "{" << "0x" << _nativeclosure(obj)->_function << "}()" << dec;
         break;
     case OT_USERPOINTER:
@@ -683,7 +718,7 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
     if (v && v->ci && sq_isnativeclosure(v->ci->_closure)) {
         closure = _nativeclosure(v->ci->_closure);
         if (sq_isstring(closure->_name)) {
-            name = _string(closure->_name)->_val;
+            name = _stringval(closure->_name);
         }
     }
 
@@ -695,8 +730,8 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
         SQChar *print = NULL;
         SQInteger length = 0;
         if (SQ_SUCCEEDED(sqstd_format(v, 2, &length, &print))) {
-            print[strcspn(print, "\r\n")] = 0;
-            LOG_F(INFO, "M2: Print: %s", print);
+            print[scstrcspn(print, "\r\n")] = 0;
+            LOG_F(INFO, "M2: sq_printf: %s", print);
         }
     }
 
@@ -770,12 +805,14 @@ DWORD __stdcall Main(void*)
     ReadConfig();
     DetectGame();
 
+    ScanFunctions();
+
     ConfigHook();
     BorderlessPatch();
+    M2Hook();
 
     SquirrelPatch();
     SquirrelHook();
-    ScanFunctions();
 
     // Signal any threads which might be waiting for us before continuing
     {

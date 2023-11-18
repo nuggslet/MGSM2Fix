@@ -137,6 +137,7 @@ typedef wchar_t SQChar;
 #define sciscntrl	iswcntrl
 #define scisalnum	iswalnum
 //#define scprintf	wprintf
+#define scstrcspn	wcscspn
 #define MAX_CHAR 0xFFFF
 #else
 typedef char SQChar;
@@ -157,6 +158,7 @@ typedef char SQChar;
 #define scisalpha	isalpha
 #define scisalnum	isalnum
 //#define scprintf	printf
+#define scstrcspn	strcspn
 #define MAX_CHAR 0xFF
 #endif
 
