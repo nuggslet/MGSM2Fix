@@ -8,6 +8,8 @@
 #include "resource.h"
 
 #include "emutask.h"
+#include "inputhub.h"
+#include "input.h"
 
 using namespace std;
 
@@ -18,6 +20,8 @@ inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
 EmuTask gEmuTask;
+InputHub gInputHub;
+Input gInput;
 
 // INI Variables
 bool bDebuggerEnabled;
@@ -33,6 +37,7 @@ int iCustomResX;
 int iCustomResY;
 bool bWindowedMode;
 bool bBorderlessMode;
+bool bAnalogMode;
 string sFullscreenMode;
 string sCustomResX;
 string sCustomResY;
@@ -42,13 +47,63 @@ string sExeName;
 string sGameName;
 string sExePath;
 string sGameVersion;
-string sFixVer = "0.3";
+string sFixVer = "0.4a";
 
 typedef struct {
     bool hooked;
     SQChar src[MAX_PATH];
     SQInteger line;
 } FixData;
+
+typedef enum {
+    PAD_BUTTON_A     =        0x1,
+    PAD_BUTTON_B     =        0x2,
+    PAD_BUTTON_C     =        0x4,
+    PAD_BUTTON_X     =        0x8,
+    PAD_BUTTON_Y     =       0x10,
+    PAD_BUTTON_L     =       0x10,
+    PAD_BUTTON_Z     =       0x20,
+    PAD_BUTTON_R     =       0x20,
+    PAD_DOWN         =       0x40,
+    PAD_LEFT         =       0x80,
+    PAD_RIGHT        =      0x100,
+    PAD_COIN         =      0x200,
+    PAD_SELECT       =      0x200,
+    PAD_START        =      0x400,
+    PAD_UP           =      0x800,
+    PAD_DISCONNECTED =     0x1000,
+    PAD_BUTTON_L2    =     0x4000,
+    PAD_BUTTON_R2    =     0x8000,
+    PAD_RPD_GC_POS   =  0x2000000,
+    PAD_RPD_GC_NEG   =  0x4000000,
+    PAD_SHORTCUT     = 0x20000000,
+    PAD_MENU         = 0x40000000,
+    PAD_RPD          = 0x80000000,
+} M2EpiPadFlag;
+
+typedef enum {
+    MD_6B_DISABLE =  0x1,
+    MD_MULTITAP_0 =  0x2,
+    MD_MULTITAP_1 =  0x4,
+    USE_ANALOG    =  0x8,
+    DIRECTION_4   = 0x10,
+} M2EpiArchSubInfo;
+
+typedef enum {
+    BUTTON_CIRCLE   =  0,
+    BUTTON_CROSS    =  1,
+    BUTTON_TRIANGLE =  2,
+    BUTTON_SQUARE   =  3,
+    BUTTON_R1       =  4,
+    BUTTON_R2       =  5,
+    BUTTON_R3       =  6,
+    BUTTON_L1       =  7,
+    BUTTON_L2       =  8,
+    BUTTON_L3       =  9,
+    BUTTON_SELECT   = 10,
+    BUTTON_START    = 11,
+    BUTTON_TOUCH    = 12,
+} PlatformButtonId;
 
 void Logging()
 {
@@ -88,6 +143,8 @@ void ReadConfig()
     inipp::get_value(ini.sections["Custom Resolution"], "Windowed", bWindowedMode);
     inipp::get_value(ini.sections["Custom Resolution"], "Borderless", bBorderlessMode);
 
+    inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
+
     // Log config parse
     LOG_F(INFO, "Config Parse: bDebuggerEnabled: %d", bDebuggerEnabled);
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
@@ -102,6 +159,7 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
     LOG_F(INFO, "Config Parse: bWindowedMode: %d", bWindowedMode);
     LOG_F(INFO, "Config Parse: bBorderlessMode: %d", bBorderlessMode);
+    LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
 
     if (bDebuggerEnabled)
     {
@@ -220,7 +278,96 @@ void BorderlessPatch()
         }
         else if (!MGS1_MWinResCfgSetWindowScanResult)
         {
-            LOG_F(INFO, "MGS 1: M2: MWinResCfg::SetWindow pattern scan failed.");
+            LOG_F(INFO, "MGS 1: M2: Borderless: MWinResCfg::SetWindow pattern scan failed.");
+        }
+    }
+}
+
+void AnalogPatch()
+{
+    // MGS 1: Analog patch
+    if (sExeName == "METAL GEAR SOLID.exe" && bAnalogMode)
+    {
+        uint8_t* MGS1_MInputHubDMGetWinScanResult = Memory::PatternScan(baseModule, "66 89 4F 0C F3 0F 2C C0 0F B7 C0 66 89 47 0E 75");
+        if (MGS1_MInputHubDMGetWinScanResult)
+        {
+            uint8_t* MGS1_MInputHubDMGetWinPTR = (uint8_t*)MGS1_MInputHubDMGetWinScanResult;
+            uint8_t MGS1_MInputHubDMGetWin[] = { "\x66\x89\x4F\x08\xF3\x0F\x2C\xC0\x0F\xB7\xC0\x66\x89\x47\x0A\x75" };
+            Memory::PatchBytes((uintptr_t)MGS1_MInputHubDMGetWinPTR, (const char*)MGS1_MInputHubDMGetWin, sizeof(MGS1_MInputHubDMGetWin) - 1);
+            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin patched.");
+        }
+        else if (!MGS1_MInputHubDMGetWinScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin pattern scan failed.");
+        }
+
+        uint8_t* MGS1_M2EpiPadUpdateAxisScanResult = Memory::PatternScan(baseModule, "88 4C 10 44 83 FB 06 7C 86 8B 44 24 18 45 89 6C");
+        if (MGS1_M2EpiPadUpdateAxisScanResult)
+        {
+            uint8_t* MGS1_M2EpiPadUpdateAxisPTR = (uint8_t*)MGS1_M2EpiPadUpdateAxisScanResult;
+            uint8_t MGS1_M2EpiPadUpdateAxis[] = { "\x90\x90\x90\x90" };
+            Memory::PatchBytes((uintptr_t)MGS1_M2EpiPadUpdateAxisPTR, (const char*)MGS1_M2EpiPadUpdateAxis, sizeof(MGS1_M2EpiPadUpdateAxis) - 1);
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis patched.");
+        }
+        else if (!MGS1_M2EpiPadUpdateAxisScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis pattern scan failed.");
+        }
+    }
+}
+
+unsigned char* M2_EpiPadStatePTR;
+void M2_EpiPadState(unsigned int addr, unsigned int id, void* state)
+{
+    M2_EpiPadStatePTR = (unsigned char*) state;
+
+    static bool printed = false;
+    if (!printed) {
+        LOG_F(INFO, "M2: Pad state is 0x" PRIxPTR ".", state);
+        printed = true;
+    }
+}
+
+DWORD32 MGS1_M2EpiPadUpdateReturnJMP;
+void __declspec(naked) MGS1_M2EpiPadUpdate_CC()
+{
+    __asm
+    {
+        push ecx
+        push edx
+        push [esp + 8]
+
+        call M2_EpiPadState
+
+        add esp, 4
+        pop edx
+        pop ecx
+
+        mov[esp + 8], 0xF3
+        mov[esp + 9], 0x5A
+        jmp[MGS1_M2EpiPadUpdateReturnJMP]
+    }
+}
+
+void AnalogHook()
+{
+    // MGS 1: Analog hook
+    if (sExeName == "METAL GEAR SOLID.exe")
+    {
+        uint8_t* MGS1_M2EpiPadUpdateScanResult = Memory::PatternScan(baseModule, "C7 44 24 08 F3 5A 00 00 C7 44 24 0C 00 00 00 00");
+        if (MGS1_M2EpiPadUpdateScanResult)
+        {
+            DWORD32 MGS1_M2EpiPadUpdateAddress = (uintptr_t)MGS1_M2EpiPadUpdateScanResult;
+            int MGS1_M2EpiPadUpdateHookLength = Memory::GetHookLength((char*)MGS1_M2EpiPadUpdateAddress, 4);
+            MGS1_M2EpiPadUpdateReturnJMP = MGS1_M2EpiPadUpdateAddress + MGS1_M2EpiPadUpdateHookLength;
+            Memory::DetourFunction32((void*)MGS1_M2EpiPadUpdateAddress, MGS1_M2EpiPadUpdate_CC, MGS1_M2EpiPadUpdateHookLength);
+
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook length is %d bytes.", MGS1_M2EpiPadUpdateHookLength);
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2EpiPadUpdateAddress);
+        }
+        else if (!MGS1_M2EpiPadUpdateScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate pattern scan failed.");
         }
     }
 }
@@ -530,11 +677,56 @@ void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
         SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
         _integer(*obj) = bDotMatrix;
     }
+
+    // ::g_emu_task.init
+    if (strcmp(name, "init") == 0) {
+        SQObjectPtr* archSubInfo = &v->_stack._vals[v->_stackbase + 5];
+
+        if (sq_isinteger(*archSubInfo)) {
+            _integer(*archSubInfo) |= (bAnalogMode ? USE_ANALOG : 0);
+        }
+    }
+}
+
+void AnalogLoop(HSQUIRRELVM v)
+{
+    gInputHub.SetInteger(_SC("setDirectionMerge"), 0);
+    gEmuTask.SetInteger(_SC("setInputDirectionMerge"), 0);
+
+    gInputHub.SetInteger(_SC("setDeadzone"), 0);
+    gEmuTask.SetInteger(_SC("setInputDeadzone"), 0);
+
+    SQFloat xL = 0.0, yL = 0.0;
+    gInput.GetFloat(_SC("getAnalogStickX"), &xL);
+    gInput.GetFloat(_SC("getAnalogStickY"), &yL);
+
+    SQFloat xR = 0.0, yR = 0.0;
+    gInput.GetFloat(_SC("getRightAnalogStickX"), &xR);
+    gInput.GetFloat(_SC("getRightAnalogStickY"), &yR);
+
+    // Normalize an axis from (-1, 1) to (0, 255) with 128 = center
+    // https://github.com/grumpycoders/pcsx-redux/blob/a072e38d78c12a4ce1dadf951d9cdfd7ea59220b/src/core/pad.cc#L664-L673
+    const auto axisToUint8 = [](float axis) {
+        constexpr float scale = 1.3f;
+        const float scaledValue = std::clamp<float>(axis * scale, -1.0f, 1.0f);
+        return (uint8_t)(std::clamp<float>(std::round(((scaledValue + 1.0f) / 2.0f) * 255.0f), 0.0f, 255.0f));
+    };
+
+    if (M2_EpiPadStatePTR) {
+        M2_EpiPadStatePTR[0x44] = axisToUint8(xL);
+        M2_EpiPadStatePTR[0x45] = axisToUint8(yL);
+        M2_EpiPadStatePTR[0x46] = axisToUint8(xR);
+        M2_EpiPadStatePTR[0x47] = axisToUint8(yR);
+    }
 }
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, SQInteger line)
 {
     gEmuTask.SetVM(v);
+    gInputHub.SetVM(v);
+    gInput.SetVM(v);
+
+    if (bAnalogMode) AnalogLoop(v);
 
     gEmuTask.SetSmoothing(bSmoothing);
     gEmuTask.SetScanline(bScanline);
@@ -809,8 +1001,10 @@ DWORD __stdcall Main(void*)
 
     ConfigHook();
     BorderlessPatch();
-    M2Hook();
+    AnalogPatch();
+    AnalogHook();
 
+    M2Hook();
     SquirrelPatch();
     SquirrelHook();
 

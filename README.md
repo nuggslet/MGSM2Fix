@@ -1,7 +1,7 @@
 # Metal Gear Solid Master Collection Fix
 [![Github All Releases](https://img.shields.io/github/downloads/nuggslet/MGSM2Fix/total.svg)](https://github.com/nuggslet/MGSM2Fix/releases)
 
-This is a fix that adds custom resolutions, pixel perfect scaling and more to the original Metal Gear Solid within the Master Collection.<br />
+This is a fix that adds custom resolutions, analog input, pixel perfect scaling and more to the original Metal Gear Solid within the Master Collection.<br />
 
 ## Games Supported
 - Metal Gear Solid <br />
