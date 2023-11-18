@@ -170,37 +170,37 @@ void ScanFunctions()
     // MGS 1: Squirrel call
     if (sExeName == "METAL GEAR SOLID.exe")
     {
-        uint8_t* MGS1_mallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 56 8B 75 08 83 FE E0 77 30 85 F6");
-        if (MGS1_mallocScanResult)
+        uint8_t* M2_mallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 56 8B 75 08 83 FE E0 77 30 85 F6");
+        if (M2_mallocScanResult)
         {
-            M2_mallocAddress = (uintptr_t)MGS1_mallocScanResult;
-            LOG_F(INFO, "MGS 1: malloc is 0x%" PRIxPTR ".", M2_mallocAddress);
+            M2_mallocAddress = (uintptr_t)M2_mallocScanResult;
+            LOG_F(INFO, "M2: malloc is 0x%" PRIxPTR ".", M2_mallocAddress);
         }
-        else if (!MGS1_mallocScanResult)
+        else if (!M2_mallocScanResult)
         {
-            LOG_F(INFO, "MGS 1: malloc scan failed.");
-        }
-
-        uint8_t* MGS1_reallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 57 8B 7D 08 85 FF 75 0B FF 75 0C");
-        if (MGS1_reallocScanResult)
-        {
-            M2_reallocAddress = (uintptr_t)MGS1_reallocScanResult;
-            LOG_F(INFO, "MGS 1: realloc is 0x%" PRIxPTR ".", M2_reallocAddress);
-        }
-        else if (!MGS1_reallocScanResult)
-        {
-            LOG_F(INFO, "MGS 1: realloc scan failed.");
+            LOG_F(INFO, "M2: malloc scan failed.");
         }
 
-        uint8_t* MGS1_freeScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 83 7D 08 00 74 2D FF 75 08 6A 00");
-        if (MGS1_freeScanResult)
+        uint8_t* M2_reallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 57 8B 7D 08 85 FF 75 0B FF 75 0C");
+        if (M2_reallocScanResult)
         {
-            M2_freeAddress = (uintptr_t)MGS1_freeScanResult;
-            LOG_F(INFO, "MGS 1: free is 0x%" PRIxPTR ".", M2_freeAddress);
+            M2_reallocAddress = (uintptr_t)M2_reallocScanResult;
+            LOG_F(INFO, "M2: realloc is 0x%" PRIxPTR ".", M2_reallocAddress);
         }
-        else if (!MGS1_freeScanResult)
+        else if (!M2_reallocScanResult)
         {
-            LOG_F(INFO, "MGS 1: free scan failed.");
+            LOG_F(INFO, "M2: realloc scan failed.");
+        }
+
+        uint8_t* M2_freeScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 83 7D 08 00 74 2D FF 75 08 6A 00");
+        if (M2_freeScanResult)
+        {
+            M2_freeAddress = (uintptr_t)M2_freeScanResult;
+            LOG_F(INFO, "M2: free is 0x%" PRIxPTR ".", M2_freeAddress);
+        }
+        else if (!M2_freeScanResult)
+        {
+            LOG_F(INFO, "M2: free scan failed.");
         }
     }
 }
