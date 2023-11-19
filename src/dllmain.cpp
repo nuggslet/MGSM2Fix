@@ -47,7 +47,7 @@ string sExeName;
 string sGameName;
 string sExePath;
 string sGameVersion;
-string sFixVer = "0.4";
+string sFixVer = "0.5";
 
 typedef struct {
     bool hooked;
@@ -323,7 +323,7 @@ void M2_EpiPadState(unsigned int addr, unsigned int id, void* state)
 
     static bool printed = false;
     if (!printed) {
-        LOG_F(INFO, "M2: Pad state is 0x" PRIxPTR ".", state);
+        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
         printed = true;
     }
 }
@@ -723,10 +723,29 @@ void AnalogLoop(HSQUIRRELVM v)
     };
 
     if (M2_EpiPadStatePTR) {
-        M2_EpiPadStatePTR[0x44 + (MGS1_PlaySide * 4)] = axisToUint8(xL);
-        M2_EpiPadStatePTR[0x45 + (MGS1_PlaySide * 4)] = axisToUint8(yL);
-        M2_EpiPadStatePTR[0x46 + (MGS1_PlaySide * 4)] = axisToUint8(xR);
-        M2_EpiPadStatePTR[0x47 + (MGS1_PlaySide * 4)] = axisToUint8(yR);
+        if (MGS1_PlaySide == 0) {
+            M2_EpiPadStatePTR[0x44] = axisToUint8(xL);
+            M2_EpiPadStatePTR[0x45] = axisToUint8(yL);
+            M2_EpiPadStatePTR[0x46] = axisToUint8(xR);
+            M2_EpiPadStatePTR[0x47] = axisToUint8(yR);
+
+            for (unsigned int i = 0x48; i < 0x54; i++) {
+                M2_EpiPadStatePTR[i] = 128;
+            }
+        } else {
+            for (unsigned int i = 0x44; i < 0x4C; i++) {
+                M2_EpiPadStatePTR[i] = 128;
+            }
+
+            M2_EpiPadStatePTR[0x4C] = axisToUint8(xL);
+            M2_EpiPadStatePTR[0x4D] = axisToUint8(yL);
+            M2_EpiPadStatePTR[0x4E] = axisToUint8(xR);
+            M2_EpiPadStatePTR[0x4F] = axisToUint8(yR);
+
+            for (unsigned int i = 0x50; i < 0x54; i++) {
+                M2_EpiPadStatePTR[i] = 128;
+            }
+        }
     }
 }
 
