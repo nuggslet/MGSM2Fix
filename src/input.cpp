@@ -1,95 +1,25 @@
 #include "input.h"
 
-void Input::SetVM(HSQUIRRELVM v)
+bool Input::GetAnalogStickX(SQFloat *value)
 {
-    m_vm = v;
+    // g_input.getAnalogStickX(g_input, value);
+    return GetFloat(_SC("getAnalogStickX"), value);
 }
 
-bool Input::Get()
+bool Input::GetAnalogStickY(SQFloat *value)
 {
-    sq_pushroottable(m_vm);
-    sq_pushstring(m_vm, _SC("g_input"), -1);
-    if (SQ_FAILED(sq_get(m_vm, -2))) {
-        sq_pop(m_vm, 1);
-        return false;
-    }
-
-    if (sq_gettype(m_vm, -1) != OT_INSTANCE)
-    {
-        sq_pop(m_vm, 2);
-        return false;
-    }
-
-    return true;
+    // g_input.getAnalogStickY(g_input, value);
+    return GetFloat(_SC("getAnalogStickY"), value);
 }
 
-bool Input::Get(const SQChar *name, SQObjectType type)
+bool Input::GetRightAnalogStickX(SQFloat *value)
 {
-    if (!Get()) return false;
-
-    sq_pushstring(m_vm, name, -1);
-    sq_get(m_vm, -2);
-
-    if (type != OT_NULL && sq_gettype(m_vm, -1) != type)
-    {
-        sq_pop(m_vm, 2);
-        return false;
-    }
-
-    return true;
+    // g_input.getRightAnalogStickX(g_input, value);
+    return GetFloat(_SC("getRightAnalogStickX"), value);
 }
 
-bool Input::GetClosure(const SQChar *name)
+bool Input::GetRightAnalogStickY(SQFloat *value)
 {
-    if (!Get()) return false;
-
-    sq_pushstring(m_vm, name, -1);
-    sq_get(m_vm, -2);
-
-    if (sq_gettype(m_vm, -1) != OT_CLOSURE && sq_gettype(m_vm, -1) != OT_NATIVECLOSURE)
-    {
-        sq_pop(m_vm, 2);
-        return false;
-    }
-
-    return true;
-}
-
-bool Input::SetBool(const SQChar *name, SQBool value)
-{
-    if (!GetClosure(name)) return false;
-
-    sq_push(m_vm, -2);
-    sq_pushbool(m_vm, value);
-    SQRESULT res = sq_call(m_vm, 2, false, false);
-    sq_pop(m_vm, 2);
-
-    if (SQ_SUCCEEDED(res)) return true;
-    return false;
-}
-
-bool Input::SetInteger(const SQChar *name, SQInteger value)
-{
-    if (!GetClosure(name)) return false;
-
-    sq_push(m_vm, -2);
-    sq_pushinteger(m_vm, value);
-    SQRESULT res = sq_call(m_vm, 2, false, false);
-    sq_pop(m_vm, 2);
-
-    if (SQ_SUCCEEDED(res)) return true;
-    return false;
-}
-
-bool Input::GetFloat(const SQChar *name, SQFloat* value)
-{
-    if (!GetClosure(name)) return false;
-
-    sq_push(m_vm, -2);
-    SQRESULT res = sq_call(m_vm, 1, true, false);
-    sq_getfloat(m_vm, -1, value);
-    sq_pop(m_vm, 3);
-
-    if (SQ_SUCCEEDED(res)) return true;
-    return false;
+    // g_input.getRightAnalogStickY(g_input, value);
+    return GetFloat(_SC("getRightAnalogStickY"), value);
 }

@@ -1,20 +1,12 @@
 #pragma once
 
-#include "squirrel.h"
+#include "m2object.h"
 
-class InputHub
+class InputHub : public M2Object
 {
 public:
-	InputHub() = default;
-	void SetVM(HSQUIRRELVM v);
+	InputHub() : M2Object("g_inputHub") {}
 
-	bool Get();
-	bool Get(const SQChar *name, SQObjectType type);
-	bool GetClosure(const SQChar *name);
-
-	bool SetBool(const SQChar *name, SQBool value);
-	bool SetInteger(const SQChar *name, SQInteger value);
-
-private:
-	HSQUIRRELVM m_vm;
+	bool SetDirectionMerge(SQInteger mode);
+	bool SetDeadzone(SQFloat value);
 };

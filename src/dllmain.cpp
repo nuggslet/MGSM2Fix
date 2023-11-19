@@ -700,19 +700,19 @@ void AnalogLoop(HSQUIRRELVM v)
         MGS1_PlaySide = _integer(obj);
     }
 
-    gInputHub.SetInteger(_SC("setDirectionMerge"), 0);
-    gEmuTask.SetInteger(_SC("setInputDirectionMerge"), 0);
+    gInputHub.SetDirectionMerge(0);
+    gEmuTask.SetInputDirectionMerge(0);
 
-    gInputHub.SetInteger(_SC("setDeadzone"), 0);
-    gEmuTask.SetInteger(_SC("setInputDeadzone"), 0);
+    gInputHub.SetDeadzone(0.0);
+    gEmuTask.SetInputDeadzone(0.0);
 
     SQFloat xL = 0.0, yL = 0.0;
-    gInput.GetFloat(_SC("getAnalogStickX"), &xL);
-    gInput.GetFloat(_SC("getAnalogStickY"), &yL);
+    gInput.GetAnalogStickX(&xL);
+    gInput.GetAnalogStickY(&yL);
 
     SQFloat xR = 0.0, yR = 0.0;
-    gInput.GetFloat(_SC("getRightAnalogStickX"), &xR);
-    gInput.GetFloat(_SC("getRightAnalogStickY"), &yR);
+    gInput.GetRightAnalogStickX(&xR);
+    gInput.GetRightAnalogStickY(&yR);
 
     // Normalize an axis from (-1, 1) to (0, 255) with 128 = center
     // https://github.com/grumpycoders/pcsx-redux/blob/a072e38d78c12a4ce1dadf951d9cdfd7ea59220b/src/core/pad.cc#L664-L673

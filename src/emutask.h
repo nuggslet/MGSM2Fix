@@ -1,23 +1,14 @@
 #pragma once
 
-#include "squirrel.h"
+#include "m2object.h"
 
-class EmuTask
+class EmuTask : public M2Object
 {
 public:
-	EmuTask() = default;
-	void SetVM(HSQUIRRELVM v);
-
-	bool Get();
-	bool Get(const SQChar *name, SQObjectType type);
-	bool GetClosure(const SQChar *name);
-
-	bool SetBool(const SQChar *name, SQBool value);
-	bool SetInteger(const SQChar *name, SQInteger value);
+	EmuTask() : M2Object("g_emu_task") {}
 
 	bool SetSmoothing(SQBool enable);
 	bool SetScanline(SQBool enable);
-
-private:
-	HSQUIRRELVM m_vm;
+	bool SetInputDirectionMerge(SQInteger mode);
+	bool SetInputDeadzone(SQFloat value);
 };
