@@ -112,6 +112,15 @@ namespace Memory
         return (void*)((DWORD_PTR)pTrampoline);
     }
 
+    void DetourFunction(void* src, void* dst, int len)
+    {
+#ifdef _WIN64
+        DetourFunction64(src, dst, len);
+#else
+        DetourFunction32(src, dst, len);
+#endif
+    }
+
     static HMODULE GetThisDllHandle()
     {
         MEMORY_BASIC_INFORMATION info;

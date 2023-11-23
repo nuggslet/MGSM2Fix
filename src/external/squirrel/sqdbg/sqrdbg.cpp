@@ -1,4 +1,3 @@
-#include <squirrel.h>
 #ifdef _WIN32
 #  include <ws2tcpip.h>
 #else
@@ -11,15 +10,15 @@
 #endif
 #include <stdio.h>
 #include <string.h>
-#include <squirrel.h>
+
+#include "resource.h"
+extern LPVOID Resource(UINT id, LPCSTR type, LPDWORD size);
+
 #include <squirrel.h>
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
 SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
 SQInteger error_handler(HSQUIRRELVM v);
-
-#include "resource.h"
-extern LPVOID Resource(UINT id, LPCSTR type, LPDWORD size);
 
 HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate,SQBool exclusive)
 {

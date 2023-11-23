@@ -5,11 +5,21 @@ This is a fix that adds custom resolutions, analog input, pixel perfect scaling 
 
 ## Games Supported
 - Metal Gear Solid <br />
+- Metal Gear / Snake's Revenge (Vol.1 Bonus Content) <br />
 See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in the collection.
+
+## Features
+- Borderless/windowed mode.
+- Control over built-in filters.
+- Analog input (MGS1).
+- Launcher skip (MGS1, boots last launched game version).
+- Skip intro logos.
+- Debug features.
 
 ## Installation
 - Grab the latest release of MGSM2Fix from [here.](https://github.com/nuggslet/MGSM2Fix/releases)
-- Extract the contents of the release zip in to the game folder.<br />(e.g. "**steamapps\common\MGS1**" for Steam).
+- Make sure to download the correct zip for the game. A separate fix is required for Bonus Content as it's 64 bit, while MGS1 is 32 bit.
+- Extract the contents of the release zip in to the game folder.<br />(e.g. "**steamapps\common\MGS1**" or "**steamapps\common\MGS Master Collection Bonus Content**" for Steam).
 
 ### Steam Deck/Linux additional instructions
 - Open up the Steam properties of MGS1 and put `WINEDLLOVERRIDES="d3d11=n,b" %command%` in the launch options.

@@ -22,6 +22,11 @@ public:
 	SQSharedState *_sharedstate;
 	SQString *_next; //chain for the string table
 	SQInteger _len;
+
+#ifdef _WIN64
+	SQInteger _m2_unknown;
+#endif
+
 	SQHash _hash;
 	SQChar _val[1];
 };

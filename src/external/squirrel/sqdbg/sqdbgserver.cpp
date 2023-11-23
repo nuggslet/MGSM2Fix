@@ -1,10 +1,16 @@
-#include <squirrel.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sqstdblob.h>
+
+#ifndef _WIN32
+#  define Sleep sleep
+#  include <sys/types.h>
+#  include <sys/socket.h>
+#endif
+
 #include "sqpcheader.h"
+#include <sqstdblob.h>
 #include "sqcompiler.h"
 #include "sqvm.h"
 #include "sqarray.h"
@@ -16,12 +22,6 @@
 #include "sqstring.h"
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
-
-#ifndef _WIN32
-#  define Sleep sleep
-#  include <sys/types.h>
-#  include <sys/socket.h>
-#endif
 
 #ifndef SQUNICODE
 #define scstrcpy strcpy

@@ -150,7 +150,9 @@ public:
 
 	SQObjectPtr temp_reg;
 
+#ifndef _WIN64
 	SQObjectPtr _m2_unknown;
+#endif
 
 	CallInfo* _callsstack;
 	SQInteger _callsstacksize;

@@ -105,10 +105,17 @@ public:
 	SQPRINTFUNCTION _errorfunc;
 	bool _debuginfo;
 	bool _notifyallexceptions;
+
+#ifdef _WIN64
+	void *_m2_unknown_0;
+	void *_m2_unknown_1;
+#endif
+
 private:
 	SQChar *_scratchpad;
 	SQInteger _scratchpadsize;
 };
+
 
 #define _sp(s) (_sharedstate->GetScratchPad(s))
 #define _spval (_sharedstate->GetScratchPad(-1))
