@@ -100,6 +100,20 @@ bool M2Object::SetFloat(const SQChar *name, SQFloat value)
     return false;
 }
 
+bool M2Object::SetInfoInteger(const SQChar *name, const SQChar *key, SQInteger value)
+{
+    if (!GetClosure(name)) return false;
+
+    sq_push(m_vm, -2);
+    sq_pushstring(m_vm, key, -1);
+    sq_pushinteger(m_vm, value);
+    SQRESULT res = sq_call(m_vm, 3, false, false);
+    sq_pop(m_vm, 2);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}
+
 bool M2Object::GetBool(const SQChar *name, SQBool *value)
 {
     if (!GetClosure(name)) return false;
@@ -133,6 +147,20 @@ bool M2Object::GetFloat(const SQChar *name, SQFloat *value)
     sq_push(m_vm, -2);
     SQRESULT res = sq_call(m_vm, 1, true, false);
     sq_getfloat(m_vm, -1, value);
+    sq_pop(m_vm, 3);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}
+
+bool M2Object::GetInfoInteger(const SQChar *name, const SQChar *key, SQInteger *value)
+{
+    if (!GetClosure(name)) return false;
+
+    sq_push(m_vm, -2);
+    sq_pushstring(m_vm, key, -1);
+    SQRESULT res = sq_call(m_vm, 2, true, false);
+    sq_getinteger(m_vm, -1, value);
     sq_pop(m_vm, 3);
 
     if (SQ_SUCCEEDED(res)) return true;

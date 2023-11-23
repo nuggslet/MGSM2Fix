@@ -23,3 +23,15 @@ bool EmuTask::SetInputDeadzone(SQFloat value)
     // g_emu_task.setInputDeadzone(g_emu_task, value);
     return SetFloat(_SC("setInputDeadzone"), value);
 }
+
+bool EmuTask::SetInfoInteger(const SQChar *key, SQInteger value)
+{
+    // g_emu_task.setInfoInteger(g_emu_task, key, value);
+    return M2Object::SetInfoInteger(_SC("setInfoInteger"), key, value);
+}
+
+bool EmuTask::GetInfoInteger(const SQChar *key, SQInteger *value)
+{
+    // g_emu_task.getInfoInteger(g_emu_task, key, value);
+    return M2Object::GetInfoInteger(_SC("getInfoInteger"), key, value);
+}

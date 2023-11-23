@@ -27,6 +27,7 @@ Input gInput;
 bool bDebuggerEnabled;
 int iDebuggerPort;
 bool bDebuggerAutoUpdate;
+bool bDebuggerExclusive;
 bool bSmoothing = true;
 bool bScanline;
 bool bDotMatrix;
@@ -38,6 +39,8 @@ int iCustomResY;
 bool bWindowedMode;
 bool bBorderlessMode;
 bool bAnalogMode;
+bool bLauncherSkipNotice;
+bool bLauncherStartGame;
 string sFullscreenMode;
 string sCustomResX;
 string sCustomResY;
@@ -47,7 +50,7 @@ string sExeName;
 string sGameName;
 string sExePath;
 string sGameVersion;
-string sFixVer = "0.5";
+string sFixVer = "0.6";
 
 typedef struct {
     bool hooked;
@@ -129,6 +132,7 @@ void ReadConfig()
     inipp::get_value(ini.sections["Squirrel Debugger"], "Enabled", bDebuggerEnabled);
     inipp::get_value(ini.sections["Squirrel Debugger"], "Port", iDebuggerPort);
     inipp::get_value(ini.sections["Squirrel Debugger"], "AutoUpdate", bDebuggerAutoUpdate);
+    inipp::get_value(ini.sections["Squirrel Debugger"], "Exclusive", bDebuggerExclusive);
 
     inipp::get_value(ini.sections["Screen"], "Smoothing", bSmoothing);
     inipp::get_value(ini.sections["Screen"], "Scanline", bScanline);
@@ -145,10 +149,14 @@ void ReadConfig()
 
     inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
 
+    inipp::get_value(ini.sections["Launcher"], "SkipNotice", bLauncherSkipNotice);
+    inipp::get_value(ini.sections["Launcher"], "StartGame", bLauncherStartGame);
+
     // Log config parse
     LOG_F(INFO, "Config Parse: bDebuggerEnabled: %d", bDebuggerEnabled);
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
     LOG_F(INFO, "Config Parse: bDebuggerAutoUpdate: %d", bDebuggerAutoUpdate);
+    LOG_F(INFO, "Config Parse: bDebuggerExclusive: %d", bDebuggerExclusive);
     LOG_F(INFO, "Config Parse: bSmoothing: %d", bSmoothing);
     LOG_F(INFO, "Config Parse: bScanline: %d", bScanline);
     LOG_F(INFO, "Config Parse: bDotMatrix: %d", bDotMatrix);
@@ -160,10 +168,12 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bWindowedMode: %d", bWindowedMode);
     LOG_F(INFO, "Config Parse: bBorderlessMode: %d", bBorderlessMode);
     LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
+    LOG_F(INFO, "Config Parse: bLauncherSkipNotice: %d", bLauncherSkipNotice);
+    LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
 
-    if (bDebuggerEnabled)
+    if (bDebuggerEnabled && bDebuggerExclusive)
     {
-        LOG_F(INFO, "Config Parse: Debugger enabled, other features will be disabled.");
+        LOG_F(INFO, "Config Parse: Debugger enabled in exclusive mode, other features will be disabled.");
     }
 
     // Force windowed mode if borderless is enabled but windowed is not. There is undoubtedly a more elegant way to handle this.
@@ -171,6 +181,11 @@ void ReadConfig()
     {
         bWindowedMode = true;
         LOG_F(INFO, "Config Parse: Borderless mode enabled.");
+    }
+
+    if (bAnalogMode)
+    {
+        LOG_F(INFO, "Config Parse: Analog mode enabled.");
     }
 
     if (iCustomResX <= 0 || iCustomResY <= 0)
@@ -202,6 +217,23 @@ void DetectGame()
     {
         LOG_F(INFO, "Detected game is: Metal Gear Solid");
     }
+}
+
+LPVOID Resource(UINT id, LPCSTR type, LPDWORD size)
+{
+    HRSRC hRes = FindResource(fixModule, MAKEINTRESOURCE(id), type);
+    if (!hRes) return NULL;
+
+    HGLOBAL h = LoadResource(fixModule, hRes);
+    if (!h) return NULL;
+
+    LPVOID p = LockResource(h);
+    if (!p) return NULL;
+
+    DWORD dw = SizeofResource(fixModule, hRes);
+    if (size) *size = dw;
+
+    return p;
 }
 
 DWORD32 M2_mallocAddress = 0;
@@ -263,115 +295,6 @@ void ScanFunctions()
     }
 }
 
-void BorderlessPatch()
-{
-    // MGS 1: Borderless patch
-    if (sExeName == "METAL GEAR SOLID.exe" && bBorderlessMode)
-    {
-        uint8_t* MGS1_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "B8 00 00 CE 02 BE 00 00 CA 02");
-        if (MGS1_MWinResCfgSetWindowScanResult)
-        {
-            uint8_t* MGS1_MWinResCfgSetWindowPTR = (uint8_t*)MGS1_MWinResCfgSetWindowScanResult;
-            uint8_t MGS1_MWinResCfgSetWindowFlags[] = { "\xB8\x00\x00\x00\x90\xBE\x00\x00\x00\x90" };
-            Memory::PatchBytes((uintptr_t)MGS1_MWinResCfgSetWindowPTR, (const char*)MGS1_MWinResCfgSetWindowFlags, sizeof(MGS1_MWinResCfgSetWindowFlags) - 1);
-            LOG_F(INFO, "MGS 1: M2: Borderless: MWinResCfg::SetWindow patched.");
-        }
-        else if (!MGS1_MWinResCfgSetWindowScanResult)
-        {
-            LOG_F(INFO, "MGS 1: M2: Borderless: MWinResCfg::SetWindow pattern scan failed.");
-        }
-    }
-}
-
-void AnalogPatch()
-{
-    // MGS 1: Analog patch
-    if (sExeName == "METAL GEAR SOLID.exe" && bAnalogMode)
-    {
-        uint8_t* MGS1_MInputHubDMGetWinScanResult = Memory::PatternScan(baseModule, "66 89 4F 0C F3 0F 2C C0 0F B7 C0 66 89 47 0E 75");
-        if (MGS1_MInputHubDMGetWinScanResult)
-        {
-            uint8_t* MGS1_MInputHubDMGetWinPTR = (uint8_t*)MGS1_MInputHubDMGetWinScanResult;
-            uint8_t MGS1_MInputHubDMGetWin[] = { "\x66\x89\x4F\x08\xF3\x0F\x2C\xC0\x0F\xB7\xC0\x66\x89\x47\x0A\x75" };
-            Memory::PatchBytes((uintptr_t)MGS1_MInputHubDMGetWinPTR, (const char*)MGS1_MInputHubDMGetWin, sizeof(MGS1_MInputHubDMGetWin) - 1);
-            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin patched.");
-        }
-        else if (!MGS1_MInputHubDMGetWinScanResult)
-        {
-            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin pattern scan failed.");
-        }
-
-        uint8_t* MGS1_M2EpiPadUpdateAxisScanResult = Memory::PatternScan(baseModule, "88 4C 10 44 83 FB 06 7C 86 8B 44 24 18 45 89 6C");
-        if (MGS1_M2EpiPadUpdateAxisScanResult)
-        {
-            uint8_t* MGS1_M2EpiPadUpdateAxisPTR = (uint8_t*)MGS1_M2EpiPadUpdateAxisScanResult;
-            uint8_t MGS1_M2EpiPadUpdateAxis[] = { "\x90\x90\x90\x90" };
-            Memory::PatchBytes((uintptr_t)MGS1_M2EpiPadUpdateAxisPTR, (const char*)MGS1_M2EpiPadUpdateAxis, sizeof(MGS1_M2EpiPadUpdateAxis) - 1);
-            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis patched.");
-        }
-        else if (!MGS1_M2EpiPadUpdateAxisScanResult)
-        {
-            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis pattern scan failed.");
-        }
-    }
-}
-
-unsigned char* M2_EpiPadStatePTR;
-void M2_EpiPadState(unsigned int addr, unsigned int id, void* state)
-{
-    M2_EpiPadStatePTR = (unsigned char*) state;
-
-    static bool printed = false;
-    if (!printed) {
-        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
-        printed = true;
-    }
-}
-
-DWORD32 MGS1_M2EpiPadUpdateReturnJMP;
-void __declspec(naked) MGS1_M2EpiPadUpdate_CC()
-{
-    __asm
-    {
-        push ecx
-        push edx
-        push [esp + 8]
-
-        call M2_EpiPadState
-
-        add esp, 4
-        pop edx
-        pop ecx
-
-        mov[esp + 8], 0xF3
-        mov[esp + 9], 0x5A
-        jmp[MGS1_M2EpiPadUpdateReturnJMP]
-    }
-}
-
-void AnalogHook()
-{
-    // MGS 1: Analog hook
-    if (sExeName == "METAL GEAR SOLID.exe")
-    {
-        uint8_t* MGS1_M2EpiPadUpdateScanResult = Memory::PatternScan(baseModule, "C7 44 24 08 F3 5A 00 00 C7 44 24 0C 00 00 00 00");
-        if (MGS1_M2EpiPadUpdateScanResult)
-        {
-            DWORD32 MGS1_M2EpiPadUpdateAddress = (uintptr_t)MGS1_M2EpiPadUpdateScanResult;
-            int MGS1_M2EpiPadUpdateHookLength = Memory::GetHookLength((char*)MGS1_M2EpiPadUpdateAddress, 4);
-            MGS1_M2EpiPadUpdateReturnJMP = MGS1_M2EpiPadUpdateAddress + MGS1_M2EpiPadUpdateHookLength;
-            Memory::DetourFunction32((void*)MGS1_M2EpiPadUpdateAddress, MGS1_M2EpiPadUpdate_CC, MGS1_M2EpiPadUpdateHookLength);
-
-            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook length is %d bytes.", MGS1_M2EpiPadUpdateHookLength);
-            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2EpiPadUpdateAddress);
-        }
-        else if (!MGS1_M2EpiPadUpdateScanResult)
-        {
-            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate pattern scan failed.");
-        }
-    }
-}
-
 void SquirrelPatch()
 {
     // MGS 1: Squirrel patch
@@ -394,13 +317,18 @@ void SquirrelPatch()
 
 void SetHook(HSQUIRRELVM v)
 {
+    if (bDebuggerEnabled && !gDBG) {
+        gDBG = sq_rdbg_init(v, iDebuggerPort, bDebuggerAutoUpdate, bDebuggerExclusive);
+        sq_rdbg_waitforconnections(gDBG);
+    }
+
     SQInteger Hook(HSQUIRRELVM v);
     if (sq_isnull(v->_debughook)) {
         sq_pushregistrytable(v);
         sq_pushstring(v, _SC("_m2_debug_hook_"), -1);
         sq_pushuserpointer(v, v);
         sq_newclosure(v, Hook, 1);
-        sq_newslot(v, -3, SQFalse);
+        sq_newslot(v, -3, false);
         sq_pop(v, 1);
 
         sq_pushregistrytable(v);
@@ -651,55 +579,117 @@ void ConfigHook()
     }
 }
 
-LPVOID Resource(UINT id, LPCSTR type, LPDWORD size)
+void BorderlessPatch()
 {
-    HRSRC hRes = FindResource(fixModule, MAKEINTRESOURCE(id), type);
-    if (!hRes) return NULL;
-
-    HGLOBAL h = LoadResource(fixModule, hRes);
-    if (!h) return NULL;
-
-    LPVOID p = LockResource(h);
-    if (!p) return NULL;
-
-    DWORD dw = SizeofResource(fixModule, hRes);
-    if (size) *size = dw;
-
-    return p;
-}
-
-void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
-{
-    if (!name) return;
-
-    // Do this here as the native call is surprisingly expensive (?!)
-    if (strcmp(name, "setDotmatrix") == 0) {
-        SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
-        _integer(*obj) = bDotMatrix;
-    }
-
-    // ::g_emu_task.init
-    if (strcmp(name, "init") == 0) {
-        SQObjectPtr* archSubInfo = &v->_stack._vals[v->_stackbase + 5];
-
-        if (sq_isinteger(*archSubInfo)) {
-            _integer(*archSubInfo) |= (bAnalogMode ? USE_ANALOG : 0);
+    // MGS 1: Borderless patch
+    if (sExeName == "METAL GEAR SOLID.exe" && bBorderlessMode)
+    {
+        uint8_t* MGS1_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "B8 00 00 CE 02 BE 00 00 CA 02");
+        if (MGS1_MWinResCfgSetWindowScanResult)
+        {
+            uint8_t* MGS1_MWinResCfgSetWindowPTR = (uint8_t*)MGS1_MWinResCfgSetWindowScanResult;
+            uint8_t MGS1_MWinResCfgSetWindowFlags[] = { "\xB8\x00\x00\x00\x90\xBE\x00\x00\x00\x90" };
+            Memory::PatchBytes((uintptr_t)MGS1_MWinResCfgSetWindowPTR, (const char*)MGS1_MWinResCfgSetWindowFlags, sizeof(MGS1_MWinResCfgSetWindowFlags) - 1);
+            LOG_F(INFO, "MGS 1: M2: Borderless: MWinResCfg::SetWindow patched.");
+        }
+        else if (!MGS1_MWinResCfgSetWindowScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Borderless: MWinResCfg::SetWindow pattern scan failed.");
         }
     }
 }
 
-SQInteger MGS1_PlaySide = 0;
+void AnalogPatch()
+{
+    // MGS 1: Analog patch
+    if (sExeName == "METAL GEAR SOLID.exe" && bAnalogMode)
+    {
+        uint8_t* MGS1_MInputHubDMGetWinScanResult = Memory::PatternScan(baseModule, "66 89 4F 0C F3 0F 2C C0 0F B7 C0 66 89 47 0E 75");
+        if (MGS1_MInputHubDMGetWinScanResult)
+        {
+            uint8_t* MGS1_MInputHubDMGetWinPTR = (uint8_t*)MGS1_MInputHubDMGetWinScanResult;
+            uint8_t MGS1_MInputHubDMGetWin[] = { "\x66\x89\x4F\x08\xF3\x0F\x2C\xC0\x0F\xB7\xC0\x66\x89\x47\x0A\x75" };
+            Memory::PatchBytes((uintptr_t)MGS1_MInputHubDMGetWinPTR, (const char*)MGS1_MInputHubDMGetWin, sizeof(MGS1_MInputHubDMGetWin) - 1);
+            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin patched.");
+        }
+        else if (!MGS1_MInputHubDMGetWinScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: MInputHubDM::GetWin pattern scan failed.");
+        }
+
+        uint8_t* MGS1_M2EpiPadUpdateAxisScanResult = Memory::PatternScan(baseModule, "88 4C 10 44 83 FB 06 7C 86 8B 44 24 18 45 89 6C");
+        if (MGS1_M2EpiPadUpdateAxisScanResult)
+        {
+            uint8_t* MGS1_M2EpiPadUpdateAxisPTR = (uint8_t*)MGS1_M2EpiPadUpdateAxisScanResult;
+            uint8_t MGS1_M2EpiPadUpdateAxis[] = { "\x90\x90\x90\x90" };
+            Memory::PatchBytes((uintptr_t)MGS1_M2EpiPadUpdateAxisPTR, (const char*)MGS1_M2EpiPadUpdateAxis, sizeof(MGS1_M2EpiPadUpdateAxis) - 1);
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis patched.");
+        }
+        else if (!MGS1_M2EpiPadUpdateAxisScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdateAxis pattern scan failed.");
+        }
+    }
+}
+
+unsigned char* M2_EpiPadStatePTR;
+void M2_EpiPadState(unsigned int addr, unsigned int id, void* state)
+{
+    M2_EpiPadStatePTR = (unsigned char*)state;
+
+    static bool printed = false;
+    if (!printed) {
+        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
+        printed = true;
+    }
+}
+
+DWORD32 MGS1_M2EpiPadUpdateReturnJMP;
+void __declspec(naked) MGS1_M2EpiPadUpdate_CC()
+{
+    __asm
+    {
+        push ecx
+        push edx
+        push[esp + 8]
+
+        call M2_EpiPadState
+
+        add esp, 4
+        pop edx
+        pop ecx
+
+        mov[esp + 8], 0xF3
+        mov[esp + 9], 0x5A
+        jmp[MGS1_M2EpiPadUpdateReturnJMP]
+    }
+}
+
+void AnalogHook()
+{
+    // MGS 1: Analog hook
+    if (sExeName == "METAL GEAR SOLID.exe")
+    {
+        uint8_t* MGS1_M2EpiPadUpdateScanResult = Memory::PatternScan(baseModule, "C7 44 24 08 F3 5A 00 00 C7 44 24 0C 00 00 00 00");
+        if (MGS1_M2EpiPadUpdateScanResult)
+        {
+            DWORD32 MGS1_M2EpiPadUpdateAddress = (uintptr_t)MGS1_M2EpiPadUpdateScanResult;
+            int MGS1_M2EpiPadUpdateHookLength = Memory::GetHookLength((char*)MGS1_M2EpiPadUpdateAddress, 4);
+            MGS1_M2EpiPadUpdateReturnJMP = MGS1_M2EpiPadUpdateAddress + MGS1_M2EpiPadUpdateHookLength;
+            Memory::DetourFunction32((void*)MGS1_M2EpiPadUpdateAddress, MGS1_M2EpiPadUpdate_CC, MGS1_M2EpiPadUpdateHookLength);
+
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook length is %d bytes.", MGS1_M2EpiPadUpdateHookLength);
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2EpiPadUpdateAddress);
+        }
+        else if (!MGS1_M2EpiPadUpdateScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate pattern scan failed.");
+        }
+    }
+}
+
 void AnalogLoop(HSQUIRRELVM v)
 {
-    const SQChar *func;
-    sq_getstring(v, 5, &func);
-
-    if (func && strcmp(func, "set_playside_mgs") == 0) {
-        SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-        SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
-        MGS1_PlaySide = _integer(obj);
-    }
-
     gInputHub.SetDirectionMerge(0);
     gEmuTask.SetInputDirectionMerge(0);
 
@@ -723,6 +713,7 @@ void AnalogLoop(HSQUIRRELVM v)
     };
 
     if (M2_EpiPadStatePTR) {
+        extern SQInteger MGS1_PlaySide;
         if (MGS1_PlaySide == 0) {
             M2_EpiPadStatePTR[0x44] = axisToUint8(xL);
             M2_EpiPadStatePTR[0x45] = axisToUint8(yL);
@@ -749,16 +740,126 @@ void AnalogLoop(HSQUIRRELVM v)
     }
 }
 
-void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, SQInteger line)
+SQInteger SQ_util_is_notice_skipable(HSQUIRRELVM v)
+{
+    sq_pushbool(v, true);
+    return 1;
+}
+
+bool M2_LaunchIntent = true;
+SQInteger SQ_util_get_launch_intent_id(HSQUIRRELVM v)
+{
+    if (M2_LaunchIntent)
+        sq_pushstring(v, _SC("MAIN_STORY"), -1);
+    else
+        sq_pushstring(v, _SC(""), -1);
+
+    return 1;
+}
+
+SQInteger SQ_util_clear_launch_intent_id(HSQUIRRELVM v)
+{
+    M2_LaunchIntent = false;
+    return 0;
+}
+
+int M2_StartPadId = 4;
+SQInteger SQ_SystemEtc_setStartPadId(HSQUIRRELVM v)
+{
+    sq_getinteger(v, 1, &M2_StartPadId);
+    return 0;
+}
+
+SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM v)
+{
+    sq_pushinteger(v, M2_StartPadId);
+    return 1;
+}
+
+void SQReturn_init_system_1st(HSQUIRRELVM v)
+{
+    sq_pushroottable(v);
+    {
+        if (bLauncherSkipNotice) {
+            sq_pushstring(v, _SC("util_is_notice_skipable"), -1);
+            sq_newclosure(v, SQ_util_is_notice_skipable, 0);
+            sq_newslot(v, -3, false);
+        }
+
+        if (bLauncherStartGame) {
+            sq_pushstring(v, _SC("util_get_launch_intent_id"), -1);
+            sq_newclosure(v, SQ_util_get_launch_intent_id, 0);
+            sq_newslot(v, -3, false);
+
+            sq_pushstring(v, _SC("util_clear_launch_intent_id"), -1);
+            sq_newclosure(v, SQ_util_clear_launch_intent_id, 0);
+            sq_newslot(v, -3, false);
+        }
+
+        sq_pushstring(v, _SC("SystemEtc"), -1);
+        sq_get(v, -2);
+        {
+            sq_pushstring(v, _SC("setStartPadId"), -1);
+            sq_newclosure(v, SQ_SystemEtc_setStartPadId, 0);
+            sq_newslot(v, -3, false);
+
+            sq_pushstring(v, _SC("getStartPadId"), -1);
+            sq_newclosure(v, SQ_SystemEtc_getStartPadId, 0);
+            sq_newslot(v, -3, false);
+
+            sq_pop(v, 1);
+        }
+
+        sq_pop(v, 1);
+    }
+}
+
+SQInteger MGS1_PlaySide = 0;
+void SQReturn_set_playside_mgs(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+    MGS1_PlaySide = _integer(obj);
+}
+
+void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
+{
+    if (!name) return;
+
+    // Do this here as the native call is surprisingly expensive (?!)
+    if (strcmp(name, "setDotmatrix") == 0) {
+        SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
+        _integer(*obj) = bDotMatrix;
+    }
+
+    // ::g_emu_task.init
+    if (strcmp(name, "init") == 0) {
+        SQObjectPtr* archSubInfo = &v->_stack._vals[v->_stackbase + 5];
+
+        if (sq_isinteger(*archSubInfo)) {
+            _integer(*archSubInfo) |= (bAnalogMode ? USE_ANALOG : 0);
+        }
+    }
+}
+
+void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *func, SQInteger line)
 {
     gEmuTask.SetVM(v);
     gInputHub.SetVM(v);
     gInput.SetVM(v);
 
-    if (bAnalogMode) AnalogLoop(v);
+    if (func && event_type == _SC('r')) {
+        if (strcmp(func, "init_system_1st") == 0)
+            SQReturn_init_system_1st(v);
+
+        if (strcmp(func, "set_playside_mgs") == 0)
+            SQReturn_set_playside_mgs(v);
+    }
 
     gEmuTask.SetSmoothing(bSmoothing);
     gEmuTask.SetScanline(bScanline);
+
+    if (bAnalogMode) AnalogLoop(v);
 }
 
 void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
@@ -839,14 +940,29 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
             trace << _stringval(_nativeclosure(obj)->_name);
         trace << hex << "{" << "0x" << _nativeclosure(obj)->_function << "}()" << dec;
         break;
+    case OT_USERDATA:
+        trace << "(udat *) " << _userdata(obj);
+        break;
     case OT_USERPOINTER:
-        trace << "(void *) " << _userpointer(obj);
+        trace << "(uptr *) " << _userpointer(obj);
+        break;
+    case OT_GENERATOR:
+        trace << "G" << _generator(obj);
+        break;
+    case OT_THREAD:
+        trace << "T" << _thread(obj);
+        break;
+    case OT_WEAKREF:
+        trace << "&" << _weakref(obj);
+        break;
+    case OT_FUNCPROTO:
+        trace << "def " << _funcproto(obj);
         break;
     case OT_NULL:
         trace << "null";
         break;
     default:
-        trace << hex << "OT_" << obj._type << dec;
+        trace << hex << "OT_" << obj._type << "<" << obj._unVal.raw << ">" << dec;
         break;
     }
 }
@@ -903,7 +1019,7 @@ void Trace(HSQUIRRELVM v)
             if (proto && sq_isstring(proto->_name)) {
                 stringstream trace;
 
-                trace << (_SC('c') ? "Call" : "Return") << ": " << src << ":" << line;
+                trace << (event_type == _SC('c') ? "Call" : "Return") << ": " << src << ":" << line;
                 trace << " " << (event_type == _SC('c') ? "->" : "<-") << " " << func;
 
                 trace << "(";
@@ -915,6 +1031,16 @@ void Trace(HSQUIRRELVM v)
                     }
                 }
                 trace << ")";
+
+                if (event_type == _SC('r')) {
+                    SQInteger i = ci._target; // what the fuck?
+                    if (ci._ip[-1].op == _OP_RETURN) i = ci._ip[-1]._arg1;
+                    if (ci._ip[-1].op == _OP_YIELD)  i = ci._ip[-1]._arg1;
+
+                    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + i];
+                    trace << " -> ";
+                    TraceParameter(trace, obj, iLevel - 2);
+                }
 
                 string tracestring = trace.str();
                 LOG_F(INFO, "M2: %s", tracestring.c_str());
@@ -963,15 +1089,12 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
 
 bool SquirrelMain(HSQUIRRELVM v)
 {
-    LOG_F(INFO, "M2: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t)v, (_ss(v)->_debuginfo ? "enabled" : "disabled"), (_ss(v)->_notifyallexceptions ? "enabled" : "disabled"));
+    LOG_F(INFO, "M2: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t)v,
+        (_ss(v)->_debuginfo ? "enabled" : "disabled"),
+        (_ss(v)->_notifyallexceptions ? "enabled" : "disabled")
+    );
 
-    if (bDebuggerEnabled && !gDBG) {
-        gDBG = sq_rdbg_init(v, iDebuggerPort, bDebuggerAutoUpdate);
-        sq_rdbg_waitforconnections(gDBG);
-        return true;
-    }
-
-    if (bDebuggerEnabled && gDBG) {
+    if (bDebuggerEnabled && bDebuggerExclusive && gDBG) {
         gDBG->Init(v);
         return true;
     }
@@ -983,6 +1106,11 @@ SQInteger Hook(HSQUIRRELVM v)
 {
     SQObjectPtr debughook = v->_debughook;
     v->_debughook = _null_;
+
+    if (bDebuggerEnabled && !bDebuggerExclusive && gDBG) {
+        extern SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
+        debug_hook(NULL, v, gDBG);
+    }
 
     FixData* data = (FixData*)v->_foreignptr;
 
@@ -996,11 +1124,12 @@ SQInteger Hook(HSQUIRRELVM v)
         if (SquirrelMain(v)) return 0;
     }
 
-    const SQChar *src;
-    SQInteger event_type, line;
+    const SQChar *src = NULL, *func = NULL;
+    SQInteger event_type = 0, line = 0;
     sq_getinteger(v, 2, &event_type);
     sq_getstring(v, 3, &src);
     sq_getinteger(v, 4, &line);
+    sq_getstring(v, 5, &func);
 
     if (iNativeLevel >= 1) {
         strcpy(data->src, src);
@@ -1011,7 +1140,7 @@ SQInteger Hook(HSQUIRRELVM v)
         Trace(v);
     }
 
-    FixLoop(v, event_type, src, line);
+    FixLoop(v, event_type, src, func, line);
 
     v->_debughook = debughook;
     return 0;
@@ -1028,14 +1157,14 @@ DWORD __stdcall Main(void*)
 
     ScanFunctions();
 
+    M2Hook();
+    SquirrelPatch();
+    SquirrelHook();
+
     ConfigHook();
     BorderlessPatch();
     AnalogPatch();
     AnalogHook();
-
-    M2Hook();
-    SquirrelPatch();
-    SquirrelHook();
 
     // Signal any threads which might be waiting for us before continuing
     {

@@ -16,9 +16,13 @@ public:
 	bool SetInteger(const SQChar *name, SQInteger value);
 	bool SetFloat(const SQChar *name, SQFloat value);
 
+	bool SetInfoInteger(const SQChar *name, const SQChar *key, SQInteger value);
+
 	bool GetBool(const SQChar *name, SQBool *value);
 	bool GetInteger(const SQChar *name, SQInteger *value);
 	bool GetFloat(const SQChar *name, SQFloat *value);
+
+	bool GetInfoInteger(const SQChar *name, const SQChar *key, SQInteger *value);
 
 private:
 	const SQChar *m_name;

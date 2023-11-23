@@ -4,6 +4,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sqstdblob.h>
+#include "sqpcheader.h"
+#include "sqcompiler.h"
+#include "sqvm.h"
+#include "sqarray.h"
+#include "sqtable.h"
+#include "sqclass.h"
+#include "sqclosure.h"
+#include "sqfuncproto.h"
+#include "squserdata.h"
+#include "sqstring.h"
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
 
@@ -44,7 +54,14 @@ const SQChar *PtrToString(void *p)
 	return temp;
 }
 
-SQInteger debug_hook(HSQUIRRELVM v);
+const SQChar *FloatToString(SQFloat n)
+{
+	static SQChar temp[256];
+	scsprintf(temp, _SC("%f"), n);
+	return temp;
+}
+
+SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
 SQInteger error_handler(HSQUIRRELVM v);
 
 SQInteger beginelement(HSQUIRRELVM v)
@@ -153,7 +170,7 @@ bool SQDbgServer::Init(HSQUIRRELVM v)
 
 	sq_pushstring(v,SQDBG_DEBUG_HOOK,-1);
 	sq_pushuserpointer(v,this);
-	sq_newclosure(v,debug_hook,1);
+	sq_newclosure(v,(SQFUNCTION)debug_hook,1);
 	sq_newslot(v,-3, SQFalse);
 	
 	sq_pushstring(v,SQDBG_ERROR_HANDLER,-1);
@@ -165,7 +182,7 @@ bool SQDbgServer::Init(HSQUIRRELVM v)
 	sq_pop(v,1);
 
 	//sets the error handlers
-	SetErrorHandlers(v);
+	if (_exclusive) SetErrorHandlers(v);
 	return true;
 }
 
@@ -222,7 +239,7 @@ VMState *SQDbgServer::GetVMState(HSQUIRRELVM v)
 
 void SQDbgServer::Hook(HSQUIRRELVM v,SQInteger type,SQInteger line,const SQChar *src,const SQChar *func)
 {
-	
+	_v = v;
 	VMState *vs = GetVMState(v);
 	switch(_state){
 	case eDBG_Running:
@@ -320,75 +337,206 @@ void SQDbgServer::ParseMsg(const char *msg)
 			break;
 		case MSG_ID('g','o'):
 			if(_state!=eDBG_Running){
-				_state=eDBG_Running;
+				_state = eDBG_Running;
 				BeginDocument();
-					BeginElement(_SC("resumed"));
-					EndElement(_SC("resumed"));
+				BeginElement(_SC("resumed"));
+				EndElement(_SC("resumed"));
 				EndDocument();
-//				Send(_SC("<resumed/>\r\n"));
+				//				Send(_SC("<resumed/>\r\n"));
 				scprintf(_SC("go (execution resumed)\n"));
 			}
 			break;
-		case MSG_ID('s','p'):
-			if(_state!=eDBG_Suspended){
-				_state=eDBG_Suspended;
+		case MSG_ID('s', 'p'):
+			if (_state != eDBG_Suspended) {
+				_state = eDBG_Suspended;
 				scprintf(_SC("suspend\n"));
 			}
 			break;
-		case MSG_ID('s','o'):
-			if(_state==eDBG_Suspended){
-				_state=eDBG_StepOver;
+		case MSG_ID('s', 'o'):
+			if (_state == eDBG_Suspended) {
+				_state = eDBG_StepOver;
 			}
 			break;
-		case MSG_ID('s','i'):
-			if(_state==eDBG_Suspended){
-				_state=eDBG_StepInto;
+		case MSG_ID('s', 'i'):
+			if (_state == eDBG_Suspended) {
+				_state = eDBG_StepInto;
 				scprintf(_SC("step into\n"));
 			}
 			break;
-		case MSG_ID('s','r'):
-			if(_state==eDBG_Suspended){
-				_state=eDBG_StepReturn;
+		case MSG_ID('s', 'r'):
+			if (_state == eDBG_Suspended) {
+				_state = eDBG_StepReturn;
 				scprintf(_SC("step return\n"));
 			}
 			break;
-		case MSG_ID('d','i'):
-			if(_state!=eDBG_Disabled){
-				_state=eDBG_Disabled;
+		case MSG_ID('d', 'i'):
+			if (_state != eDBG_Disabled) {
+				_state = eDBG_Disabled;
 				scprintf(_SC("disabled\n"));
 			}
 			break;
-		case MSG_ID('a','w'): {
+		case MSG_ID('a', 'w'): {
 			Watch w;
-			if(ParseWatch(msg+3,w))
+			if (ParseWatch(msg + 3, w))
 			{
 				AddWatch(w);
-				scprintf(_SC("added watch %d %s\n"),w._id,w._exp.c_str());
+				scprintf(_SC("added watch %d %s\n"), w._id, w._exp.c_str());
 				/*if(_state == eDBG_Suspended) {
 					Break(_line,_src.c_str(),_break_type.c_str());
 				}*/
 			}
 			else
 				scprintf(_SC("error parsing add watch"));
-								}
-			break;
-		case MSG_ID('r','w'): {
+		}
+							 break;
+		case MSG_ID('r', 'w'): {
 			SQInteger id;
-			if(ParseRemoveWatch(msg+3,id))
+			if (ParseRemoveWatch(msg + 3, id))
 			{
 				RemoveWatch(id);
-				scprintf(_SC("added watch %d\n"),id);
+				scprintf(_SC("added watch %d\n"), id);
 			}
 			else
 				scprintf(_SC("error parsing remove watch"));
-								}
-			break;
-		case MSG_ID('t','r'):
+		}
+							 break;
+		case MSG_ID('t', 'r'):
 			scprintf(_SC("terminate from user\n"));
 			break;
-		case MSG_ID('r','d'):
+		case MSG_ID('r', 'd'):
 			scprintf(_SC("ready\n"));
-			_ready=true;
+			_ready = true;
+			break;
+		case MSG_ID('e', 'v'):
+			BeginDocument();
+			if (SQ_FAILED(sq_compilebuffer(_v, msg + 3, scstrlen(msg + 3), _SC("REMOTE"), SQFalse)))
+				scprintf(_SC("error compiling the remote function"));
+			else
+			{
+				HSQOBJECT func;
+				sq_getstackobj(_v, -1, &func);
+				sq_addref(_v, &func);
+				sq_pop(_v, 1);
+
+				sq_pushobject(_v, func);
+				sq_pushroottable(_v);
+
+				BeginElement(_SC("eval"));
+
+				if (SQ_FAILED(sq_call(_v, 1, SQTrue, SQFalse)))
+					scprintf(_SC("error calling the remote function"));
+				else
+				{
+					switch (sq_gettype(_v, -1)) {
+						case OT_NULL:
+							Attribute(_SC("type"), "OT_NULL");
+							break;
+						case OT_STRING:
+						{
+							Attribute(_SC("type"), "OT_STRING");
+							const SQChar *value;
+							sq_getstring(_v, -1, &value);
+							Attribute(_SC("value"), value);
+						}
+						break;
+						case OT_FLOAT:
+						{
+							Attribute(_SC("type"), "OT_FLOAT");
+							SQFloat value;
+							sq_getfloat(_v, -1, &value);
+							Attribute(_SC("value"), FloatToString(value));
+						}
+						break;
+						case OT_INTEGER:
+						{
+							Attribute(_SC("type"), "OT_INTEGER");
+							SQInteger value;
+							sq_getinteger(_v, -1, &value);
+							Attribute(_SC("value"), IntToString(value));
+						}
+						break;
+						case OT_BOOL:
+						{
+							Attribute(_SC("type"), "OT_BOOL");
+							SQInteger value;
+							sq_getinteger(_v, -1, &value);
+							Attribute(_SC("value"), value ? "true" : "false");
+						}
+						break;
+						case OT_CLOSURE:
+						{
+							Attribute(_SC("type"), "OT_CLOSURE");
+							HSQOBJECT obj;
+							sq_getstackobj(_v, -1, &obj);
+							SQClosure *closure = _closure(obj);
+							if (closure) {
+								SQFunctionProto *proto = _funcproto(closure->_function);
+								if (proto && sq_isstring(proto->_name)) {
+									Attribute(_SC("name"), _stringval(proto->_name));
+								}
+							}
+						}
+						break;
+						case OT_NATIVECLOSURE:
+						{
+							Attribute(_SC("type"), "OT_NATIVECLOSURE");
+							HSQOBJECT obj;
+							sq_getstackobj(_v, -1, &obj);
+							SQNativeClosure *closure = _nativeclosure(obj);
+							if (sq_isstring(closure->_name)) {
+								Attribute(_SC("name"), _stringval(closure->_name));
+							}
+							Attribute(_SC("value"), PtrToString(closure->_function));
+						}
+						break;
+						default:
+						{
+							scprintf(_SC("eval\n"));
+							switch (sq_gettype(_v, -1)) {
+								case OT_INSTANCE:
+									Attribute(_SC("type"), "OT_INSTANCE");
+									break;
+								case OT_CLASS:
+									Attribute(_SC("type"), "OT_CLASS");
+									break;
+								case OT_TABLE:
+									Attribute(_SC("type"), "OT_TABLE");
+									break;
+								case OT_ARRAY:
+									Attribute(_SC("type"), "OT_ARRAY");
+									break;
+								case OT_USERDATA:
+									Attribute(_SC("type"), "OT_USERDATA");
+									break;
+								case OT_USERPOINTER:
+									Attribute(_SC("type"), "OT_USERPOINTER");
+									break;
+								case OT_GENERATOR:
+									Attribute(_SC("type"), "OT_GENERATOR");
+									break;
+								case OT_THREAD:
+									Attribute(_SC("type"), "OT_THREAD");
+									break;
+								case OT_FUNCPROTO:
+									Attribute(_SC("type"), "OT_FUNCPROTO");
+									break;
+								case OT_WEAKREF:
+									Attribute(_SC("type"), "OT_WEAKREF");
+									break;
+							}
+							HSQOBJECT obj;
+							sq_getstackobj(_v, -1, &obj);
+							Attribute(_SC("value"), PtrToString((void*) obj._unVal.raw));
+						}
+						break;
+					}
+				}
+				EndElement(_SC("eval"));
+
+				sq_pop(_v, 2);
+				sq_release(_v, &func);
+			}
+			EndDocument();
 			break;
 		default:
 			scprintf(_SC("unknown packet"));
@@ -546,10 +694,12 @@ void SQDbgServer::Break(HSQUIRRELVM v,SQInteger line,const SQChar *src,const SQC
 
 void SQDbgServer::SerializeState(HSQUIRRELVM v)
 {
-	sq_pushnull(v);
-	sq_setdebughook(v);
-	sq_pushnull(v);
-	sq_seterrorhandler(v);
+	if (_exclusive) {
+		sq_pushnull(v);
+		sq_setdebughook(v);
+		sq_pushnull(v);
+		sq_seterrorhandler(v);
+	}
 	sq_pushobject(v,_serializefunc);
 	sq_pushobject(v,_debugroot);
 	sq_pushstring(v,_SC("watches"),-1);
@@ -567,7 +717,7 @@ void SQDbgServer::SerializeState(HSQUIRRELVM v)
 	}
 	sq_pop(v,2);
 	
-	SetErrorHandlers(v);
+	if (_exclusive) SetErrorHandlers(v);
 }
 
 

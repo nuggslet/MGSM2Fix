@@ -5,7 +5,7 @@
 class Input : public M2Object
 {
 public:
-	Input() : M2Object("g_input") {}
+	Input() : M2Object(_SC("g_input")) {}
 
 	bool GetAnalogStickX(SQFloat *value);
 	bool GetAnalogStickY(SQFloat *value);

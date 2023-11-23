@@ -15,13 +15,13 @@
 #include <squirrel.h>
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
-SQInteger debug_hook(HSQUIRRELVM v);
+SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
 SQInteger error_handler(HSQUIRRELVM v);
 
 #include "resource.h"
 extern LPVOID Resource(UINT id, LPCSTR type, LPDWORD size);
 
-HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
+HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate,SQBool exclusive)
 {
 	struct sockaddr_in bindaddr;
 #ifdef _WIN32
@@ -31,6 +31,7 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 	}	
 #endif 
 	SQDbgServer *rdbg = new SQDbgServer(v);
+	rdbg->_exclusive = exclusive?true :false;
 	rdbg->_autoupdate = autoupdate?true:false;
 	rdbg->_accept = socket(AF_INET,SOCK_STREAM,0);
 	bindaddr.sin_family = AF_INET;
@@ -41,7 +42,7 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 		sq_throwerror(v,_SC("failed to bind the socket"));
 		return NULL;
 	}
-	if(!rdbg->Init(v)) {
+	if(v && !rdbg->Init(v)) {
 		delete rdbg;
 		sq_throwerror(v,_SC("failed to initialize the debugger"));
 		return NULL;
@@ -122,21 +123,25 @@ SQRESULT sq_rdbg_update(HSQREMOTEDBG rdbg)
 	return SQ_OK;
 }
 
-SQInteger debug_hook(HSQUIRRELVM v)
+SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg)
 {
+	if (v) _v = v;
+
 	SQUserPointer up;
 	SQInteger event_type,line;
 	const SQChar *src,*func;
-	sq_getinteger(v,2,&event_type);
-	sq_getstring(v,3,&src);
-	sq_getinteger(v,4,&line);
-	sq_getstring(v,5,&func);
-	sq_getuserpointer(v,-1,&up);
-	HSQREMOTEDBG rdbg = (HSQREMOTEDBG)up;
-	rdbg->Hook(v,event_type,line,src,func);
+	sq_getinteger(_v,2,&event_type);
+	sq_getstring(_v,3,&src);
+	sq_getinteger(_v,4,&line);
+	sq_getstring(_v,5,&func);
+	if (v) {
+		sq_getuserpointer(_v, -1, &up);
+		rdbg = (HSQREMOTEDBG)up;
+	}
+	rdbg->Hook(_v,event_type,line,src,func);
 	if(rdbg->_autoupdate) {
 		if(SQ_FAILED(sq_rdbg_update(rdbg)))
-			return sq_throwerror(v,_SC("socket failed"));
+			return sq_throwerror(_v,_SC("socket failed"));
 	}
 	return 0;
 }

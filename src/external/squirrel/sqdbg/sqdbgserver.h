@@ -138,6 +138,7 @@ public:
 	//int _maxrecursion;
 	
 	bool _ready;
+	bool _exclusive;
 	bool _autoupdate;
 	HSQOBJECT _serializefunc;
 	SQCharVec _scratchstring;
