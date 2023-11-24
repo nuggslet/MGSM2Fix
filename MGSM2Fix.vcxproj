@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\emutask.cpp" />
     <ClCompile Include="src\external\loguru\loguru.cpp" />
@@ -47,6 +48,7 @@
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\inputhub.cpp" />
     <ClCompile Include="src\m2object.cpp" />
+    <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -203,8 +205,6 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <UseMSVC>false</UseMSVC>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

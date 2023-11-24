@@ -116,7 +116,6 @@ private:
 	SQInteger _scratchpadsize;
 };
 
-
 #define _sp(s) (_sharedstate->GetScratchPad(s))
 #define _spval (_sharedstate->GetScratchPad(-1))
 
