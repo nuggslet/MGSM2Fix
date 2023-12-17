@@ -1405,10 +1405,18 @@ SQInteger prevstackbase = _stackbase;
 		return Execute(closure, _top - nparams, nparams, stackbase,outres,raiseerror);
 		break;
 	case OT_NATIVECLOSURE:{
-		bool suspend;
-		return CallNative(_nativeclosure(closure), nparams, stackbase, outres,suspend);
-		
-						  }
+		bool suspend = false;
+		bool ret = CallNative(_nativeclosure(closure), nparams, stackbase, outres, suspend);
+		if (suspend) {
+			_suspended = SQTrue;
+			_suspended_target = ci->_target;
+			_suspended_root = ci->_root;
+			_suspended_traps = ci->_etraps;
+			_suspend_varargs = ci->_vargs;
+			outres = closure;
+		}
+		return ret;
+		}
 		break;
 	case OT_CLASS: {
 		SQObjectPtr constr;
@@ -1419,7 +1427,7 @@ SQInteger prevstackbase = _stackbase;
 			return Call(constr,nparams,stackbase,temp,raiseerror);
 		}
 		return true;
-				   }
+		}
 		break;
 	default:
 		return false;

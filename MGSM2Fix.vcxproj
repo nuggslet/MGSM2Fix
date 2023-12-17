@@ -167,6 +167,7 @@
       <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -206,6 +207,7 @@
       <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -117,7 +117,7 @@ void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const
 {
     stringstream trace;
 
-    FixData* data = (FixData*)v->_foreignptr;
+    FixData* data = (FixData *) sq_getforeignptr(v);
     if (data && data->src[0] != 0) {
         trace << data->src << ":" << data->line << " -> ";
         data->src[0] = 0;

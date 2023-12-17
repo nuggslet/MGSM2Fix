@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "helper.hpp"
 
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
@@ -14,6 +15,7 @@ using namespace std;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
+string sFixVer = "0.7";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -39,16 +41,39 @@ bool bBorderlessMode;
 bool bAnalogMode;
 bool bLauncherSkipNotice;
 bool bLauncherStartGame;
+bool bGameDevMenu;
+bool bPatchesUnderpants = true;
+bool bPatchesGhosts = true;
+
+// Variables
 string sFullscreenMode;
 string sCustomResX;
 string sCustomResY;
 
-// Variables
-string sExeName;
-string sGameName;
-string sExePath;
-string sGameVersion;
-string sFixVer = "0.6";
+std::filesystem::path sExePath;
+std::string sExeName;
+
+struct GameInfo
+{
+    std::string GameTitle;
+    std::string ExeName;
+    int SteamAppId;
+};
+
+enum class MgsGame
+{
+    Unknown,
+    MGS,
+    MGSR,
+};
+
+const std::map<MgsGame, GameInfo> kGames = {
+    {MgsGame::MGS, {"Metal Gear Solid", "METAL GEAR SOLID.exe", 2131630}},
+    {MgsGame::MGSR, {"Metal Gear / Snake's Revenge (NES)", "MGS MC1 Bonus Content.exe", 2306740}},
+};
+
+const GameInfo* game = nullptr;
+MgsGame eGameType = MgsGame::Unknown;
 
 typedef struct {
     bool hooked;
@@ -150,6 +175,11 @@ void ReadConfig()
     inipp::get_value(ini.sections["Launcher"], "SkipNotice", bLauncherSkipNotice);
     inipp::get_value(ini.sections["Launcher"], "StartGame", bLauncherStartGame);
 
+    inipp::get_value(ini.sections["Patches"], "Underpants", bPatchesUnderpants);
+    inipp::get_value(ini.sections["Patches"], "Ghosts", bPatchesGhosts);
+
+    inipp::get_value(ini.sections["Game"], "DevMenu", bGameDevMenu);
+
     // Log config parse
     LOG_F(INFO, "Config Parse: bDebuggerEnabled: %d", bDebuggerEnabled);
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
@@ -168,6 +198,9 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
     LOG_F(INFO, "Config Parse: bLauncherSkipNotice: %d", bLauncherSkipNotice);
     LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
+    LOG_F(INFO, "Config Parse: bPatchesUnderpants: %d", bPatchesUnderpants);
+    LOG_F(INFO, "Config Parse: bPatchesGhosts: %d", bPatchesGhosts);
+    LOG_F(INFO, "Config Parse: bGameDevMenu: %d", bGameDevMenu);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
     {
@@ -200,26 +233,33 @@ void ReadConfig()
     sCustomResY = to_string(iCustomResY);
 }
 
-void DetectGame()
+bool DetectGame()
 {
     // Get game name and exe path
-    LPSTR exePath = new CHAR[_MAX_PATH];
+    CHAR exePath[_MAX_PATH] = { 0 };
     GetModuleFileName(baseModule, exePath, MAX_PATH);
-    sExePath = string(exePath);
-    sExeName = sExePath.substr(sExePath.find_last_of("/\\") + 1);
+    sExePath = exePath;
+    sExeName = sExePath.filename().string();
 
-    LOG_F(INFO, "Game Name: %s", sExeName.c_str());
-    LOG_F(INFO, "Game Path: %s", sExePath.c_str());
+    LOG_F(INFO, "Module Name: %s", sExeName.c_str());
+    LOG_F(INFO, "Module Path: %s", sExePath.string().c_str());
+    LOG_F(INFO, "Module Address: %p", baseModule);
+    LOG_F(INFO, "Module Timestamp: %u", Memory::ModuleTimestamp(baseModule));
 
-    if (sExeName == "METAL GEAR SOLID.exe")
+    eGameType = MgsGame::Unknown;
+    for (const auto& [type, info] : kGames)
     {
-        LOG_F(INFO, "Detected game is: Metal Gear Solid");
+        if (info.ExeName == sExeName)
+        {
+            LOG_F(INFO, "Detected game: %s (app %d)", info.GameTitle.c_str(), info.SteamAppId);
+            eGameType = type;
+            game = &info;
+            return true;
+        }
     }
 
-    if (sExeName == "MGS MC1 Bonus Content.exe")
-    {
-        LOG_F(INFO, "Detected game is: Metal Gear / Snake's Revenge (NES)");
-    }
+    LOG_F(INFO, "Failed to detect supported game, %s isn't supported by MGSM2Fix", sExeName.c_str());
+    return false;
 }
 
 LPVOID Resource(UINT id, LPCSTR type, LPDWORD size)
@@ -282,10 +322,58 @@ void SetHook(HSQUIRRELVM v)
     }
 }
 
-void SquirrelNew(HSQUIRRELVM v)
+void SQNew(HSQUIRRELVM v)
 {
     LOG_F(INFO, "M2: SQVM is 0x%" PRIxPTR ", SQSharedState is 0x%" PRIxPTR ".", (uintptr_t)v, (uintptr_t)_ss(v));
     _ss(v)->_debuginfo = true;
+}
+
+void SQHookFunction(HSQUIRRELVM v, const SQChar *func, SQFUNCTION hook, HSQOBJECT *obj = NULL)
+{
+    sq_pushroottable(v);
+    {
+        if (obj) {
+            sq_pushstring(v, func, -1);
+            if (SQ_SUCCEEDED(sq_get(v, -2))) {
+                sq_getstackobj(v, -1, obj);
+                sq_addref(v, obj);
+                sq_pop(v, 1);
+            }
+        }
+
+        sq_pushstring(v, func, -1);
+        sq_newclosure(v, hook, 0);
+        sq_newslot(v, -3, false);
+
+        sq_pop(v, 1);
+    }
+}
+
+void SQHookMethod(HSQUIRRELVM v, const SQChar *name, const SQChar *func, SQFUNCTION hook, HSQOBJECT *obj = NULL)
+{
+    sq_pushroottable(v);
+    {
+        sq_pushstring(v, name, -1);
+        sq_get(v, -2);
+        {
+            if (obj) {
+                sq_pushstring(v, func, -1);
+                if (SQ_SUCCEEDED(sq_get(v, -2))) {
+                    sq_getstackobj(v, -1, obj);
+                    sq_addref(v, obj);
+                    sq_pop(v, 1);
+                }
+            }
+
+            sq_pushstring(v, func, -1);
+            sq_newclosure(v, hook, 0);
+            sq_newslot(v, -3, false);
+
+            sq_pop(v, 1);
+        }
+
+        sq_pop(v, 1);
+    }
 }
 
 void M2Print(const char *fmt, ...)
@@ -309,6 +397,14 @@ const char* ConfigOverride(string *key)
         return sFullscreenMode.c_str();
     }
 
+    if (*key == "FULLSCREEN_CURSOR" || *key == "MOUSE_CURSOR") {
+        return "0";
+    }
+
+    if (*key == "WINDOW_VSYNC") {
+        return "0";
+    }
+
     if (*key == "WINDOW_W" || *key == "SCREEN_W" || *key == "LAST_CLIENT_SIZE_X") {
         return sCustomResX.c_str();
     }
@@ -320,16 +416,34 @@ const char* ConfigOverride(string *key)
     return NULL;
 }
 
-unsigned char* M2_EpiPadStatePTR;
-void M2_EpiPadState(unsigned int addr, unsigned int id, void* state)
+vector<string> M2_FileFilter;
+void FilterPatches()
 {
-    M2_EpiPadStatePTR = (unsigned char*)state;
-
-    static bool printed = false;
-    if (!printed) {
-        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
-        printed = true;
+    if (eGameType == MgsGame::MGS && !bPatchesUnderpants) {
+        vector<string> MGS1_FileFilter_Underpants = {
+            "0046a5", "0046a6",
+            "0057c3", "0057c4", "0057c5",
+            "0099fc", "0099fd",
+        };
+        M2_FileFilter.insert(M2_FileFilter.end(),
+            MGS1_FileFilter_Underpants.begin(),
+            MGS1_FileFilter_Underpants.end()
+        );
     }
+
+    if (eGameType == MgsGame::MGS && !bPatchesGhosts) {
+        M2_FileFilter.push_back("shinrei");
+    }
+}
+
+unsigned char* M2_EpiPadStatePTR;
+void M2_EpiPadState(unsigned int addr, unsigned int id, unsigned char* state)
+{
+    if (M2_EpiPadStatePTR != state) {
+        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
+    }
+
+    M2_EpiPadStatePTR = state;
 }
 
 void AnalogLoop(HSQUIRRELVM v)
@@ -420,42 +534,106 @@ SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM v)
     return 1;
 }
 
-void SQReturn_init_system_1st(HSQUIRRELVM v)
+SQInteger MGS1_GlobalsPTR;
+SQInteger MGS1_LoaderPTR;
+
+SQObject SQObj_util_get_memory_define_table;
+SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM v)
 {
-    sq_pushroottable(v);
-    {
-        if (bLauncherSkipNotice) {
-            sq_pushstring(v, _SC("util_is_notice_skipable"), -1);
-            sq_newclosure(v, SQ_util_is_notice_skipable, 0);
-            sq_newslot(v, -3, false);
-        }
+    SQInteger nargs = sq_gettop(v);
 
-        if (bLauncherStartGame) {
-            sq_pushstring(v, _SC("util_get_launch_intent_id"), -1);
-            sq_newclosure(v, SQ_util_get_launch_intent_id, 0);
-            sq_newslot(v, -3, false);
-
-            sq_pushstring(v, _SC("util_clear_launch_intent_id"), -1);
-            sq_newclosure(v, SQ_util_clear_launch_intent_id, 0);
-            sq_newslot(v, -3, false);
-        }
-
-        sq_pushstring(v, _SC("SystemEtc"), -1);
-        sq_get(v, -2);
-        {
-            sq_pushstring(v, _SC("setStartPadId"), -1);
-            sq_newclosure(v, SQ_SystemEtc_setStartPadId, 0);
-            sq_newslot(v, -3, false);
-
-            sq_pushstring(v, _SC("getStartPadId"), -1);
-            sq_newclosure(v, SQ_SystemEtc_getStartPadId, 0);
-            sq_newslot(v, -3, false);
-
+    SQObjectPtr ret;
+    SQObjectPtr closure = SQObj_util_get_memory_define_table;
+    bool res = v->Call(closure, nargs, v->_stackbase, ret, false);
+    if (res) {
+        if (eGameType == MgsGame::MGS) {
+            sq_pushobject(v, ret);
+            sq_pushstring(v, _SC("scene_name"), -1);
+            if (SQ_SUCCEEDED(sq_get(v, -2))) {
+                sq_getinteger(v, -1, &MGS1_GlobalsPTR);
+                sq_pop(v, 1);
+            }
             sq_pop(v, 1);
         }
 
-        sq_pop(v, 1);
+        sq_pushobject(v, ret);
+        return 1;
     }
+
+    return -1;
+}
+
+void SQReturn_init_system_1st(HSQUIRRELVM v)
+{
+    if (bLauncherSkipNotice) {
+        SQHookFunction(v, _SC("util_is_notice_skipable"), SQ_util_is_notice_skipable);
+    }
+
+    if (bLauncherStartGame) {
+        SQHookFunction(v, _SC("util_get_launch_intent_id"), SQ_util_get_launch_intent_id);
+        SQHookFunction(v, _SC("util_clear_launch_intent_id"), SQ_util_clear_launch_intent_id);
+    }
+
+    SQHookMethod(v, _SC("SystemEtc"), _SC("setStartPadId"), SQ_SystemEtc_setStartPadId);
+    SQHookMethod(v, _SC("SystemEtc"), _SC("getStartPadId"), SQ_SystemEtc_getStartPadId);
+
+    SQHookFunction(v, _SC("util_get_memory_define_table"),
+        SQ_util_get_memory_define_table, &SQObj_util_get_memory_define_table);
+}
+
+SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM v)
+{
+    sq_pushinteger(v, bAnalogMode ? USE_ANALOG : 0);
+    return 1;
+}
+
+void SQReturn_init_system_last(HSQUIRRELVM v)
+{
+    SQHookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
+}
+
+void _SQReturn_update_gadgets(HSQUIRRELVM v)
+{
+    if (MGS1_GlobalsPTR != 0 && MGS1_LoaderPTR != 0) {
+        SQInteger MGS1_StageNamePTR = MGS1_GlobalsPTR;
+        SQInteger MGS1_GameStatePTR = MGS1_GlobalsPTR + 16;
+
+        char MGS1_StageName[8] = { 0 };
+        char MGS1_LoaderName[8] = { 0 };
+        for (int i = 0; i < sizeof(MGS1_StageName) / sizeof(uint32_t); i++) {
+            gEmuTask.GetRamValue(32, MGS1_StageNamePTR + (i * sizeof(uint32_t)),
+                (SQInteger *) &MGS1_StageName[i * sizeof(uint32_t)]);
+            gEmuTask.GetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
+                (SQInteger *) &MGS1_LoaderName[i * sizeof(uint32_t)]);
+        }
+
+        SQInteger MGS1_CurrentStagePTR = MGS1_GameStatePTR + (6 * sizeof(short));
+        SQInteger MGS1_CurrentStage = 0;
+        gEmuTask.GetRamValue(16, MGS1_CurrentStagePTR, &MGS1_CurrentStage);
+
+        if (bGameDevMenu) {
+            if (strcmp(MGS1_LoaderName, "title") == 0 && strcmp(MGS1_StageName, "select") != 0) {
+                strcpy(MGS1_LoaderName, "select");
+                for (int i = 0; i < sizeof(MGS1_StageName) / sizeof(uint32_t); i++) {
+                    gEmuTask.SetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
+                        *(SQInteger *)&MGS1_LoaderName[i * sizeof(uint32_t)]);
+                }
+            }
+        }
+    }
+}
+
+void *LoadImage(void *dst, void *src, size_t num)
+{
+    LOG_F(INFO, "M2: Loading image at 0x%" PRIxPTR " with size %d bytes.", src, num);
+
+    uint8_t* MGS1_LoaderScanResult = Memory::PatternScanBuffer(src, num, "00 00 00 00 69 6E 69 74 00 00 00 00");
+    if (MGS1_LoaderScanResult)
+        MGS1_LoaderPTR = (MGS1_LoaderScanResult - 0x30) - (uint8_t *) src;
+    else
+        MGS1_LoaderPTR = 0;
+
+    return memmove(dst, src, num);
 }
 
 SQInteger MGS1_PlaySide = 0;
@@ -466,9 +644,9 @@ void SQReturn_set_playside_mgs(HSQUIRRELVM v)
     MGS1_PlaySide = _integer(obj);
 }
 
-void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
+bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
 {
-    if (!name) return;
+    if (!name) return true;
 
     // Do this here as the native call is surprisingly expensive (?!)
     if (strcmp(name, "setDotmatrix") == 0) {
@@ -476,14 +654,55 @@ void FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
         _integer(*obj) = bDotMatrix;
     }
 
-    // ::g_emu_task.init
-    if (strcmp(name, "init") == 0) {
-        SQObjectPtr* archSubInfo = &v->_stack._vals[v->_stackbase + 5];
+    if (strcmp(name, "setRamValue") == 0) {
+        SQObjectPtr* width = &v->_stack._vals[v->_stackbase + 1];
+        SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 2];
+        SQObjectPtr* value = &v->_stack._vals[v->_stackbase + 3];
 
-        if (sq_isinteger(*archSubInfo)) {
-            _integer(*archSubInfo) |= (bAnalogMode ? USE_ANALOG : 0);
+        SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 5];
+        if (!sq_istable(*patch)) return true;
+
+        sq_pushobject(v, *patch);
+        sq_pushstring(v, "offset", -1);
+        if (SQ_SUCCEEDED(sq_get(v, -2))) {
+            SQInteger offset = 0;
+            sq_getinteger(v, -1, &offset);
+
+            sq_pop(v, 1);
         }
+
+        sq_pop(v, 1);
     }
+
+    if (strcmp(name, "entryCdRomPatch") == 0) {
+        SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 1];
+        SQObjectPtr* data = &v->_stack._vals[v->_stackbase + 2];
+
+        SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 3];
+        if (sq_isinstance(*data)) patch = &v->_stack._vals[v->_stackbase - 4];
+
+        sq_pushobject(v, *patch);
+        sq_pushstring(v, "file", -1);
+        if (SQ_SUCCEEDED(sq_get(v, -2))) {
+            const SQChar *file = NULL;
+            sq_getstring(v, -1, &file);
+
+            for (auto &filter : M2_FileFilter) {
+                if (strncmp(filter.c_str(), file, filter.length()) == 0)
+                {
+                    LOG_F(INFO, "M2: filtering patch file %s.", file);
+                    sq_pop(v, 2);
+                    return false;
+                }
+            }
+
+            sq_pop(v, 1);
+        }
+
+        sq_pop(v, 1);
+    }
+
+    return true;
 }
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *func, SQInteger line)
@@ -496,8 +715,14 @@ void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQCha
         if (strcmp(func, "init_system_1st") == 0)
             SQReturn_init_system_1st(v);
 
+        if (strcmp(func, "init_system_last") == 0)
+            SQReturn_init_system_last(v);
+
         if (strcmp(func, "set_playside_mgs") == 0)
             SQReturn_set_playside_mgs(v);
+
+        if (strcmp(func, "_update_gadgets") == 0)
+            _SQReturn_update_gadgets(v);
     }
 
     if (event_type == _SC('r')) {
@@ -507,7 +732,6 @@ void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQCha
 
     if (bAnalogMode) AnalogLoop(v);
 }
-
 
 SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
 {
@@ -531,7 +755,7 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
         TraceNative(v, func, closure, name);
     }
 
-    if (name && strcmp(name, "printf") == 0) {
+    if (name && (strcmp(name, "printf") == 0 || strcmp(name, "print") == 0)) {
         SQChar *print = NULL;
         SQInteger length = 0;
         if (SQ_SUCCEEDED(sqstd_format(v, 2, &length, &print))) {
@@ -540,14 +764,16 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
         }
     }
 
-    FixNativeCall(v, func, closure, name);
+    if (FixNativeCall(v, func, closure, name)) {
+        return func(v);
+    }
 
-    return func(v);
+    return 0;
 }
 
 bool SquirrelMain(HSQUIRRELVM v)
 {
-    LOG_F(INFO, "M2: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t)v,
+    LOG_F(INFO, "M2: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t) v,
         (_ss(v)->_debuginfo ? "enabled" : "disabled"),
         (_ss(v)->_notifyallexceptions ? "enabled" : "disabled")
     );
@@ -570,11 +796,11 @@ SQInteger Hook(HSQUIRRELVM v)
         debug_hook(NULL, v, gDBG);
     }
 
-    FixData* data = (FixData*)v->_foreignptr;
+    FixData* data = (FixData *) sq_getforeignptr(v);
 
     if (!data) {
-        v->_foreignptr = calloc(1, sizeof(FixData));
-        data = (FixData*)v->_foreignptr;
+        sq_setforeignptr(v, calloc(1, sizeof(FixData)));
+        data = (FixData *) sq_getforeignptr(v);
     }
 
     if (!data->hooked) {
@@ -614,18 +840,22 @@ DWORD __stdcall Main(void*)
 {
     Logging();
     ReadConfig();
-    DetectGame();
+    if (DetectGame())
+    {
+        FilterPatches();
 
-    CALL(ScanFunctions());
+        CALL(ScanFunctions());
 
-    CALL(M2Hook());
-    CALL(SquirrelHook());
+        CALL(M2Hook());
+        CALL(LoadHook());
+        CALL(SquirrelHook());
 
-    if (bCustomResolution) CALL(ConfigHook());
-    if (bBorderlessMode) CALL(BorderlessPatch());
-    if (bAnalogMode) {
-        CALL(AnalogPatch());
-        CALL(AnalogHook());
+        if (bCustomResolution) CALL(ConfigHook());
+        if (bBorderlessMode) CALL(BorderlessPatch());
+        if (bAnalogMode) {
+            CALL(AnalogPatch());
+            CALL(AnalogHook());
+        }
     }
 
     // Signal any threads which might be waiting for us before continuing

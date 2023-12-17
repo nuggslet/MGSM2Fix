@@ -35,3 +35,33 @@ bool EmuTask::GetInfoInteger(const SQChar *key, SQInteger *value)
     // g_emu_task.getInfoInteger(g_emu_task, key, value);
     return M2Object::GetInfoInteger(_SC("getInfoInteger"), key, value);
 }
+
+bool EmuTask::GetRamValue(SQInteger width, SQInteger offset, SQInteger *value)
+{
+    if (!GetClosure(_SC("getRamValue"))) return false;
+
+    sq_push(m_vm, -2);
+    sq_pushinteger(m_vm, width);
+    sq_pushinteger(m_vm, offset);
+    SQRESULT res = sq_call(m_vm, 3, true, false);
+    sq_getinteger(m_vm, -1, value);
+    sq_pop(m_vm, 3);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}
+
+bool EmuTask::SetRamValue(SQInteger width, SQInteger offset, SQInteger value)
+{
+    if (!GetClosure(_SC("setRamValue"))) return false;
+
+    sq_push(m_vm, -2);
+    sq_pushinteger(m_vm, width);
+    sq_pushinteger(m_vm, offset);
+    sq_pushinteger(m_vm, value);
+    SQRESULT res = sq_call(m_vm, 4, false, false);
+    sq_pop(m_vm, 2);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <inttypes.h>
 #include <mutex>
+#include <filesystem>
 
 #include "external/loguru/loguru.hpp"
 #include "external/inipp/inipp/inipp.h"
@@ -29,3 +30,5 @@
 #include "squserdata.h"
 #include "sqstring.h"
 #include "sqstdstring.h"
+
+#undef LoadImage

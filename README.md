@@ -11,11 +11,11 @@ See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in
 
 ## Features
 - Borderless/windowed mode.
-- Control over built-in filters.
+- Control over built-in filters and Master Collection game patches.
 - Analog input (MGS1).
 - Launcher skip (MGS1, boots last launched game version).
 - Skip intro logos.
-- Debug features.
+- Debug features (including stage select menu in MGS1).
 
 ## Installation
 - Grab the latest release of MGSM2Fix from [here.](https://github.com/nuggslet/MGSM2Fix/releases)

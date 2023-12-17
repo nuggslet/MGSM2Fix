@@ -12,6 +12,8 @@ public:
 	bool Get(const SQChar *name, SQObjectType type);
 	bool GetClosure(const SQChar *name);
 
+	bool Void(const SQChar *name);
+
 	bool SetBool(const SQChar *name, SQBool value);
 	bool SetInteger(const SQChar *name, SQInteger value);
 	bool SetFloat(const SQChar *name, SQFloat value);
@@ -24,7 +26,7 @@ public:
 
 	bool GetInfoInteger(const SQChar *name, const SQChar *key, SQInteger *value);
 
-private:
+protected:
 	const SQChar *m_name;
 	HSQUIRRELVM m_vm;
 };

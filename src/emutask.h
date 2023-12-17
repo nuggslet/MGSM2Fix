@@ -10,6 +10,9 @@ public:
 	bool SetInfoInteger(const SQChar *key, SQInteger value);
 	bool GetInfoInteger(const SQChar *key, SQInteger *value);
 
+	bool GetRamValue(SQInteger width, SQInteger offset, SQInteger *value);
+	bool SetRamValue(SQInteger width, SQInteger offset, SQInteger value);
+
 	bool SetSmoothing(SQBool enable);
 	bool SetScanline(SQBool enable);
 	bool SetInputDirectionMerge(SQInteger mode);

@@ -6,7 +6,7 @@ using namespace std;
 namespace Memory
 {
     template<typename T>
-    void Write(uintptr_t writeAddress, T value)
+    static void Write(uintptr_t writeAddress, T value)
     {
         DWORD oldProtect;
         VirtualProtect((LPVOID)(writeAddress), sizeof(T), PAGE_EXECUTE_WRITECOPY, &oldProtect);
@@ -14,7 +14,7 @@ namespace Memory
         VirtualProtect((LPVOID)(writeAddress), sizeof(T), oldProtect, &oldProtect);
     }
 
-    void PatchBytes(uintptr_t address, const char* pattern, unsigned int numBytes)
+    static void PatchBytes(uintptr_t address, const char* pattern, unsigned int numBytes)
     {
         DWORD oldProtect;
         VirtualProtect((LPVOID)address, numBytes, PAGE_EXECUTE_READWRITE, &oldProtect);
@@ -22,12 +22,12 @@ namespace Memory
         VirtualProtect((LPVOID)address, numBytes, oldProtect, &oldProtect);
     }
 
-    void ReadBytes(const uintptr_t address, void* const buffer, const SIZE_T size) 
+    static void ReadBytes(const uintptr_t address, void* const buffer, const SIZE_T size)
     {
         memcpy(buffer, reinterpret_cast<const void*>(address), size); 
     }
 
-    uintptr_t ReadMultiLevelPointer(uintptr_t base, const std::vector<uint32_t>& offsets)
+    static uintptr_t ReadMultiLevelPointer(uintptr_t base, const std::vector<uint32_t>& offsets)
     {
         MEMORY_BASIC_INFORMATION mbi;
         for (auto& offset : offsets)
@@ -41,7 +41,7 @@ namespace Memory
         return base;
     }
 
-    int GetHookLength(char* src, int minLen)
+    static int GetHookLength(char* src, int minLen)
     {
         int lengthHook = 0;
         const int size = 15;
@@ -56,7 +56,7 @@ namespace Memory
         return lengthHook;
     }
 
-    bool DetourFunction32(void* src, void* dst, int len)
+    static bool DetourFunction32(void* src, void* dst, int len)
     {
         if (len < 5) return false;
 
@@ -76,7 +76,7 @@ namespace Memory
         return true;
     }
 
-    void* DetourFunction64(void* pSource, void* pDestination, int dwLen)
+    static void* DetourFunction64(void* pSource, void* pDestination, int dwLen)
     {
         DWORD MinLen = 14;
 
@@ -112,7 +112,7 @@ namespace Memory
         return (void*)((DWORD_PTR)pTrampoline);
     }
 
-    void DetourFunction(void* src, void* dst, int len)
+    static void DetourFunction(void* src, void* dst, int len)
     {
 #ifdef _WIN64
         DetourFunction64(src, dst, len);
@@ -129,29 +129,36 @@ namespace Memory
         return len ? (HMODULE)info.AllocationBase : NULL;
     }
 
+    static uint32_t ModuleTimestamp(void* module)
+    {
+        auto dosHeader = (PIMAGE_DOS_HEADER)module;
+        auto ntHeaders = (PIMAGE_NT_HEADERS)((std::uint8_t*)module + dosHeader->e_lfanew);
+        return ntHeaders->FileHeader.TimeDateStamp;
+    }
+
+    static auto pattern_to_byte = [](const char* pattern) {
+        auto bytes = std::vector<int>{};
+        auto start = const_cast<char*>(pattern);
+        auto end = const_cast<char*>(pattern) + strlen(pattern);
+
+        for (auto current = start; current < end; ++current) {
+            if (*current == '?') {
+                ++current;
+                if (*current == '?')
+                    ++current;
+                bytes.push_back(-1);
+            }
+            else {
+                bytes.push_back(strtoul(current, &current, 16));
+            }
+        }
+        return bytes;
+    };
+
     // CSGOSimple's pattern scan
     // https://github.com/OneshotGH/CSGOSimple-master/blob/master/CSGOSimple/helpers/utils.cpp
-    std::uint8_t* PatternScan(void* module, const char* signature)
+    static std::uint8_t* PatternScan(void* module, const char* signature)
     {
-        static auto pattern_to_byte = [](const char* pattern) {
-            auto bytes = std::vector<int>{};
-            auto start = const_cast<char*>(pattern);
-            auto end = const_cast<char*>(pattern) + strlen(pattern);
-
-            for (auto current = start; current < end; ++current) {
-                if (*current == '?') {
-                    ++current;
-                    if (*current == '?')
-                        ++current;
-                    bytes.push_back(-1);
-                }
-                else {
-                    bytes.push_back(strtoul(current, &current, 16));
-                }
-            }
-            return bytes;
-        };
-
         auto dosHeader = (PIMAGE_DOS_HEADER)module;
         auto ntHeaders = (PIMAGE_NT_HEADERS)((std::uint8_t*)module + dosHeader->e_lfanew);
 
@@ -177,7 +184,30 @@ namespace Memory
         return nullptr;
     }
 
-    uintptr_t GetAbsolute(uintptr_t address) noexcept
+    static std::uint8_t* PatternScanBuffer(void* buffer, size_t size, const char* signature)
+    {
+        auto patternBytes = pattern_to_byte(signature);
+        auto scanBytes = reinterpret_cast<std::uint8_t*>(buffer);
+
+        auto s = patternBytes.size();
+        auto d = patternBytes.data();
+
+        for (auto i = 0ul; i < size - s; ++i) {
+            bool found = true;
+            for (auto j = 0ul; j < s; ++j) {
+                if (scanBytes[i + j] != d[j] && d[j] != -1) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return &scanBytes[i];
+            }
+        }
+        return nullptr;
+    }
+
+    static uintptr_t GetAbsolute(uintptr_t address) noexcept
     {
         return (address + 4 + *reinterpret_cast<std::int32_t*>(address));
     }

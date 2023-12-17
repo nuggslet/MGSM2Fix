@@ -61,6 +61,18 @@ bool M2Object::GetClosure(const SQChar *name)
     return true;
 }
 
+bool M2Object::Void(const SQChar *name)
+{
+    if (!GetClosure(name)) return false;
+
+    sq_push(m_vm, -2);
+    SQRESULT res = sq_call(m_vm, 2, false, false);
+    sq_pop(m_vm, 2);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}
+
 bool M2Object::SetBool(const SQChar *name, SQBool value)
 {
     if (!GetClosure(name)) return false;

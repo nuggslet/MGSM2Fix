@@ -6,7 +6,14 @@ using namespace std;
 
 extern HMODULE baseModule;
 
-extern string sExeName;
+enum class MgsGame
+{
+    Unknown,
+    MGS,
+    MGSR,
+};
+
+extern MgsGame eGameType;
 
 void ScanFunctions()
 {
@@ -15,7 +22,7 @@ void ScanFunctions()
     extern uintptr_t M2_freeAddress;
 
     // MGS 1: Squirrel call
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* M2_mallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 56 8B 75 08 83 FE E0 77 30 85 F6");
         if (M2_mallocScanResult)
@@ -52,7 +59,7 @@ void ScanFunctions()
     }
 
     // MG | SR: Squirrel call
-    if (sExeName == "MGS MC1 Bonus Content.exe")
+    if (eGameType == MgsGame::MGSR)
     {
         uint8_t* M2_mallocScanResult = Memory::PatternScan(baseModule, "40 53 48 83 EC 20 48 8B D9 48 83 F9 E0 77 3C 48");
         if (M2_mallocScanResult)
@@ -91,7 +98,7 @@ void ScanFunctions()
 
 // MGS 1: Squirrel hook
 uintptr_t MGS1_SQVMReturnJMP;
-extern void SquirrelNew(HSQUIRRELVM v);
+extern void SQNew(HSQUIRRELVM v);
 void __declspec(naked) MGS1_SQVM_CC()
 {
 #ifndef _WIN64
@@ -105,7 +112,7 @@ void __declspec(naked) MGS1_SQVM_CC()
         mov ebp, esp
 
         push esi
-        call SquirrelNew
+        call SQNew
 
         mov esp, ebp
         pop ebp
@@ -132,7 +139,7 @@ void __declspec(naked) MGSR_SQVM_CC()
         push r8
         push r9
 
-        call SquirrelNew
+        call SQNew
 
         pop r9
         pop r8
@@ -239,7 +246,7 @@ void __declspec(naked) MGSR_SqratBindFunc_CC()
 void SquirrelHook()
 {
     // MGS 1: Squirrel hook
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_SQVMScanResult = Memory::PatternScan(baseModule, "C7 86 A4 00 00 00 FF FF FF FF 89 86 A0 00 00 00");
         if (MGS1_SQVMScanResult)
@@ -291,7 +298,7 @@ void SquirrelHook()
     }
 
     // MG | SR: Squirrel hook
-    if (sExeName == "MGS MC1 Bonus Content.exe")
+    if (eGameType == MgsGame::MGSR)
     {
         uint8_t* MGSR_SQVMScanResult = Memory::PatternScan(baseModule, "48 C7 81 FC 00 00 00 FF FF FF FF 48 89 B1 E0 00");
         if (MGSR_SQVMScanResult)
@@ -348,7 +355,7 @@ void M2Hook()
     // MGS 1: M2 hook
     extern void M2Print(const char *fmt, ...);
 
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_M2PrintScanResult = Memory::PatternScan(baseModule, "8B 4C 24 04 8D 54 24 08 E8 ?? ?? FF FF 85 C0 74");
         if (MGS1_M2PrintScanResult)
@@ -367,7 +374,7 @@ void M2Hook()
     }
 
     // MG | SR: M2 hook
-    if (sExeName == "MGS MC1 Bonus Content.exe")
+    if (eGameType == MgsGame::MGSR)
     {
         uint8_t* MGSR_M2PrintScanResult = Memory::PatternScan(baseModule, "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C 89 4C 24 20 48 83 EC 28 48 8D 54 24 38 E8 ?? ?? ?? ?? 48 85 C0 74 08 48 8B C8 E8 ?? ??");
         if (MGSR_M2PrintScanResult)
@@ -467,7 +474,7 @@ void __declspec(naked) MGSR_MWinResCfgGet_CC()
 void ConfigHook()
 {
     // MGS 1: Configuration hook
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_MWinResCfgGetScanResult = Memory::PatternScan(baseModule, "50 C6 01 00 E8 ?? ?? ?? FF 8B CF E8 78 0B 00 00");
         if (MGS1_MWinResCfgGetScanResult)
@@ -487,7 +494,7 @@ void ConfigHook()
     }
 
     // MG | SR: Configuration hook
-    if (sExeName == "MGS MC1 Bonus Content.exe")
+    if (eGameType == MgsGame::MGSR)
     {
         uint8_t* MGSR_MWinResCfgGetScanResult = Memory::PatternScan(baseModule, "48 33 C4 48 89 44 24 50 48 8B FA 48 8B D9 48 89 54 24 48 48 8D 4C 24 28 E8 ?? ?? ?? ?? 48");
         if (MGSR_MWinResCfgGetScanResult)
@@ -510,7 +517,7 @@ void ConfigHook()
 void BorderlessPatch()
 {
     // MGS 1: Borderless patch
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "B8 00 00 CE 02 BE 00 00 CA 02");
         if (MGS1_MWinResCfgSetWindowScanResult)
@@ -527,7 +534,7 @@ void BorderlessPatch()
     }
 
     // MG | SR: Borderless patch
-    if (sExeName == "MGS MC1 Bonus Content.exe")
+    if (eGameType == MgsGame::MGSR)
     {
         uint8_t* MGSR_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "BE 00 00 CB 02 41 BE 00 00 CB 00 44 ?? ?? ?? ?? ?? ?? 74 0B BE 00 00 CF 02 41 BE 00 00 CF 00");
         if (MGSR_MWinResCfgSetWindowScanResult)
@@ -547,7 +554,7 @@ void BorderlessPatch()
 void AnalogPatch()
 {
     // MGS 1: Analog patch
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_MInputHubDMGetWinScanResult = Memory::PatternScan(baseModule, "66 89 4F 0C F3 0F 2C C0 0F B7 C0 66 89 47 0E 75");
         if (MGS1_MInputHubDMGetWinScanResult)
@@ -578,7 +585,7 @@ void AnalogPatch()
 }
 
 uintptr_t MGS1_M2EpiPadUpdateReturnJMP;
-extern void M2_EpiPadState(unsigned int addr, unsigned int id, void* state);
+extern void M2_EpiPadState(unsigned int addr, unsigned int id, unsigned char* state);
 void __declspec(naked) MGS1_M2EpiPadUpdate_CC()
 {
 #ifndef _WIN64
@@ -604,7 +611,7 @@ void __declspec(naked) MGS1_M2EpiPadUpdate_CC()
 void AnalogHook()
 {
     // MGS 1: Analog hook
-    if (sExeName == "METAL GEAR SOLID.exe")
+    if (eGameType == MgsGame::MGS)
     {
         uint8_t* MGS1_M2EpiPadUpdateScanResult = Memory::PatternScan(baseModule, "C7 44 24 08 F3 5A 00 00 C7 44 24 0C 00 00 00 00");
         if (MGS1_M2EpiPadUpdateScanResult)
@@ -620,6 +627,72 @@ void AnalogHook()
         else if (!MGS1_M2EpiPadUpdateScanResult)
         {
             LOG_F(INFO, "MGS 1: M2: Analog: M2Epi::PadUpdate pattern scan failed.");
+        }
+    }
+}
+
+extern void *LoadImage(void *dst, void *src, size_t num);
+
+uintptr_t MGS1_PSXLoadImageReturnJMP;
+void __declspec(naked) MGS1_PSXLoadImage_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push dword ptr[ebx]
+        call LoadImage
+        jmp[MGS1_PSXLoadImageReturnJMP]
+    }
+#endif
+}
+
+uintptr_t MGS1_PSXReloadImageReturnJMP;
+void __declspec(naked) MGS1_PSXReloadImage_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push dword ptr[esi + 14h]
+        call LoadImage
+        jmp[MGS1_PSXReloadImageReturnJMP]
+    }
+#endif
+}
+
+void LoadHook()
+{
+    if (eGameType == MgsGame::MGS)
+    {
+        uint8_t* MGS1_PSXLoadImageScanResult = Memory::PatternScan(baseModule, "51 FF 70 04 FF 33 E8 ?? ?? ?? ?? 83 C4 0C 6A 06");
+        if (MGS1_PSXLoadImageScanResult)
+        {
+            uintptr_t MGS1_PSXLoadImageAddress = (uintptr_t)(MGS1_PSXLoadImageScanResult + 4);
+            int MGS1_PSXLoadImageHookLength = Memory::GetHookLength((char*)MGS1_PSXLoadImageAddress, 4);
+            MGS1_PSXLoadImageReturnJMP = MGS1_PSXLoadImageAddress + MGS1_PSXLoadImageHookLength;
+            Memory::DetourFunction((void*)MGS1_PSXLoadImageAddress, MGS1_PSXLoadImage_CC, MGS1_PSXLoadImageHookLength);
+
+            LOG_F(INFO, "MGS 1: M2: psx_load_image hook length is %d bytes.", MGS1_PSXLoadImageHookLength);
+            LOG_F(INFO, "MGS 1: M2: psx_load_image hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_PSXLoadImageAddress);
+        }
+        else if (!MGS1_PSXLoadImageScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: psx_load_image pattern scan failed.");
+        }
+
+        uint8_t* MGS1_PSXReloadImageScanResult = Memory::PatternScan(baseModule, "74 1B FF 70 08 FF 70 04 FF 76 14 E8 ?? ?? ?? ??");
+        if (MGS1_PSXReloadImageScanResult)
+        {
+            uintptr_t MGS1_PSXReloadImageAddress = (uintptr_t)(MGS1_PSXReloadImageScanResult + 8);
+            int MGS1_PSXReloadImageHookLength = Memory::GetHookLength((char*)MGS1_PSXReloadImageAddress, 4);
+            MGS1_PSXReloadImageReturnJMP = MGS1_PSXReloadImageAddress + MGS1_PSXReloadImageHookLength;
+            Memory::DetourFunction((void*)MGS1_PSXReloadImageAddress, MGS1_PSXReloadImage_CC, MGS1_PSXReloadImageHookLength);
+
+            LOG_F(INFO, "MGS 1: M2: psx_reload_image hook length is %d bytes.", MGS1_PSXReloadImageHookLength);
+            LOG_F(INFO, "MGS 1: M2: psx_reload_image hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_PSXReloadImageAddress);
+        }
+        else if (!MGS1_PSXReloadImageScanResult)
+        {
+            LOG_F(INFO, "MGS 1: M2: psx_reload_image pattern scan failed.");
         }
     }
 }
