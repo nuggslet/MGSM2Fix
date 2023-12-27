@@ -15,7 +15,7 @@ using namespace std;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "0.7";
+string sFixVer = "0.8";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -28,9 +28,9 @@ bool bDebuggerEnabled;
 int iDebuggerPort;
 bool bDebuggerAutoUpdate;
 bool bDebuggerExclusive;
-bool bSmoothing = true;
-bool bScanline;
-bool bDotMatrix;
+optional<bool> bSmoothing;
+optional<bool> bScanline;
+optional<bool> bDotMatrix;
 int iLevel;
 int iNativeLevel;
 bool bCustomResolution;
@@ -44,6 +44,7 @@ bool bLauncherStartGame;
 bool bGameDevMenu;
 bool bPatchesUnderpants = true;
 bool bPatchesGhosts = true;
+bool bPatchesMedicine = true;
 
 // Variables
 string sFullscreenMode;
@@ -157,9 +158,21 @@ void ReadConfig()
     inipp::get_value(ini.sections["Squirrel Debugger"], "AutoUpdate", bDebuggerAutoUpdate);
     inipp::get_value(ini.sections["Squirrel Debugger"], "Exclusive", bDebuggerExclusive);
 
-    inipp::get_value(ini.sections["Screen"], "Smoothing", bSmoothing);
-    inipp::get_value(ini.sections["Screen"], "Scanline", bScanline);
-    inipp::get_value(ini.sections["Screen"], "DotMatrix", bDotMatrix);
+    {
+        bool _bSmoothing;
+        if (inipp::get_value(ini.sections["Screen"], "Smoothing", _bSmoothing))
+            bSmoothing = _bSmoothing;
+    }
+    {
+        bool _bScanline;
+        if (inipp::get_value(ini.sections["Screen"], "Scanline", _bScanline))
+            bScanline = _bScanline;
+    }
+    {
+        bool _bDotMatrix;
+        if (inipp::get_value(ini.sections["Screen"], "DotMatrix", _bDotMatrix))
+            bDotMatrix = _bDotMatrix;
+    }
 
     inipp::get_value(ini.sections["Tracing"], "Level", iLevel);
     inipp::get_value(ini.sections["Tracing"], "NativeLevel", iNativeLevel);
@@ -177,6 +190,7 @@ void ReadConfig()
 
     inipp::get_value(ini.sections["Patches"], "Underpants", bPatchesUnderpants);
     inipp::get_value(ini.sections["Patches"], "Ghosts", bPatchesGhosts);
+    inipp::get_value(ini.sections["Patches"], "Medicine", bPatchesMedicine);
 
     inipp::get_value(ini.sections["Game"], "DevMenu", bGameDevMenu);
 
@@ -185,9 +199,9 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
     LOG_F(INFO, "Config Parse: bDebuggerAutoUpdate: %d", bDebuggerAutoUpdate);
     LOG_F(INFO, "Config Parse: bDebuggerExclusive: %d", bDebuggerExclusive);
-    LOG_F(INFO, "Config Parse: bSmoothing: %d", bSmoothing);
-    LOG_F(INFO, "Config Parse: bScanline: %d", bScanline);
-    LOG_F(INFO, "Config Parse: bDotMatrix: %d", bDotMatrix);
+    LOG_F(INFO, "Config Parse: bSmoothing: %d<%d>", bSmoothing, bSmoothing ? bSmoothing.value() : -1);
+    LOG_F(INFO, "Config Parse: bScanline: %d<%d>", bScanline, bScanline ? bScanline.value() : -1);
+    LOG_F(INFO, "Config Parse: bDotMatrix: %d<%d>", bDotMatrix, bDotMatrix ? bDotMatrix.value() : -1);
     LOG_F(INFO, "Config Parse: iLevel: %d", iLevel);
     LOG_F(INFO, "Config Parse: iNativeLevel: %d", iNativeLevel);
     LOG_F(INFO, "Config Parse: bCustomResolution: %d", bCustomResolution);
@@ -200,6 +214,7 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
     LOG_F(INFO, "Config Parse: bPatchesUnderpants: %d", bPatchesUnderpants);
     LOG_F(INFO, "Config Parse: bPatchesGhosts: %d", bPatchesGhosts);
+    LOG_F(INFO, "Config Parse: bPatchesMedicine: %d", bPatchesMedicine);
     LOG_F(INFO, "Config Parse: bGameDevMenu: %d", bGameDevMenu);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
@@ -417,6 +432,7 @@ const char* ConfigOverride(string *key)
 }
 
 vector<string> M2_FileFilter;
+vector<vector<unsigned char>> M2_DataFilter;
 void FilterPatches()
 {
     if (eGameType == MgsGame::MGS && !bPatchesUnderpants) {
@@ -433,6 +449,11 @@ void FilterPatches()
 
     if (eGameType == MgsGame::MGS && !bPatchesGhosts) {
         M2_FileFilter.push_back("shinrei");
+    }
+
+    if (eGameType == MgsGame::MGS && !bPatchesMedicine) {
+        vector<unsigned char> MGS1_DataFilter_Medicine = { 0, 152, 0, 72, 152, 72, 152, 152, 152 };
+        M2_DataFilter.push_back(MGS1_DataFilter_Medicine);
     }
 }
 
@@ -649,9 +670,9 @@ bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
     if (!name) return true;
 
     // Do this here as the native call is surprisingly expensive (?!)
-    if (strcmp(name, "setDotmatrix") == 0) {
+    if (bDotMatrix && strcmp(name, "setDotmatrix") == 0) {
         SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
-        _integer(*obj) = bDotMatrix;
+        _integer(*obj) = bDotMatrix.value();
     }
 
     if (strcmp(name, "setRamValue") == 0) {
@@ -697,6 +718,22 @@ bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
             }
 
             sq_pop(v, 1);
+        } else if (sq_isarray(*data)) {
+            int i = 0;
+            SQObjectPtr ent;
+            vector<unsigned char> buffer;
+            while (_array(*data)->Get(i++, ent)) {
+                buffer.push_back(_integer(ent)); // lmao
+            }
+
+            for (auto &filter : M2_DataFilter) {
+                if (buffer.size() == filter.size() && memcmp(filter.data(), buffer.data(), buffer.size()) == 0)
+                {
+                    LOG_F(INFO, "M2: filtering patch offset 0x%" PRIxPTR ".", _integer(*offset));
+                    sq_pop(v, 1);
+                    return false;
+                }
+            }
         }
 
         sq_pop(v, 1);
@@ -726,8 +763,8 @@ void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQCha
     }
 
     if (event_type == _SC('r')) {
-        gEmuTask.SetSmoothing(bSmoothing);
-        gEmuTask.SetScanline(bScanline);
+        if (bSmoothing) gEmuTask.SetSmoothing(bSmoothing.value());
+        if (bScanline) gEmuTask.SetScanline(bScanline.value());
     }
 
     if (bAnalogMode) AnalogLoop(v);
