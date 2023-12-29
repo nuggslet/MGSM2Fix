@@ -199,9 +199,9 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: iDebuggerPort: %d", iDebuggerPort);
     LOG_F(INFO, "Config Parse: bDebuggerAutoUpdate: %d", bDebuggerAutoUpdate);
     LOG_F(INFO, "Config Parse: bDebuggerExclusive: %d", bDebuggerExclusive);
-    LOG_F(INFO, "Config Parse: bSmoothing: %d<%d>", bSmoothing, bSmoothing ? bSmoothing.value() : -1);
-    LOG_F(INFO, "Config Parse: bScanline: %d<%d>", bScanline, bScanline ? bScanline.value() : -1);
-    LOG_F(INFO, "Config Parse: bDotMatrix: %d<%d>", bDotMatrix, bDotMatrix ? bDotMatrix.value() : -1);
+    LOG_F(INFO, "Config Parse: bSmoothing: %d<%d>", bSmoothing.has_value(), bSmoothing ? bSmoothing.value() : -1);
+    LOG_F(INFO, "Config Parse: bScanline: %d<%d>", bScanline.has_value(), bScanline ? bScanline.value() : -1);
+    LOG_F(INFO, "Config Parse: bDotMatrix: %d<%d>", bDotMatrix.has_value(), bDotMatrix ? bDotMatrix.value() : -1);
     LOG_F(INFO, "Config Parse: iLevel: %d", iLevel);
     LOG_F(INFO, "Config Parse: iNativeLevel: %d", iNativeLevel);
     LOG_F(INFO, "Config Parse: bCustomResolution: %d", bCustomResolution);
@@ -584,7 +584,7 @@ SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM v)
     return -1;
 }
 
-void SQReturn_init_system_1st(HSQUIRRELVM v)
+SQInteger SQReturn_init_system_1st(HSQUIRRELVM v)
 {
     if (bLauncherSkipNotice) {
         SQHookFunction(v, _SC("util_is_notice_skipable"), SQ_util_is_notice_skipable);
@@ -600,6 +600,8 @@ void SQReturn_init_system_1st(HSQUIRRELVM v)
 
     SQHookFunction(v, _SC("util_get_memory_define_table"),
         SQ_util_get_memory_define_table, &SQObj_util_get_memory_define_table);
+
+    return 0;
 }
 
 SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM v)
@@ -608,12 +610,13 @@ SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM v)
     return 1;
 }
 
-void SQReturn_init_system_last(HSQUIRRELVM v)
+SQInteger SQReturn_init_system_last(HSQUIRRELVM v)
 {
     SQHookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
+    return 0;
 }
 
-void _SQReturn_update_gadgets(HSQUIRRELVM v)
+SQInteger _SQReturn_update_gadgets(HSQUIRRELVM v)
 {
     if (MGS1_GlobalsPTR != 0 && MGS1_LoaderPTR != 0) {
         SQInteger MGS1_StageNamePTR = MGS1_GlobalsPTR;
@@ -642,6 +645,8 @@ void _SQReturn_update_gadgets(HSQUIRRELVM v)
             }
         }
     }
+
+    return 0;
 }
 
 void *LoadImage(void *dst, void *src, size_t num)
@@ -658,108 +663,137 @@ void *LoadImage(void *dst, void *src, size_t num)
 }
 
 SQInteger MGS1_PlaySide = 0;
-void SQReturn_set_playside_mgs(HSQUIRRELVM v)
+SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM v)
 {
     SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
     SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
     MGS1_PlaySide = _integer(obj);
+    return 0;
 }
+
+SQInteger SQNative_setDotmatrix(HSQUIRRELVM v)
+{
+    if (bDotMatrix) {
+        // Do this here as the native call is surprisingly expensive (?!)
+        SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
+        _integer(*obj) = bDotMatrix.value();
+    }
+    return 0;
+}
+
+SQInteger SQNative_setRamValue(HSQUIRRELVM v)
+{
+    SQObjectPtr* width = &v->_stack._vals[v->_stackbase + 1];
+    SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 2];
+    SQObjectPtr* value = &v->_stack._vals[v->_stackbase + 3];
+
+    SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 5];
+    if (!sq_istable(*patch)) return 0;
+
+    sq_pushobject(v, *patch);
+    sq_pushstring(v, "offset", -1);
+    if (SQ_SUCCEEDED(sq_get(v, -2))) {
+        SQInteger offset = 0;
+        sq_getinteger(v, -1, &offset);
+
+        sq_pop(v, 1);
+    }
+
+    sq_pop(v, 1);
+    return 0;
+}
+
+SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
+{
+    SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 1];
+    SQObjectPtr* data = &v->_stack._vals[v->_stackbase + 2];
+
+    SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 3];
+    if (sq_isinstance(*data)) patch = &v->_stack._vals[v->_stackbase - 4];
+
+    sq_pushobject(v, *patch);
+    sq_pushstring(v, "file", -1);
+    if (SQ_SUCCEEDED(sq_get(v, -2))) {
+        const SQChar *file = NULL;
+        sq_getstring(v, -1, &file);
+
+        for (auto &filter : M2_FileFilter) {
+            if (strncmp(filter.c_str(), file, filter.length()) == 0)
+            {
+                LOG_F(INFO, "M2: filtering patch file %s.", file);
+                sq_pop(v, 2);
+                return 1;
+            }
+        }
+
+        sq_pop(v, 1);
+    }
+    else if (sq_isarray(*data)) {
+        int i = 0;
+        SQObjectPtr ent;
+        vector<unsigned char> buffer;
+        while (_array(*data)->Get(i++, ent)) {
+            buffer.push_back(_integer(ent)); // lmao
+        }
+
+        for (auto &filter : M2_DataFilter) {
+            if (filter == buffer)
+            {
+                LOG_F(INFO, "M2: filtering patch offset 0x%" PRIxPTR ".", _integer(*offset));
+                sq_pop(v, 1);
+                return 1;
+            }
+        }
+    }
+
+    sq_pop(v, 1);
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 3> M2_NativeCallTable = {
+    make_pair("setDotmatrix", SQNative_setDotmatrix),
+    make_pair("setRamValue", SQNative_setRamValue),
+    make_pair("entryCdRomPatch", SQNative_entryCdRomPatch),
+};
 
 bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
 {
     if (!name) return true;
 
-    // Do this here as the native call is surprisingly expensive (?!)
-    if (bDotMatrix && strcmp(name, "setDotmatrix") == 0) {
-        SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
-        _integer(*obj) = bDotMatrix.value();
-    }
-
-    if (strcmp(name, "setRamValue") == 0) {
-        SQObjectPtr* width = &v->_stack._vals[v->_stackbase + 1];
-        SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 2];
-        SQObjectPtr* value = &v->_stack._vals[v->_stackbase + 3];
-
-        SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 5];
-        if (!sq_istable(*patch)) return true;
-
-        sq_pushobject(v, *patch);
-        sq_pushstring(v, "offset", -1);
-        if (SQ_SUCCEEDED(sq_get(v, -2))) {
-            SQInteger offset = 0;
-            sq_getinteger(v, -1, &offset);
-
-            sq_pop(v, 1);
+    for (auto &func : M2_NativeCallTable) {
+        if (strcmp(name, func.first) == 0) {
+            switch (func.second(v)) {
+                case 0: break;
+                case 1: return false;
+                default: break;
+            }
+            break;
         }
-
-        sq_pop(v, 1);
-    }
-
-    if (strcmp(name, "entryCdRomPatch") == 0) {
-        SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 1];
-        SQObjectPtr* data = &v->_stack._vals[v->_stackbase + 2];
-
-        SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 3];
-        if (sq_isinstance(*data)) patch = &v->_stack._vals[v->_stackbase - 4];
-
-        sq_pushobject(v, *patch);
-        sq_pushstring(v, "file", -1);
-        if (SQ_SUCCEEDED(sq_get(v, -2))) {
-            const SQChar *file = NULL;
-            sq_getstring(v, -1, &file);
-
-            for (auto &filter : M2_FileFilter) {
-                if (strncmp(filter.c_str(), file, filter.length()) == 0)
-                {
-                    LOG_F(INFO, "M2: filtering patch file %s.", file);
-                    sq_pop(v, 2);
-                    return false;
-                }
-            }
-
-            sq_pop(v, 1);
-        } else if (sq_isarray(*data)) {
-            int i = 0;
-            SQObjectPtr ent;
-            vector<unsigned char> buffer;
-            while (_array(*data)->Get(i++, ent)) {
-                buffer.push_back(_integer(ent)); // lmao
-            }
-
-            for (auto &filter : M2_DataFilter) {
-                if (buffer.size() == filter.size() && memcmp(filter.data(), buffer.data(), buffer.size()) == 0)
-                {
-                    LOG_F(INFO, "M2: filtering patch offset 0x%" PRIxPTR ".", _integer(*offset));
-                    sq_pop(v, 1);
-                    return false;
-                }
-            }
-        }
-
-        sq_pop(v, 1);
     }
 
     return true;
 }
 
-void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *func, SQInteger line)
+array<pair<const SQChar *, SQFUNCTION>, 4> M2_ReturnTable = {
+    make_pair("init_system_1st", SQReturn_init_system_1st),
+    make_pair("init_system_last", SQReturn_init_system_last),
+    make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
+    make_pair("_update_gadgets", _SQReturn_update_gadgets),
+};
+
+void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
 {
     gEmuTask.SetVM(v);
     gInputHub.SetVM(v);
     gInput.SetVM(v);
 
-    if (func && event_type == _SC('r')) {
-        if (strcmp(func, "init_system_1st") == 0)
-            SQReturn_init_system_1st(v);
-
-        if (strcmp(func, "init_system_last") == 0)
-            SQReturn_init_system_last(v);
-
-        if (strcmp(func, "set_playside_mgs") == 0)
-            SQReturn_set_playside_mgs(v);
-
-        if (strcmp(func, "_update_gadgets") == 0)
-            _SQReturn_update_gadgets(v);
+    if (name && event_type == _SC('r')) {
+        for (auto &func : M2_ReturnTable) {
+            if (strcmp(name, func.first) == 0) {
+                func.second(v);
+                break;
+            }
+        }
     }
 
     if (event_type == _SC('r')) {

@@ -14,6 +14,8 @@
 #include <mutex>
 #include <filesystem>
 #include <optional>
+#include <array>
+#include <utility>
 
 #include "external/loguru/loguru.hpp"
 #include "external/inipp/inipp/inipp.h"
