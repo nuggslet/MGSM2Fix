@@ -762,11 +762,7 @@ bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
 
     for (auto &func : M2_NativeCallTable) {
         if (strcmp(name, func.first) == 0) {
-            switch (func.second(v)) {
-                case 0: break;
-                case 1: return false;
-                default: break;
-            }
+            if (func.second(v)) return false;
             break;
         }
     }
@@ -774,11 +770,19 @@ bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
     return true;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 4> M2_ReturnTable = {
+SQInteger SQReturn_setSmoothing(HSQUIRRELVM v)
+{
+    if (bSmoothing) gEmuTask.SetSmoothing(bSmoothing.value());
+    if (bScanline) gEmuTask.SetScanline(bScanline.value());
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 5> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
     make_pair("_update_gadgets", _SQReturn_update_gadgets),
+    make_pair("setSmoothing", SQReturn_setSmoothing),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
@@ -794,11 +798,6 @@ void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQCha
                 break;
             }
         }
-    }
-
-    if (event_type == _SC('r')) {
-        if (bSmoothing) gEmuTask.SetSmoothing(bSmoothing.value());
-        if (bScanline) gEmuTask.SetScanline(bScanline.value());
     }
 
     if (bAnalogMode) AnalogLoop(v);
