@@ -750,10 +750,46 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 3> M2_NativeCallTable = {
+string M2_Disk;
+SQInteger SQNative_setupCdRom(HSQUIRRELVM v)
+{
+    HSQOBJECT obj; sq_getstackobj(v, 2, &obj);
+    M2_Disk.assign(_stringval(obj));
+
+    LOG_F(INFO, "M2: Mounted CD-ROM image: %s.", M2_Disk.c_str());
+    return 0;
+}
+
+string M2_ROM;
+SQInteger SQNative_init(HSQUIRRELVM v)
+{
+    // Do some strange things to confirm that this is EmuTask::init() and not another init().
+    gEmuTask.SetVM(v);
+    if (!gEmuTask.Get()) return 0;
+
+    HSQOBJECT obj; sq_getstackobj(v, -1, &obj);
+    HSQOBJECT instance; sq_getstackobj(v, 1, &instance);
+    sq_pop(v, 2);
+
+    // Check that `this` is g_emu_task, therefore g_emu_task.init()...
+    if (!sq_isinstance(obj) || !sq_isinstance(instance) ||
+        _instance(obj) != _instance(instance)) {
+        return 0;
+    }
+
+    sq_getstackobj(v, 5, &obj);
+    M2_ROM.assign(_stringval(obj));
+
+    LOG_F(INFO, "M2: Loaded ROM image: %s.", M2_ROM.c_str());
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 5> M2_NativeCallTable = {
     make_pair("setDotmatrix", SQNative_setDotmatrix),
     make_pair("setRamValue", SQNative_setRamValue),
     make_pair("entryCdRomPatch", SQNative_entryCdRomPatch),
+    make_pair("setupCdRom", SQNative_setupCdRom),
+    make_pair("init", SQNative_init),
 };
 
 bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
@@ -777,12 +813,18 @@ SQInteger SQReturn_setSmoothing(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 5> M2_ReturnTable = {
+SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM v)
+{
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 6> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
     make_pair("_update_gadgets", _SQReturn_update_gadgets),
     make_pair("setSmoothing", SQReturn_setSmoothing),
+    make_pair("_set_disk_patch", _SQReturn_set_disk_patch),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
