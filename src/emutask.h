@@ -13,6 +13,9 @@ public:
 	bool GetRamValue(SQInteger width, SQInteger offset, SQInteger *value);
 	bool SetRamValue(SQInteger width, SQInteger offset, SQInteger value);
 
+	bool EntryCdRomPatch(SQInteger offset, SQArray *data);
+	bool ReleaseCdRomPatch();
+
 	bool SetSmoothing(SQBool enable);
 	bool SetScanline(SQBool enable);
 	bool SetInputDirectionMerge(SQInteger mode);

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "squirrel.h"
+#include "sqpcheader.h"
+#include "sqvm.h"
+#include "sqarray.h"
 
 class M2Object
 {

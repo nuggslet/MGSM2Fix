@@ -65,3 +65,23 @@ bool EmuTask::SetRamValue(SQInteger width, SQInteger offset, SQInteger value)
     if (SQ_SUCCEEDED(res)) return true;
     return false;
 }
+
+bool EmuTask::EntryCdRomPatch(SQInteger offset, SQArray *data)
+{
+    SQObjectPtr dataObj(data);
+    if (!GetClosure(_SC("entryCdRomPatch"))) return false;
+
+    sq_push(m_vm, -2);
+    sq_pushinteger(m_vm, offset);
+    sq_pushobject(m_vm, dataObj);
+    SQRESULT res = sq_call(m_vm, 3, false, false);
+    sq_pop(m_vm, 2);
+
+    if (SQ_SUCCEEDED(res)) return true;
+    return false;
+}
+
+bool EmuTask::ReleaseCdRomPatch()
+{
+    return Void(_SC("releaseCdRomPatch"));
+}
