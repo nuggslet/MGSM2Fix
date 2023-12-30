@@ -818,13 +818,25 @@ SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 6> M2_ReturnTable = {
+SQInteger M2_DevId;
+SQInteger SQReturn_set_current_title_dev_id(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+    M2_DevId = _integer(obj);
+
+    LOG_F(INFO, "M2: Set title ID: %d.", M2_DevId);
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 7> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
     make_pair("_update_gadgets", _SQReturn_update_gadgets),
     make_pair("setSmoothing", SQReturn_setSmoothing),
     make_pair("_set_disk_patch", _SQReturn_set_disk_patch),
+    make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
