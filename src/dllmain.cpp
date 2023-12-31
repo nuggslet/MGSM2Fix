@@ -829,14 +829,38 @@ SQInteger SQReturn_set_current_title_dev_id(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 7> M2_ReturnTable = {
+SQInteger M2_DiskId;
+SQInteger _SQReturn_get_disk_path(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 2];
+    M2_DiskId = _integer(obj);
+
+    LOG_F(INFO, "M2: Set disk ID: %d.", M2_DiskId);
+    return 0;
+}
+
+string M2_DevType;
+SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+    M2_DevType.assign(_stringval(obj));
+
+    LOG_F(INFO, "M2: Set title version: %s.", M2_DevType.c_str());
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 9> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
     make_pair("_update_gadgets", _SQReturn_update_gadgets),
     make_pair("setSmoothing", SQReturn_setSmoothing),
     make_pair("_set_disk_patch", _SQReturn_set_disk_patch),
+    make_pair("_get_disk_path", _SQReturn_get_disk_path),
     make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
+    make_pair("set_game_regionTag", SQReturn_set_game_regionTag),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
