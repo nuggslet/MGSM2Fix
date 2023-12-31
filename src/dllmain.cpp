@@ -760,6 +760,16 @@ SQInteger SQNative_setupCdRom(HSQUIRRELVM v)
     return 0;
 }
 
+SQInteger M2_Tray;
+SQInteger SQNative_setCdRomShellOpen(HSQUIRRELVM v)
+{
+    HSQOBJECT obj; sq_getstackobj(v, 2, &obj);
+    M2_Tray = _integer(obj);
+
+    LOG_F(INFO, "M2: CD-ROM tray is %s.", M2_Tray ? "open" : "closed");
+    return 0;
+}
+
 string M2_ROM;
 SQInteger SQNative_init(HSQUIRRELVM v)
 {
@@ -784,10 +794,11 @@ SQInteger SQNative_init(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 5> M2_NativeCallTable = {
+array<pair<const SQChar *, SQFUNCTION>, 6> M2_NativeCallTable = {
     make_pair("setDotmatrix", SQNative_setDotmatrix),
     make_pair("setRamValue", SQNative_setRamValue),
     make_pair("entryCdRomPatch", SQNative_entryCdRomPatch),
+    make_pair("setCdRomShellOpen", SQNative_setCdRomShellOpen),
     make_pair("setupCdRom", SQNative_setupCdRom),
     make_pair("init", SQNative_init),
 };
