@@ -15,7 +15,7 @@ using namespace std;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "0.8";
+string sFixVer = "1.0";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -826,6 +826,9 @@ SQInteger SQReturn_setSmoothing(HSQUIRRELVM v)
 
 SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM v)
 {
+    extern bool Ketchup_Process(HSQUIRRELVM v);
+    gEmuTask.SetVM(v);
+    Ketchup_Process(v);
     return 0;
 }
 
