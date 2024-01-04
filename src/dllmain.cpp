@@ -6,6 +6,8 @@
 
 #include "resource.h"
 
+#include "m2binary.h"
+
 #include "emutask.h"
 #include "inputhub.h"
 #include "input.h"

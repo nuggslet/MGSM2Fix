@@ -47,6 +47,7 @@
     <ClCompile Include="src\external\squirrel\squirrel\sqvm.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\inputhub.cpp" />
+    <ClCompile Include="src\m2binary.cpp" />
     <ClCompile Include="src\m2object.cpp" />
     <ClCompile Include="src\ketchup.cpp" />
     <ClCompile Include="src\patch.cpp" />

@@ -113,6 +113,36 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
     }
 }
 
+void TraceNext(stringstream &trace, HSQUIRRELVM v)
+{
+    sq_pushnull(v);
+    SQRESULT res = sq_next(v, -2);
+    while (SQ_SUCCEEDED(res))
+    {
+        HSQOBJECT key; sq_getstackobj(v, -2, &key);
+        HSQOBJECT value; sq_getstackobj(v, -1, &value);
+
+        TraceParameter(trace, key, 1);
+        trace << ": ";
+
+        if (sq_isinstance(value)) {
+            trace << "{";
+            TraceNext(trace, v);
+            trace << "}";
+        }
+        else {
+            TraceParameter(trace, value, 1);
+        }
+
+        sq_pop(v, 2);
+
+        res = sq_next(v, -2);
+        if (SQ_SUCCEEDED(res)) trace << ", ";
+    }
+
+    sq_pop(v, 1);
+}
+
 void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
 {
     stringstream trace;
