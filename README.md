@@ -2,7 +2,7 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z7S6BTK)</br>
 [![Github All Releases](https://img.shields.io/github/downloads/nuggslet/MGSM2Fix/total.svg)](https://github.com/nuggslet/MGSM2Fix/releases)
 
-This is a fix that adds custom resolutions, analog input, pixel perfect scaling and more to the original Metal Gear Solid within the Master Collection.<br />
+This is a fix that adds custom resolutions, analog input, mod support and more to the original Metal Gear Solid within the Master Collection.<br />
 
 ## Games Supported
 - Metal Gear Solid <br />
@@ -15,6 +15,7 @@ See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in
 - Analog input (MGS1).
 - Launcher skip (MGS1, boots last launched game version).
 - Skip intro logos.
+- Modding support (MGS1, via Ketchup - see below).
 - Debug features (including stage select menu in MGS1).
 
 ## Installation
@@ -27,6 +28,37 @@ See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in
 
 ## Configuration
 - See **MGSM2Fix.ini** to adjust settings for the fix.
+
+## Modding (Ketchup)
+'Ketchup' is a mod loader for MGS1 in the Master Collection.
+
+It currently supports PPF3 format patches to each ISO under the following folders in the "**steamapps\common\MGS1**" directory:
+```
+  mods\INTEGRAL\INTEGRAL\0\
+  mods\INTEGRAL\INTEGRAL\1\
+  mods\INTEGRAL\VR-DISK\
+  mods\VR-DISK_US\
+  mods\VR-DISK_EU\
+  mods\MGS1_JP\0\
+  mods\MGS1_JP\1\
+  mods\MGS1_US\0\
+  mods\MGS1_US\1\
+  mods\MGS1_UK\0\
+  mods\MGS1_UK\1\
+  mods\MGS1_DE\0\
+  mods\MGS1_DE\1\
+  mods\MGS1_FR\0\
+  mods\MGS1_FR\1\
+  mods\MGS1_IT\0\
+  mods\MGS1_IT\1\
+  mods\MGS1_ES\0\
+  mods\MGS1_ES\1\
+```
+Where `0` and `1` refer to disk 1 and disk 2 respectively.
+
+See [makeppf](https://github.com/meunierd/ppf) for creating PPF3 patches/mods. PPF3 patches derived from original PSX CD releases should work correctly with Master Collection.
+
+Additional patch formats may be supported in future.
 
 ## Known Issues
 Please report any issues you see.

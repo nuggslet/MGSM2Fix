@@ -17,7 +17,7 @@ using namespace std;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "1.0";
+string sFixVer = "1.1";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -44,6 +44,8 @@ bool bAnalogMode;
 bool bLauncherSkipNotice;
 bool bLauncherStartGame;
 bool bGameDevMenu;
+bool bPatchesGlobalRAM = true;
+bool bPatchesGlobalCDROM = true;
 bool bPatchesUnderpants = true;
 bool bPatchesGhosts = true;
 bool bPatchesMedicine = true;
@@ -190,6 +192,9 @@ void ReadConfig()
     inipp::get_value(ini.sections["Launcher"], "SkipNotice", bLauncherSkipNotice);
     inipp::get_value(ini.sections["Launcher"], "StartGame", bLauncherStartGame);
 
+    inipp::get_value(ini.sections["Patches"], "GlobalRAM", bPatchesGlobalRAM);
+    inipp::get_value(ini.sections["Patches"], "GlobalCDROM", bPatchesGlobalCDROM);
+
     inipp::get_value(ini.sections["Patches"], "Underpants", bPatchesUnderpants);
     inipp::get_value(ini.sections["Patches"], "Ghosts", bPatchesGhosts);
     inipp::get_value(ini.sections["Patches"], "Medicine", bPatchesMedicine);
@@ -214,6 +219,8 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
     LOG_F(INFO, "Config Parse: bLauncherSkipNotice: %d", bLauncherSkipNotice);
     LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
+    LOG_F(INFO, "Config Parse: bPatchesGlobalRAM: %d", bPatchesGlobalRAM);
+    LOG_F(INFO, "Config Parse: bPatchesGlobalCDROM: %d", bPatchesGlobalCDROM);
     LOG_F(INFO, "Config Parse: bPatchesUnderpants: %d", bPatchesUnderpants);
     LOG_F(INFO, "Config Parse: bPatchesGhosts: %d", bPatchesGhosts);
     LOG_F(INFO, "Config Parse: bPatchesMedicine: %d", bPatchesMedicine);
@@ -664,7 +671,7 @@ void *LoadImage(void *dst, void *src, size_t num)
     return memmove(dst, src, num);
 }
 
-SQInteger MGS1_PlaySide = 0;
+SQInteger MGS1_PlaySide;
 SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM v)
 {
     SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
@@ -692,16 +699,23 @@ SQInteger SQNative_setRamValue(HSQUIRRELVM v)
     SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 5];
     if (!sq_istable(*patch)) return 0;
 
+    SQInteger address = 0;
+
     sq_pushobject(v, *patch);
     sq_pushstring(v, "offset", -1);
     if (SQ_SUCCEEDED(sq_get(v, -2))) {
-        SQInteger offset = 0;
-        sq_getinteger(v, -1, &offset);
-
+        sq_getinteger(v, -1, &address);
         sq_pop(v, 1);
     }
-
     sq_pop(v, 1);
+
+    if (!bPatchesGlobalRAM && address != 0x200000) {
+        if (_integer(*offset) == address) {
+            LOG_F(INFO, "M2: filtering RAM patch offset 0x%" PRIxPTR ".", address);
+        }
+        return 1;
+    }
+
     return 0;
 }
 
@@ -713,42 +727,53 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
     SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 3];
     if (sq_isinstance(*data)) patch = &v->_stack._vals[v->_stackbase - 4];
 
+    const SQChar *file = NULL;
+    vector<unsigned char> buffer;
+
     sq_pushobject(v, *patch);
     sq_pushstring(v, "file", -1);
     if (SQ_SUCCEEDED(sq_get(v, -2))) {
-        const SQChar *file = NULL;
         sq_getstring(v, -1, &file);
-
-        for (auto &filter : M2_FileFilter) {
-            if (strncmp(filter.c_str(), file, filter.length()) == 0)
-            {
-                LOG_F(INFO, "M2: filtering patch file %s.", file);
-                sq_pop(v, 2);
-                return 1;
-            }
-        }
-
         sq_pop(v, 1);
     }
     else if (sq_isarray(*data)) {
         int i = 0;
         SQObjectPtr ent;
-        vector<unsigned char> buffer;
         while (_array(*data)->Get(i++, ent)) {
             buffer.push_back(_integer(ent)); // lmao
+        }
+    }
+    sq_pop(v, 1);
+
+    if (file) {
+        if (!bPatchesGlobalCDROM) {
+            LOG_F(INFO, "M2: filtering CD-ROM patch file %s.", file);
+            return 1;
+        }
+
+        for (auto &filter : M2_FileFilter) {
+            if (strncmp(filter.c_str(), file, filter.length()) == 0)
+            {
+                LOG_F(INFO, "M2: filtering CD-ROM patch file %s.", file);
+                return 1;
+            }
+        }
+    }
+    else if (!buffer.empty()) {
+        if (!bPatchesGlobalCDROM) {
+            LOG_F(INFO, "M2: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
+            return 1;
         }
 
         for (auto &filter : M2_DataFilter) {
             if (filter == buffer)
             {
-                LOG_F(INFO, "M2: filtering patch offset 0x%" PRIxPTR ".", _integer(*offset));
-                sq_pop(v, 1);
+                LOG_F(INFO, "M2: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
                 return 1;
             }
         }
     }
 
-    sq_pop(v, 1);
     return 0;
 }
 

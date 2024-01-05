@@ -34,7 +34,7 @@ constexpr unsigned int gSectorRange = gSectorSize + gSectorStride;
 
 auto cRange = [](unsigned int size) constexpr -> unsigned int
 {
-	return (size / gSectorSize) * (gSectorSize + gSectorStride);
+	return (size / gSectorSize) * gSectorRange;
 };
 
 vector<Ketchup_TitleInfo> gTitles = {
@@ -110,7 +110,7 @@ bool Ketchup_ApplyBlock(HSQUIRRELVM v,
 		block->Set(i, data[i]);
 	}
 	gEmuTask.EntryCdRomPatch(offset, block);
-	LOG_F(INFO, "Ketchup: CD-ROM write 0x%08" PRIX64 " with %d bytes.", offset, size);
+	LOG_F(INFO, "Ketchup: CD-ROM write 0x%08" PRIx64 " with %d bytes.", offset, size);
 
 	// If tray is open this isn't a cold boot, so we can skip this.
 	while (!M2_Tray && size != 0) {
@@ -122,7 +122,8 @@ bool Ketchup_ApplyBlock(HSQUIRRELVM v,
 			if (pos < gSectorSize) {
 				address = (sector * gSectorSize) + pos;
 				gEmuTask.SetRamValue(CHAR_BIT, gImageBase + address, *data);
-				LOG_F(INFO, "Ketchup: Mapped RAM write 0x%08X [0x%08" PRIX64 "] with value 0x%02X.", address, offset, *data);
+				LOG_F(INFO, "Ketchup: Mapped RAM write 0x%08X [0x%08" PRIx64 "] with value 0x%02X.",
+					gImageBase + address, offset, *data);
 			}
 		}
 
