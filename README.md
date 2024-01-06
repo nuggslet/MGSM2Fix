@@ -29,10 +29,13 @@ See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in
 ## Configuration
 - See **MGSM2Fix.ini** to adjust settings for the fix.
 
-## Modding (Ketchup)
+## Analog (MGS 1)
+Recommended Steam controller profile: steam://controllerconfig/2131630/3087945618 (copy to browser address bar).
+
+## Modding (MGS 1; Ketchup)
 'Ketchup' is a mod loader for MGS1 in the Master Collection.
 
-It currently supports PPF3 format patches to each ISO under the following folders in the "**steamapps\common\MGS1**" directory:
+It currently supports PPF3 format mods to each ISO under the following folders in the "**steamapps\common\MGS1**" directory:
 ```
   mods\INTEGRAL\INTEGRAL\0\
   mods\INTEGRAL\INTEGRAL\1\
@@ -56,9 +59,12 @@ It currently supports PPF3 format patches to each ISO under the following folder
 ```
 Where `0` and `1` refer to disk 1 and disk 2 respectively.
 
-See [makeppf](https://github.com/meunierd/ppf) for creating PPF3 patches/mods. PPF3 patches derived from original PSX CD releases should work correctly with Master Collection.
+See [makeppf](https://github.com/meunierd/ppf) for creating PPF3 patches/mods. PPF3 mods derived from original PSX CD releases should work correctly with Master Collection.
 
-Additional patch formats may be supported in future.
+If your mods conflict with the built-in Master Collection patches, for the time being it may be useful to disable the `GlobalRAM` and `GlobalCDROM` settings in **MGSM2Fix.ini**.
+Once all of the Master Collection patches have been identified and grouped (please help, there are lots!) this heavy-handed approach should no longer be necessary.
+
+Additional mod formats may be supported in future.
 
 ## Known Issues
 Please report any issues you see.
