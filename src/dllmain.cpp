@@ -13,11 +13,12 @@
 #include "input.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "1.1";
+string sFixVer = "1.2";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -35,6 +36,7 @@ optional<bool> bScanline;
 optional<bool> bDotMatrix;
 int iLevel;
 int iNativeLevel;
+int iEmulatorLevel;
 bool bCustomResolution;
 int iCustomResX;
 int iCustomResY;
@@ -47,6 +49,7 @@ bool bGameDevMenu;
 bool bPatchesGlobalRAM = true;
 bool bPatchesGlobalCDROM = true;
 bool bPatchesUnderpants = true;
+bool bPatchesMosaic = true;
 bool bPatchesGhosts = true;
 bool bPatchesMedicine = true;
 
@@ -68,12 +71,12 @@ struct GameInfo
 enum class MgsGame
 {
     Unknown,
-    MGS,
+    MGS1,
     MGSR,
 };
 
 const std::map<MgsGame, GameInfo> kGames = {
-    {MgsGame::MGS, {"Metal Gear Solid", "METAL GEAR SOLID.exe", 2131630}},
+    {MgsGame::MGS1, {"Metal Gear Solid", "METAL GEAR SOLID.exe", 2131630}},
     {MgsGame::MGSR, {"Metal Gear / Snake's Revenge (NES)", "MGS MC1 Bonus Content.exe", 2306740}},
 };
 
@@ -180,6 +183,7 @@ void ReadConfig()
 
     inipp::get_value(ini.sections["Tracing"], "Level", iLevel);
     inipp::get_value(ini.sections["Tracing"], "NativeLevel", iNativeLevel);
+    inipp::get_value(ini.sections["Tracing"], "EmulatorLevel", iEmulatorLevel);
 
     inipp::get_value(ini.sections["Custom Resolution"], "Enabled", bCustomResolution);
     inipp::get_value(ini.sections["Custom Resolution"], "Width", iCustomResX);
@@ -196,6 +200,7 @@ void ReadConfig()
     inipp::get_value(ini.sections["Patches"], "GlobalCDROM", bPatchesGlobalCDROM);
 
     inipp::get_value(ini.sections["Patches"], "Underpants", bPatchesUnderpants);
+    inipp::get_value(ini.sections["Patches"], "Mosaic", bPatchesMosaic);
     inipp::get_value(ini.sections["Patches"], "Ghosts", bPatchesGhosts);
     inipp::get_value(ini.sections["Patches"], "Medicine", bPatchesMedicine);
 
@@ -211,6 +216,7 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bDotMatrix: %d<%d>", bDotMatrix.has_value(), bDotMatrix ? bDotMatrix.value() : -1);
     LOG_F(INFO, "Config Parse: iLevel: %d", iLevel);
     LOG_F(INFO, "Config Parse: iNativeLevel: %d", iNativeLevel);
+    LOG_F(INFO, "Config Parse: iEmulatorLevel: %d", iEmulatorLevel);
     LOG_F(INFO, "Config Parse: bCustomResolution: %d", bCustomResolution);
     LOG_F(INFO, "Config Parse: iCustomResX: %d", iCustomResX);
     LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
@@ -222,6 +228,7 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bPatchesGlobalRAM: %d", bPatchesGlobalRAM);
     LOG_F(INFO, "Config Parse: bPatchesGlobalCDROM: %d", bPatchesGlobalCDROM);
     LOG_F(INFO, "Config Parse: bPatchesUnderpants: %d", bPatchesUnderpants);
+    LOG_F(INFO, "Config Parse: bPatchesMosaic: %d", bPatchesMosaic);
     LOG_F(INFO, "Config Parse: bPatchesGhosts: %d", bPatchesGhosts);
     LOG_F(INFO, "Config Parse: bPatchesMedicine: %d", bPatchesMedicine);
     LOG_F(INFO, "Config Parse: bGameDevMenu: %d", bGameDevMenu);
@@ -348,7 +355,7 @@ void SetHook(HSQUIRRELVM v)
 
 void SQNew(HSQUIRRELVM v)
 {
-    LOG_F(INFO, "M2: SQVM is 0x%" PRIxPTR ", SQSharedState is 0x%" PRIxPTR ".", (uintptr_t)v, (uintptr_t)_ss(v));
+    LOG_F(INFO, "Squirrel: SQVM is 0x%" PRIxPTR ", SQSharedState is 0x%" PRIxPTR ".", (uintptr_t)v, (uintptr_t)_ss(v));
     _ss(v)->_debuginfo = true;
 }
 
@@ -409,13 +416,13 @@ void M2Print(const char *fmt, ...)
     va_end(va);
 
     buf[scstrcspn(buf, "\r\n")] = 0;
-    LOG_F(INFO, "M2: printf: %s", buf);
+    LOG_F(INFO, "Emulator: printf: %s", buf);
     free(buf);
 }
 
-const char* ConfigOverride(string *key)
+const char* M2_GetCfgValue(string *key)
 {
-    LOG_F(INFO, "M2: MWinResCfg::Get(\"%s\")", key->c_str());
+    LOG_F(INFO, "M2: MWinResCfg::GetValue(\"%s\")", key->c_str());
 
     if (*key == "FULLSCREEN_MODE" || *key == "BOOT_FULLSCREEN") {
         return sFullscreenMode.c_str();
@@ -444,7 +451,7 @@ vector<string> M2_FileFilter;
 vector<vector<unsigned char>> M2_DataFilter;
 void FilterPatches()
 {
-    if (eGameType == MgsGame::MGS && !bPatchesUnderpants) {
+    if (eGameType == MgsGame::MGS1 && !bPatchesUnderpants) {
         vector<string> MGS1_FileFilter_Underpants = {
             "0046a5", "0046a6",
             "0057c3", "0057c4", "0057c5",
@@ -456,29 +463,29 @@ void FilterPatches()
         );
     }
 
-    if (eGameType == MgsGame::MGS && !bPatchesGhosts) {
+    if (eGameType == MgsGame::MGS1 && !bPatchesGhosts) {
         M2_FileFilter.push_back("shinrei");
     }
 
-    if (eGameType == MgsGame::MGS && !bPatchesMedicine) {
+    if (eGameType == MgsGame::MGS1 && !bPatchesMedicine) {
         vector<unsigned char> MGS1_DataFilter_Medicine = { 0, 152, 0, 72, 152, 72, 152, 152, 152 };
         M2_DataFilter.push_back(MGS1_DataFilter_Medicine);
     }
 }
 
-unsigned char* M2_EpiPadStatePTR;
-void M2_EpiPadState(unsigned int addr, unsigned int id, unsigned char* state)
+unsigned char* M2_PadPTR;
+void M2_ReadPad(unsigned int addr, unsigned int id, unsigned char* state)
 {
-    if (M2_EpiPadStatePTR != state) {
-        LOG_F(INFO, "M2: Pad state is 0x%" PRIxPTR ".", state);
+    if (M2_PadPTR != state) {
+        LOG_F(INFO, "Emulator: Pad state is 0x%" PRIxPTR ".", state);
     }
 
-    M2_EpiPadStatePTR = state;
+    M2_PadPTR = state;
 }
 
 void AnalogLoop(HSQUIRRELVM v)
 {
-    if (!M2_EpiPadStatePTR) return;
+    if (!M2_PadPTR) return;
 
     gInputHub.SetDirectionMerge(0);
     gEmuTask.SetInputDirectionMerge(0);
@@ -504,26 +511,26 @@ void AnalogLoop(HSQUIRRELVM v)
 
     extern SQInteger MGS1_PlaySide;
     if (MGS1_PlaySide == 0) {
-        M2_EpiPadStatePTR[0x44] = axisToUint8(xL);
-        M2_EpiPadStatePTR[0x45] = axisToUint8(yL);
-        M2_EpiPadStatePTR[0x46] = axisToUint8(xR);
-        M2_EpiPadStatePTR[0x47] = axisToUint8(yR);
+        M2_PadPTR[0x44] = axisToUint8(xL);
+        M2_PadPTR[0x45] = axisToUint8(yL);
+        M2_PadPTR[0x46] = axisToUint8(xR);
+        M2_PadPTR[0x47] = axisToUint8(yR);
 
         for (unsigned int i = 0x48; i < 0x54; i++) {
-            M2_EpiPadStatePTR[i] = 128;
+            M2_PadPTR[i] = 128;
         }
     } else {
         for (unsigned int i = 0x44; i < 0x4C; i++) {
-            M2_EpiPadStatePTR[i] = 128;
+            M2_PadPTR[i] = 128;
         }
 
-        M2_EpiPadStatePTR[0x4C] = axisToUint8(xL);
-        M2_EpiPadStatePTR[0x4D] = axisToUint8(yL);
-        M2_EpiPadStatePTR[0x4E] = axisToUint8(xR);
-        M2_EpiPadStatePTR[0x4F] = axisToUint8(yR);
+        M2_PadPTR[0x4C] = axisToUint8(xL);
+        M2_PadPTR[0x4D] = axisToUint8(yL);
+        M2_PadPTR[0x4E] = axisToUint8(xR);
+        M2_PadPTR[0x4F] = axisToUint8(yR);
 
         for (unsigned int i = 0x50; i < 0x54; i++) {
-            M2_EpiPadStatePTR[i] = 128;
+            M2_PadPTR[i] = 128;
         }
     }
 }
@@ -576,7 +583,7 @@ SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM v)
     SQObjectPtr closure = SQObj_util_get_memory_define_table;
     bool res = v->Call(closure, nargs, v->_stackbase, ret, false);
     if (res) {
-        if (eGameType == MgsGame::MGS) {
+        if (eGameType == MgsGame::MGS1) {
             sq_pushobject(v, ret);
             sq_pushstring(v, _SC("scene_name"), -1);
             if (SQ_SUCCEEDED(sq_get(v, -2))) {
@@ -658,9 +665,9 @@ SQInteger _SQReturn_update_gadgets(HSQUIRRELVM v)
     return 0;
 }
 
-void *LoadImage(void *dst, void *src, size_t num)
+void *M2LoadImage(void *dst, void *src, size_t num)
 {
-    LOG_F(INFO, "M2: Loading image at 0x%" PRIxPTR " with size %d bytes.", src, num);
+    LOG_F(INFO, "Emulator: Loading image at 0x%" PRIxPTR " with size %d bytes.", src, num);
 
     uint8_t* MGS1_LoaderScanResult = Memory::PatternScanBuffer(src, num, "00 00 00 00 69 6E 69 74 00 00 00 00");
     if (MGS1_LoaderScanResult)
@@ -711,7 +718,7 @@ SQInteger SQNative_setRamValue(HSQUIRRELVM v)
 
     if (!bPatchesGlobalRAM && address != 0x200000) {
         if (_integer(*offset) == address) {
-            LOG_F(INFO, "M2: filtering RAM patch offset 0x%" PRIxPTR ".", address);
+            LOG_F(INFO, "Patch: filtering RAM patch offset 0x%" PRIxPTR ".", address);
         }
         return 1;
     }
@@ -747,28 +754,28 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
 
     if (file) {
         if (!bPatchesGlobalCDROM) {
-            LOG_F(INFO, "M2: filtering CD-ROM patch file %s.", file);
+            LOG_F(INFO, "Patch: filtering CD-ROM patch file %s.", file);
             return 1;
         }
 
         for (auto &filter : M2_FileFilter) {
             if (strncmp(filter.c_str(), file, filter.length()) == 0)
             {
-                LOG_F(INFO, "M2: filtering CD-ROM patch file %s.", file);
+                LOG_F(INFO, "Patch: filtering CD-ROM patch file %s.", file);
                 return 1;
             }
         }
     }
     else if (!buffer.empty()) {
         if (!bPatchesGlobalCDROM) {
-            LOG_F(INFO, "M2: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
+            LOG_F(INFO, "Patch: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
             return 1;
         }
 
         for (auto &filter : M2_DataFilter) {
             if (filter == buffer)
             {
-                LOG_F(INFO, "M2: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
+                LOG_F(INFO, "Patch: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
                 return 1;
             }
         }
@@ -821,7 +828,7 @@ SQInteger SQNative_init(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 6> M2_NativeCallTable = {
+vector<pair<const SQChar *, SQFUNCTION>> M2_NativeCallTable = {
     make_pair("setDotmatrix", SQNative_setDotmatrix),
     make_pair("setRamValue", SQNative_setRamValue),
     make_pair("entryCdRomPatch", SQNative_entryCdRomPatch),
@@ -892,7 +899,20 @@ SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 9> M2_ReturnTable = {
+SQInteger M2_InitializeFinish;
+SQInteger SQReturn_onInitializeFinish(HSQUIRRELVM v)
+{
+    extern void FixModules();
+
+    if (M2_InitializeFinish == 0) {
+        FixModules();
+    }
+
+    M2_InitializeFinish++;
+    return 0;
+}
+
+vector<pair<const SQChar *, SQFUNCTION>> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
@@ -902,6 +922,7 @@ array<pair<const SQChar *, SQFUNCTION>, 9> M2_ReturnTable = {
     make_pair("_get_disk_path", _SQReturn_get_disk_path),
     make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
     make_pair("set_game_regionTag", SQReturn_set_game_regionTag),
+    make_pair("onInitializeFinish", SQReturn_onInitializeFinish),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
@@ -949,7 +970,7 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
         SQInteger length = 0;
         if (SQ_SUCCEEDED(sqstd_format(v, 2, &length, &print))) {
             print[scstrcspn(print, "\r\n")] = 0;
-            LOG_F(INFO, "M2: sq_printf: %s", print);
+            LOG_F(INFO, "Squirrel: printf: %s", print);
         }
     }
 
@@ -962,7 +983,7 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
 
 bool SquirrelMain(HSQUIRRELVM v)
 {
-    LOG_F(INFO, "M2: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t) v,
+    LOG_F(INFO, "Squirrel: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t) v,
         (_ss(v)->_debuginfo ? "enabled" : "disabled"),
         (_ss(v)->_notifyallexceptions ? "enabled" : "disabled")
     );
@@ -1036,7 +1057,7 @@ DWORD __stdcall Main(void*)
         CALL(ScanFunctions());
 
         CALL(M2Hook());
-        CALL(LoadHook());
+        CALL(EmuHook());
         CALL(SquirrelHook());
 
         if (bCustomResolution) CALL(ConfigHook());

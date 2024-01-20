@@ -172,7 +172,7 @@ void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const
     trace << ")";
 
     string tracestring = trace.str();
-    LOG_F(INFO, "M2: CallNative: %s", tracestring.c_str());
+    LOG_F(INFO, "Squirrel: CallNative: %s", tracestring.c_str());
 }
 
 void Trace(HSQUIRRELVM v)
@@ -220,11 +220,11 @@ void Trace(HSQUIRRELVM v)
                 }
 
                 string tracestring = trace.str();
-                LOG_F(INFO, "M2: %s", tracestring.c_str());
+                LOG_F(INFO, "Squirrel: %s", tracestring.c_str());
             }
         }
     }
     else if (event_type == _SC('l')) {
-        LOG_F(INFO, "M2: Line: %s:%d", src, line);
+        LOG_F(INFO, "Squirrel: Line: %s:%d", src, line);
     }
 }

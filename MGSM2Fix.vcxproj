@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\emulator.cpp" />
     <ClCompile Include="src\emutask.cpp" />
     <ClCompile Include="src\external\loguru\loguru.cpp" />
     <ClCompile Include="src\external\squirrel\sqdbg\sqdbgserver.cpp" />
@@ -60,6 +61,7 @@
     <ClInclude Include="src\helper.hpp" />
     <ClInclude Include="src\input.h" />
     <ClInclude Include="src\inputhub.h" />
+    <ClInclude Include="src\m2binary.h" />
     <ClInclude Include="src\m2object.h" />
     <ClInclude Include="src\stdafx.h" />
   </ItemGroup>

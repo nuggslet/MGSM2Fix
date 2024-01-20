@@ -33,5 +33,3 @@
 #include "squserdata.h"
 #include "sqstring.h"
 #include "sqstdstring.h"
-
-#undef LoadImage
