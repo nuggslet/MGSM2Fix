@@ -62,7 +62,7 @@ Where `0` and `1` refer to disk 1 and disk 2 respectively.
 
 See [makeppf](https://github.com/meunierd/ppf) for creating PPF3 patches/mods. PPF3 mods derived from original PSX CD releases should work correctly with Master Collection.
 
-If your mods conflict with the built-in Master Collection patches, for the time being it may be useful to disable the `GlobalRAM` and `GlobalCDROM` settings in **MGSM2Fix.ini**.
+If your mods conflict with the built-in Master Collection patches, for the time being it may be useful to enable the `DisableRAM` and `DisableCDROM` settings in **MGSM2Fix.ini**.
 Once all of the Master Collection patches have been identified and grouped (please help, there are lots!) this heavy-handed approach should no longer be necessary.
 
 Additional mod formats may be supported in future.
