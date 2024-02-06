@@ -436,8 +436,8 @@ bool M2MachineCommand(unsigned int *args)
 
             (* (unsigned int *) args[3]) = (2560 - w) >> 1; // X
             (* (unsigned int *) args[4]) = (x - y) >> 1;    // Y
-            (* (unsigned int *) args[5]) = M2_ScreenWidth;  // W
-            (* (unsigned int *) args[6]) = M2_ScreenHeight; // H
+            (* (unsigned int *) args[5]) = 999999999;       // W
+            (* (unsigned int *) args[6]) = 999999999;       // H
 
             return true;
         }
