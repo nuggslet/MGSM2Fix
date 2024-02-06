@@ -212,13 +212,13 @@ vector<pair<unsigned int, M2FUNCTION>> M2_ModuleTable_Kernel = {
 
 int M2Hook_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    extern bool bPatchesMosaic;
+    extern bool bPatchesEnableMosaic;
     static bool oneshot = false;
     if (!oneshot) {
-        LOG_F(INFO, "MGS 1: %s s03a_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+        LOG_F(INFO, "MGS 1: %s s03a_disable_mosaic().", bPatchesEnableMosaic ? "Blocking" : "Allowing");
         oneshot = true;
     }
-    if (bPatchesMosaic) {
+    if (!bPatchesEnableMosaic) {
         M2FUNCTION s03a_disable_mosaic = M2_ModuleHandlers[address];
         return s03a_disable_mosaic(cpu, cycle, address);
     }
@@ -228,13 +228,13 @@ int M2Hook_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address
 
 int M2Hook_s03d_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    extern bool bPatchesMosaic;
+    extern bool bPatchesEnableMosaic;
     static bool oneshot = false;
     if (!oneshot) {
-        LOG_F(INFO, "MGS 1: %s s03d_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+        LOG_F(INFO, "MGS 1: %s s03d_disable_mosaic().", bPatchesEnableMosaic ? "Blocking" : "Allowing");
         oneshot = true;
     }
-    if (bPatchesMosaic) {
+    if (!bPatchesEnableMosaic) {
         M2FUNCTION s03d_disable_mosaic = M2_ModuleHandlers[address];
         return s03d_disable_mosaic(cpu, cycle, address);
     }
@@ -412,6 +412,8 @@ bool M2MachineCommand(unsigned int *args)
     extern bool bInternalEnabled;
     extern int iInternalWidth;
     extern int iInternalHeight;
+    extern int iLayerWidth;
+    extern int iLayerHeight;
     extern SQInteger M2_ScreenWidth;
     extern SQInteger M2_ScreenHeight;
 
@@ -436,8 +438,8 @@ bool M2MachineCommand(unsigned int *args)
 
             (* (unsigned int *) args[3]) = (2560 - w) >> 1; // X
             (* (unsigned int *) args[4]) = (x - y) >> 1;    // Y
-            (* (unsigned int *) args[5]) = 999999999;       // W
-            (* (unsigned int *) args[6]) = 999999999;       // H
+            (* (unsigned int *) args[5]) = iLayerWidth;     // W
+            (* (unsigned int *) args[6]) = iLayerHeight;    // H
 
             return true;
         }

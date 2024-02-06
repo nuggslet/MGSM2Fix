@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "2.0";
+string sFixVer = "2.1";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -45,19 +45,21 @@ int iExternalHeight;
 bool bWindowedMode;
 bool bBorderlessMode;
 bool bInternalEnabled;
-int iInternalHeight;
 int iInternalWidth;
+int iInternalHeight;
 bool bInternalWidescreen;
+int iLayerWidth = 7680;
+int iLayerHeight = 4320;
 bool bAnalogMode;
 bool bLauncherSkipNotice;
 bool bLauncherStartGame;
-bool bGameDevMenu;
-bool bPatchesGlobalRAM = true;
-bool bPatchesGlobalCDROM = true;
-bool bPatchesUnderpants = true;
-bool bPatchesMosaic = true;
-bool bPatchesGhosts = true;
-bool bPatchesMedicine = true;
+bool bGameStageSelect;
+bool bPatchesDisableRAM;
+bool bPatchesDisableCDROM;
+bool bPatchesRemoveUnderpants = true;
+bool bPatchesEnableMosaic = true;
+bool bPatchesRestoreGhosts = true;
+bool bPatchesRestoreMedicine = true;
 
 // Variables
 string sFullscreenMode;
@@ -145,21 +147,23 @@ void ReadConfig()
     inipp::get_value(ini.sections["Internal Resolution"], "Enabled", bInternalEnabled);
     inipp::get_value(ini.sections["Internal Resolution"], "Height", iInternalHeight);
     inipp::get_value(ini.sections["Internal Resolution"], "Widescreen", bInternalWidescreen);
+    inipp::get_value(ini.sections["Internal Resolution"], "LayerWidth", iLayerWidth);
+    inipp::get_value(ini.sections["Internal Resolution"], "LayerHeight", iLayerHeight);
 
     inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
 
     inipp::get_value(ini.sections["Launcher"], "SkipNotice", bLauncherSkipNotice);
     inipp::get_value(ini.sections["Launcher"], "StartGame", bLauncherStartGame);
 
-    inipp::get_value(ini.sections["Patches"], "GlobalRAM", bPatchesGlobalRAM);
-    inipp::get_value(ini.sections["Patches"], "GlobalCDROM", bPatchesGlobalCDROM);
+    inipp::get_value(ini.sections["Patches"], "DisableRAM", bPatchesDisableRAM);
+    inipp::get_value(ini.sections["Patches"], "DisableCDROM", bPatchesDisableCDROM);
 
-    inipp::get_value(ini.sections["Patches"], "Underpants", bPatchesUnderpants);
-    inipp::get_value(ini.sections["Patches"], "Mosaic", bPatchesMosaic);
-    inipp::get_value(ini.sections["Patches"], "Ghosts", bPatchesGhosts);
-    inipp::get_value(ini.sections["Patches"], "Medicine", bPatchesMedicine);
+    inipp::get_value(ini.sections["Patches"], "RemoveUnderpants", bPatchesRemoveUnderpants);
+    inipp::get_value(ini.sections["Patches"], "EnableMosaic", bPatchesEnableMosaic);
+    inipp::get_value(ini.sections["Patches"], "RestoreGhosts", bPatchesRestoreGhosts);
+    inipp::get_value(ini.sections["Patches"], "RestoreMedicine", bPatchesRestoreMedicine);
 
-    inipp::get_value(ini.sections["Game"], "DevMenu", bGameDevMenu);
+    inipp::get_value(ini.sections["Game"], "StageSelect", bGameStageSelect);
 
     // Log config parse
     LOG_F(INFO, "Config Parse: bDebuggerEnabled: %d", bDebuggerEnabled);
@@ -180,16 +184,18 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bInternalEnabled: %d", bInternalEnabled);
     LOG_F(INFO, "Config Parse: iInternalHeight: %d", iInternalHeight);
     LOG_F(INFO, "Config Parse: bInternalWidescreen: %d", bInternalWidescreen);
+    LOG_F(INFO, "Config Parse: iLayerWidth: %d", iLayerWidth);
+    LOG_F(INFO, "Config Parse: iLayerHeight: %d", iLayerHeight);
     LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
     LOG_F(INFO, "Config Parse: bLauncherSkipNotice: %d", bLauncherSkipNotice);
     LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
-    LOG_F(INFO, "Config Parse: bPatchesGlobalRAM: %d", bPatchesGlobalRAM);
-    LOG_F(INFO, "Config Parse: bPatchesGlobalCDROM: %d", bPatchesGlobalCDROM);
-    LOG_F(INFO, "Config Parse: bPatchesUnderpants: %d", bPatchesUnderpants);
-    LOG_F(INFO, "Config Parse: bPatchesMosaic: %d", bPatchesMosaic);
-    LOG_F(INFO, "Config Parse: bPatchesGhosts: %d", bPatchesGhosts);
-    LOG_F(INFO, "Config Parse: bPatchesMedicine: %d", bPatchesMedicine);
-    LOG_F(INFO, "Config Parse: bGameDevMenu: %d", bGameDevMenu);
+    LOG_F(INFO, "Config Parse: bPatchesDisableRAM: %d", bPatchesDisableRAM);
+    LOG_F(INFO, "Config Parse: bPatchesDisableCDROM: %d", bPatchesDisableCDROM);
+    LOG_F(INFO, "Config Parse: bPatchesRemoveUnderpants: %d", bPatchesRemoveUnderpants);
+    LOG_F(INFO, "Config Parse: bPatchesEnableMosaic: %d", bPatchesEnableMosaic);
+    LOG_F(INFO, "Config Parse: bPatchesRestoreGhosts: %d", bPatchesRestoreGhosts);
+    LOG_F(INFO, "Config Parse: bPatchesRestoreMedicine: %d", bPatchesRestoreMedicine);
+    LOG_F(INFO, "Config Parse: bGameStageSelect: %d", bGameStageSelect);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
     {
@@ -415,7 +421,7 @@ vector<string> M2_FileFilter;
 vector<vector<unsigned char>> M2_DataFilter;
 void FilterPatches()
 {
-    if (eGameType == MgsGame::MGS1 && !bPatchesUnderpants) {
+    if (eGameType == MgsGame::MGS1 && bPatchesRemoveUnderpants) {
         vector<string> MGS1_FileFilter_Underpants = {
             "0046a5", "0046a6",
             "0057c3", "0057c4", "0057c5",
@@ -427,11 +433,11 @@ void FilterPatches()
         );
     }
 
-    if (eGameType == MgsGame::MGS1 && !bPatchesGhosts) {
+    if (eGameType == MgsGame::MGS1 && bPatchesRestoreGhosts) {
         M2_FileFilter.push_back("shinrei");
     }
 
-    if (eGameType == MgsGame::MGS1 && !bPatchesMedicine) {
+    if (eGameType == MgsGame::MGS1 && bPatchesRestoreMedicine) {
         vector<unsigned char> MGS1_DataFilter_Medicine = { 0, 152, 0, 72, 152, 72, 152, 152, 152 };
         M2_DataFilter.push_back(MGS1_DataFilter_Medicine);
     }
@@ -615,7 +621,7 @@ SQInteger _SQReturn_update_gadgets(HSQUIRRELVM v)
         SQInteger MGS1_CurrentStage = 0;
         gEmuTask.GetRamValue(16, MGS1_CurrentStagePTR, &MGS1_CurrentStage);
 
-        if (bGameDevMenu) {
+        if (bGameStageSelect) {
             if (strcmp(MGS1_LoaderName, "title") == 0 && strcmp(MGS1_StageName, "select") != 0) {
                 strcpy(MGS1_LoaderName, "select");
                 for (int i = 0; i < sizeof(MGS1_StageName) / sizeof(uint32_t); i++) {
@@ -680,7 +686,7 @@ SQInteger SQNative_setRamValue(HSQUIRRELVM v)
     }
     sq_pop(v, 1);
 
-    if (!bPatchesGlobalRAM && address != 0x200000) {
+    if (bPatchesDisableRAM && address != 0x200000) {
         if (_integer(*offset) == address) {
             LOG_F(INFO, "Patch: filtering RAM patch offset 0x%" PRIxPTR ".", address);
         }
@@ -717,7 +723,7 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
     sq_pop(v, 1);
 
     if (file) {
-        if (!bPatchesGlobalCDROM) {
+        if (bPatchesDisableCDROM) {
             LOG_F(INFO, "Patch: filtering CD-ROM patch file %s.", file);
             return 1;
         }
@@ -731,7 +737,7 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
         }
     }
     else if (!buffer.empty()) {
-        if (!bPatchesGlobalCDROM) {
+        if (bPatchesDisableCDROM) {
             LOG_F(INFO, "Patch: filtering CD-ROM patch offset 0x%" PRIxPTR ".", _integer(*offset));
             return 1;
         }
