@@ -16,6 +16,8 @@
 #include <optional>
 #include <array>
 #include <utility>
+#include <numeric>
+#include <variant>
 
 #include "external/loguru/loguru.hpp"
 #include "external/inipp/inipp/inipp.h"

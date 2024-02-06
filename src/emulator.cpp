@@ -1,128 +1,11 @@
 #include "stdafx.h"
 
+#include "emulator.h"
+
 using namespace std;
 
+extern MgsGame eGameType;
 extern int iEmulatorLevel;
-
-#ifndef _WIN64
-
-extern bool bPatchesMosaic;
-
-typedef int (*M2FUNCTION)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
-
-typedef struct M2_EmuPSX {
-    struct M2_MethodsPSX *Methods;
-    void *Components;
-    void *Archive;
-    void *ImageBIOS;
-    void *ImageDRAM;
-    void *MemoryDRAM;
-    void *MemoryTCM;
-    struct M2_EmuBusPSX *Bus;
-    struct M2_EmuR3000 *DevR3000;
-    void *DevCDROM;
-    void *DevDMAC;
-    void *DevGPU;
-    void *DevINTC;
-    void *DevMDEC;
-    void *DevRTC;
-    void *DevSIO;
-    void *DevSPU;
-    union {
-        struct {
-            // No more, but space for up to 16.
-            unsigned char Wide;
-            unsigned char HighP;
-        } Flag;
-        unsigned char Flags[16]; // "InfoIntegers".
-    };
-
-} M2_EmuPSX;
-
-static_assert(sizeof(M2_EmuPSX) == 0x54);
-
-typedef struct M2_MethodsPSX {
-    void (*Destroy)     (struct M2_EmuPSX *machine);
-    void (*_Stub)       (struct M2_EmuPSX *machine);
-    void (*Reload)      (struct M2_EmuPSX *machine, void *param);
-    void (*Command)     (struct M2_EmuPSX *machine, int cmd, void *param);
-    void (*Update)      (struct M2_EmuPSX *machine, int op);
-} M2_MethodsPSX;
-
-static_assert(sizeof(M2_MethodsPSX) == 0x14);
-
-typedef struct M2_EmuBusPSX {
-    unsigned char  (*Read8)  (struct M2_EmuBusPSX *bus, unsigned int address);
-    unsigned short (*Read16) (struct M2_EmuBusPSX *bus, unsigned int address);
-    unsigned int   (*Read32) (struct M2_EmuBusPSX *bus, unsigned int address);
-    void           (*Write8) (struct M2_EmuBusPSX *bus, unsigned int address, unsigned char value);
-    void           (*Write16)(struct M2_EmuBusPSX *bus, unsigned int address, unsigned short value);
-    void           (*Write32)(struct M2_EmuBusPSX *bus, unsigned int address, unsigned int value);
-    unsigned int _Spare[2];
-    struct M2_EmuPSX *Machine;
-} M2_EmuBusPSX;
-
-static_assert(sizeof(M2_EmuBusPSX) == 0x24);
-
-typedef struct M2_EmuCoprocGTE {
-    unsigned int Reg[64];
-    unsigned int SR;
-    int (*Command)(struct M2_EmuCoprocGTE *gte, int id);
-    int (*Result) (struct M2_EmuCoprocGTE *gte, int id);
-} M2_EmuCoprocGTE;
-
-static_assert(sizeof(M2_EmuCoprocGTE) == 0x10C);
-
-typedef struct M2_EmuR3000 {
-    struct M2_MethodsR3000 *Methods;
-    void *Components;
-    struct M2_EmuBusPSX *Bus;
-    void *DevINTC;
-    struct M2_EmuCoprocGTE *CoprocGTE;
-    M2FUNCTION *Segment; // The main/non-accelerated segment.
-    bool           (*Execute)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
-    unsigned char  (*Read8)  (struct M2_EmuR3000 *cpu, unsigned int address);
-    unsigned short (*Read16) (struct M2_EmuR3000 *cpu, unsigned int address);
-    unsigned int   (*Read32) (struct M2_EmuR3000 *cpu, unsigned int address);
-    void           (*Write8) (struct M2_EmuR3000 *cpu, unsigned int address, unsigned char value);
-    void           (*Write16)(struct M2_EmuR3000 *cpu, unsigned int address, unsigned short value);
-    void           (*Write32)(struct M2_EmuR3000 *cpu, unsigned int address, unsigned int value);
-    unsigned int Accelerator;
-    bool           (*Step)   (struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
-    unsigned int Cycle;
-    unsigned int _Spare; // Unused, leaks uninitialised memory.
-    unsigned int Target;
-    unsigned int Instruction;
-    unsigned int State;
-    unsigned int Hi;
-    unsigned int Lo;
-    unsigned int PC0;
-    unsigned int PC1;
-    unsigned int Reg[32];
-    unsigned int SR;
-    unsigned int Cause;
-    unsigned int EPC;
-    unsigned int OffsetDRAM;
-    unsigned int SizeDRAM;
-    unsigned char *BufferDRAM;
-    M2FUNCTION *Segments[0x80000000 / 0x80000];
-    void *MemoryVRAM; // What the fuck?
-    unsigned int Cycles;
-} M2_EmuR3000;
-
-static_assert(sizeof(M2_EmuR3000) == 0x4100);
-
-typedef struct M2_MethodsR3000 {
-    void (*Destroy)(struct M2_EmuR3000 *cpu);
-    void (*_Stub)  (struct M2_EmuR3000 *cpu);
-    void (*Reload) (struct M2_EmuR3000 *cpu);
-    void (*Boot)   (struct M2_EmuR3000 *cpu, int op);
-    void (*Command)(struct M2_EmuR3000 *cpu, int cmd, void *param);
-    void (*Dump)   (struct M2_EmuR3000 *cpu);
-    void (*Error)  (struct M2_EmuR3000 *cpu);
-} M2_MethodsR3000;
-
-static_assert(sizeof(M2_MethodsR3000) == 0x1C);
 
 typedef struct {
     unsigned int address;
@@ -242,12 +125,40 @@ void *M2LoadModule(void *module, void *)
     return mod;
 }
 
+void M2ListInsert(void *list, void *object)
+{
+    // Didn't end up using this but the detour might be useful for something else in future...
+    return;
+}
+
 map<unsigned int, M2FUNCTION> M2_ModuleHandlers;
 
 int M2Hook_main(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
+    LOG_F(INFO, "Emulator: Machine at 0x%" PRIxPTR ".", cpu->Bus->Machine);
+    LOG_F(INFO, "Emulator: Archive at 0x%" PRIxPTR ".", cpu->Bus->Machine->Archive);
+    LOG_F(INFO, "Emulator: BIOS at 0x%" PRIxPTR ".", cpu->Bus->Machine->ImageBIOS);
+    LOG_F(INFO, "Emulator: Image at 0x%" PRIxPTR ".", cpu->Bus->Machine->ImageDRAM);
+    LOG_F(INFO, "Emulator: DRAM at 0x%" PRIxPTR ".", cpu->Bus->Machine->MemoryDRAM);
+    LOG_F(INFO, "Emulator: TCM at 0x%" PRIxPTR ".", cpu->Bus->Machine->MemoryTCM);
+    LOG_F(INFO, "Emulator: Bus at 0x%" PRIxPTR ".", cpu->Bus->Machine->Bus);
+    LOG_F(INFO, "Emulator: R3000 at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevR3000);
+    LOG_F(INFO, "Emulator: GTE at 0x%" PRIxPTR ".", cpu->CoprocGTE);
+    LOG_F(INFO, "Emulator: CDROM at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevCDROM);
+    LOG_F(INFO, "Emulator: DMAC at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevDMAC);
+    LOG_F(INFO, "Emulator: GPU at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevGPU);
+    LOG_F(INFO, "Emulator: INTC at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevINTC);
+    LOG_F(INFO, "Emulator: MDEC at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevMDEC);
+    LOG_F(INFO, "Emulator: RTC at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevRTC);
+    LOG_F(INFO, "Emulator: SIO at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevSIO);
+    LOG_F(INFO, "Emulator: SPU at 0x%" PRIxPTR ".", cpu->Bus->Machine->DevSPU);
+
+    extern int R3000_CommandGTE(struct M2_EmuCoprocGTE *gte, int op);
+    cpu->CoprocGTE->Command = R3000_CommandGTE;
+
     unsigned int ra = cpu->Reg[31];
     LOG_F(INFO, "MGS 1: __main: 0x%" PRIxPTR " -> 0x%" PRIxPTR ".", address, ra);
+
     return cpu->Step(cpu, 0, ra);
 }
 
@@ -301,7 +212,12 @@ vector<pair<unsigned int, M2FUNCTION>> M2_ModuleTable_Kernel = {
 
 int M2Hook_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    LOG_F(INFO, "MGS 1: %s s03a_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+    extern bool bPatchesMosaic;
+    static bool oneshot = false;
+    if (!oneshot) {
+        LOG_F(INFO, "MGS 1: %s s03a_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+        oneshot = true;
+    }
     if (bPatchesMosaic) {
         M2FUNCTION s03a_disable_mosaic = M2_ModuleHandlers[address];
         return s03a_disable_mosaic(cpu, cycle, address);
@@ -312,7 +228,12 @@ int M2Hook_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address
 
 int M2Hook_s03d_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    LOG_F(INFO, "MGS 1: %s s03d_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+    extern bool bPatchesMosaic;
+    static bool oneshot = false;
+    if (!oneshot) {
+        LOG_F(INFO, "MGS 1: %s s03d_disable_mosaic().", bPatchesMosaic ? "Allowing" : "Blocking");
+        oneshot = true;
+    }
     if (bPatchesMosaic) {
         M2FUNCTION s03d_disable_mosaic = M2_ModuleHandlers[address];
         return s03d_disable_mosaic(cpu, cycle, address);
@@ -478,15 +399,123 @@ void FixUserModules(const char *basename = "mgs_r3000_int")
 
 void FixModules()
 {
-    FixUserModules();
-    FixKernelModules();
+    switch (eGameType) {
+        case MgsGame::MGS1:
+            FixUserModules();
+            FixKernelModules();
+        default: break;
+    }
 }
 
-#else
-
-void FixModules()
+bool M2MachineCommand(unsigned int *args)
 {
-    return;
-}
+    extern bool bInternalEnabled;
+    extern int iInternalWidth;
+    extern int iInternalHeight;
+    extern SQInteger M2_ScreenWidth;
+    extern SQInteger M2_ScreenHeight;
 
-#endif
+    struct M2_EmuPSX *psx = reinterpret_cast<struct M2_EmuPSX *>(args[1]);
+    unsigned int cmd = args[2];
+
+    struct M2_EmuGPU *gpu = psx->DevGPU;
+
+    switch (cmd)
+    {
+        case 0x8001: // DRAW
+            break;
+
+        case 0x8002: // GET_LAYER
+        {
+            if (!bInternalEnabled) return false;
+
+            unsigned int w = (gpu->ScreenRangeW >> 12 & 0xFFF) - (gpu->ScreenRangeW & 0xFFF);
+            unsigned int h = ((gpu->ScreenRangeH >> 10 & 0x3FF) - (gpu->ScreenRangeH & 0x3FF)) << ((gpu->Status >> 22) & 1);
+            unsigned int x = (gpu->VideoMode ? 256 : 240) << ((gpu->Status >> 22) & 1);
+            unsigned int y = min(h, x);
+
+            (* (unsigned int *) args[3]) = (2560 - w) >> 1; // X
+            (* (unsigned int *) args[4]) = (x - y) >> 1;    // Y
+            (* (unsigned int *) args[5]) = M2_ScreenWidth;  // W
+            (* (unsigned int *) args[6]) = M2_ScreenHeight; // H
+
+            return true;
+        }
+
+        case 0x8003: // GET_DIMENSION
+        {
+            if (!bInternalEnabled) return false;
+
+            if ((gpu->Status >> 16) & 1) {
+                return false;
+            }
+
+            (* (unsigned int *) args[3]) = iInternalWidth;
+
+            static const unsigned int h[] = { 256, 320, 512, 640 };
+            static const unsigned int hx = 368;
+
+            (* (unsigned int *) args[3]) *= h[(gpu->Status >> 17) & 3];
+            (* (unsigned int *) args[3]) /= h[1];
+
+            if ((gpu->Status >> 16) & 1) {
+                (* (unsigned int *) args[3]) *= hx;
+                (* (unsigned int *) args[3]) /= h[(gpu->Status >> 17) & 3];
+            }
+
+            (* (unsigned int *) args[4]) = iInternalHeight;
+
+            static const unsigned int w[] = { 240, 480 };
+
+            (* (unsigned int *) args[4]) *= w[(gpu->Status >> 19) & 1];
+            (* (unsigned int *) args[4]) /= w[0];
+
+            /*
+            LOG_F(INFO, "Emulator: GET_DIMENSION: %ux%u -> %ux%u.",
+                ((gpu->Status >> 16) & 1) ? hx : h[(gpu->Status >> 17) & 3],
+                w[(gpu->Status >> 19) & 1],
+                (* (unsigned int *) args[3]),
+                (* (unsigned int *) args[4]));
+            */
+
+            return true;
+        }
+
+        case 0x8004: // SUBMIT
+        {
+            if (!bInternalEnabled) return false;
+
+            if ((gpu->Status >> 16) & 1) {
+                return false;
+            }
+
+            unsigned int *res = (unsigned int *) args[3];
+
+            res[1] = iInternalWidth;
+
+            static const unsigned int h[] = { 256, 320, 512, 640 };
+            static const unsigned int hx = 368;
+
+            res[1] *= h[1];
+            res[1] /= h[(gpu->Status >> 17) & 3];
+
+            if ((gpu->Status >> 16) & 1) {
+                res[1] *= h[(gpu->Status >> 17) & 3];
+                res[1] /= hx;
+            }
+
+            res[2] = iInternalHeight;
+
+            static const unsigned int w[] = { 240, 480 };
+
+            res[2] *= w[0];
+            res[2] /= w[(gpu->Status >> 19) & 1];
+
+            return false;
+        }
+
+        default: break;
+    }
+
+    return false;
+}

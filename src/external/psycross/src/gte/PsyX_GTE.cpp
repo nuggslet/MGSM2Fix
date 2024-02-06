@@ -7,9 +7,53 @@
 
 #include <math.h>
 
+#ifdef MGSM2Fix_EXPORTS
+#include "../../m2psyx.h"
+// Batshit reference reseating hackery so that the `gteRegs.` macros work and I don't have to change them to `gteRegs->`
+struct M2_EmuCoprocGTE *xGTE = nullptr;
+struct M2_EmuCoprocGTE &gGTE = *static_cast<struct M2_EmuCoprocGTE *>(nullptr);
+int GTE_execute(struct M2_EmuCoprocGTE *gte, int op)
+{
+	(&xGTE)[1] = gte; // !
+	return GTE_operator(op);
+}
 
+void GTE_aspect(long long &x, long long &y)
+{
+	extern bool bInternalWidescreen;
+	if (!bInternalWidescreen) {
+		x = 1;
+		y = 1;
+		return;
+	}
+
+	typedef int SQInteger;
+	extern SQInteger M2_ScreenScaleX;
+	extern SQInteger M2_ScreenScaleY;
+	extern SQInteger M2_ScreenMode;
+
+	switch (M2_ScreenMode) {
+		case 3:
+			x = M2_ScreenScaleX;
+			y = M2_ScreenScaleY;
+			break;
+		case 7:
+			x = 4;
+			y = 3;
+			break;
+		default:
+			x = 1;
+			y = 1;
+			break;
+	}
+}
+#endif
 
 GTERegisters gteRegs;
+
+#ifdef MGSM2Fix_EXPORTS
+#define gteRegs gGTE
+#endif
 
 #define GTE_SF(op)			((op >> 19) & 1)
 #define GTE_MX(op)			((op >> 17) & 3)
@@ -392,7 +436,13 @@ int GTE_RotTransPers(int idx, int lm)
 	h_over_sz3 = Lm_E(gte_divide(C2_H, C2_SZ3));
 	C2_SXY0 = C2_SXY1;
 	C2_SXY1 = C2_SXY2;
+#ifdef MGSM2Fix_EXPORTS
+	long long x = 1, y = 1;
+	GTE_aspect(x, y);
+	C2_SX2 = Lm_G1(F(((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3 * y) / x)) >> 16);
+#else
 	C2_SX2 = Lm_G1(F((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3)) >> 16);
+#endif
 	C2_SY2 = Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16);
 
 #if USE_PGXP

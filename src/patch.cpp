@@ -421,15 +421,15 @@ void __declspec(naked) MGS1_MWinResCfgGetValue_CC()
         pop ebp
         retn 1Ch
 
-        MGS1_MWinResCfgGetValue_RET :
+    MGS1_MWinResCfgGetValue_RET:
         pop eax
-            mov esp, ebp
-            pop ebp
+        mov esp, ebp
+        pop ebp
 
-            push ebp
-            mov ebp, esp
-            push 0FFFFFFFFh
-            jmp[MGS1_MWinResCfgGetValueReturnJMP]
+        push ebp
+        mov ebp, esp
+        push 0FFFFFFFFh
+        jmp[MGS1_MWinResCfgGetValueReturnJMP]
     }
 #endif
 }
@@ -461,12 +461,12 @@ void __declspec(naked) MGSR_MWinResCfgGetValue_CC()
         pop rdi
         retn
 
-        MGSR_MWinResCfgGetValue_RET :
+    MGSR_MWinResCfgGetValue_RET:
         mov rdi, rdx
-            mov rbx, rcx
-            mov[rsp + 48h], rdx
-            lea rcx, [rsp + 28h]
-            jmp[MGSR_MWinResCfgGetValueReturnJMP]
+        mov rbx, rcx
+        mov[rsp + 48h], rdx
+        lea rcx, [rsp + 28h]
+        jmp[MGSR_MWinResCfgGetValueReturnJMP]
     }
 #endif
 }
@@ -659,10 +659,42 @@ void __declspec(naked) MGS1_PSXReloadImage_CC()
 #endif
 }
 
+extern bool M2MachineCommand(unsigned int *args);
+
+uintptr_t MGS1_PSXMachineCommandReturnJMP;
+void __declspec(naked) MGS1_PSXMachineCommand_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        mov eax, esp
+
+        push ebp
+        mov ebp, esp
+
+        push eax
+        call M2MachineCommand
+
+        mov esp, ebp
+        pop ebp
+
+        cmp eax, 0
+        je MGS1_PSXMachineCommand_RET
+
+        retn
+
+    MGS1_PSXMachineCommand_RET:
+        mov eax, [esp + 4]
+        lea edx, [esp + 12]
+        jmp[MGS1_PSXMachineCommandReturnJMP]
+    }
+#endif
+}
+
 extern void *M2LoadModule(void *module, void *);
 
-uintptr_t MGS1_PSXLoadModuleReturnJMP;
-void __declspec(naked) MGS1_PSXLoadModule_CC()
+uintptr_t MGS1_M2EPILoadModuleReturnJMP;
+void __declspec(naked) MGS1_M2EPILoadModule_CC()
 {
 #ifndef _WIN64
     __asm
@@ -684,7 +716,38 @@ void __declspec(naked) MGS1_PSXLoadModule_CC()
         sub esp, 8
         push ebx
         push ebp
-        jmp[MGS1_PSXLoadModuleReturnJMP]
+        jmp[MGS1_M2EPILoadModuleReturnJMP]
+    }
+#endif
+}
+
+extern void M2ListInsert(void *list, void *object);
+
+uintptr_t MGS1_M2EPIListInsertReturnJMP;
+void __declspec(naked) MGS1_M2EPIListInsert_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push edx
+        push ecx
+
+        push ebp
+        mov ebp, esp
+
+        push edx
+        push ecx
+        call M2ListInsert
+
+        mov esp, ebp
+        pop ebp
+
+        pop ecx
+        pop edx
+
+        sub esp, 12
+        mov[esp + 4], ecx
+        jmp[MGS1_M2EPIListInsertReturnJMP]
     }
 #endif
 }
@@ -725,20 +788,52 @@ void EmuHook()
             LOG_F(INFO, "MGS 1: Emulator: psx_reload_image pattern scan failed.");
         }
 
-        uint8_t* MGS1_PSXLoadModuleScanResult = Memory::PatternScan(baseModule, "83 EC 08 53 55 56 8B 35 ?? ?? ?? ?? 8B DA 8B E9");
-        if (MGS1_PSXLoadModuleScanResult)
+        uint8_t* MGS1_PSXMachineCommandResult = Memory::PatternScan(baseModule, "8B 44 24 04 8D 54 24 0C 52 FF 74 24 0C 8B 08 50 8B 41 0C FF D0 83 C4 0C C3");
+        if (MGS1_PSXMachineCommandResult)
         {
-            uintptr_t MGS1_PSXLoadModuleAddress = (uintptr_t)MGS1_PSXLoadModuleScanResult;
-            int MGS1_PSXLoadModuleHookLength = Memory::GetHookLength((char*)MGS1_PSXLoadModuleAddress, 4);
-            MGS1_PSXLoadModuleReturnJMP = MGS1_PSXLoadModuleAddress + MGS1_PSXLoadModuleHookLength;
-            Memory::DetourFunction((void*)MGS1_PSXLoadModuleAddress, MGS1_PSXLoadModule_CC, MGS1_PSXLoadModuleHookLength);
+            uintptr_t MGS1_PSXMachineCommandAddress = (uintptr_t)MGS1_PSXMachineCommandResult;
+            int MGS1_PSXMachineCommandHookLength = Memory::GetHookLength((char*)MGS1_PSXMachineCommandAddress, 4);
+            MGS1_PSXMachineCommandReturnJMP = MGS1_PSXMachineCommandAddress + MGS1_PSXMachineCommandHookLength;
+            Memory::DetourFunction((void*)MGS1_PSXMachineCommandAddress, MGS1_PSXMachineCommand_CC, MGS1_PSXMachineCommandHookLength);
 
-            LOG_F(INFO, "MGS 1: Emulator: psx_load_module hook length is %d bytes.", MGS1_PSXLoadModuleHookLength);
-            LOG_F(INFO, "MGS 1: Emulator: psx_load_module hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_PSXLoadModuleAddress);
+            LOG_F(INFO, "MGS 1: Emulator: psx_machine_cmd hook length is %d bytes.", MGS1_PSXMachineCommandHookLength);
+            LOG_F(INFO, "MGS 1: Emulator: psx_machine_cmd hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_PSXMachineCommandAddress);
         }
-        else if (!MGS1_PSXLoadModuleScanResult)
+        else if (!MGS1_PSXMachineCommandResult)
         {
-            LOG_F(INFO, "MGS 1: Emulator: psx_load_module pattern scan failed.");
+            LOG_F(INFO, "MGS 1: Emulator: psx_machine_cmd pattern scan failed.");
+        }
+
+        uint8_t* MGS1_M2EPILoadModuleScanResult = Memory::PatternScan(baseModule, "83 EC 08 53 55 56 8B 35 ?? ?? ?? ?? 8B DA 8B E9");
+        if (MGS1_M2EPILoadModuleScanResult)
+        {
+            uintptr_t MGS1_M2EPILoadModuleAddress = (uintptr_t)MGS1_M2EPILoadModuleScanResult;
+            int MGS1_M2EPILoadModuleHookLength = Memory::GetHookLength((char*)MGS1_M2EPILoadModuleAddress, 4);
+            MGS1_M2EPILoadModuleReturnJMP = MGS1_M2EPILoadModuleAddress + MGS1_M2EPILoadModuleHookLength;
+            Memory::DetourFunction((void*)MGS1_M2EPILoadModuleAddress, MGS1_M2EPILoadModule_CC, MGS1_M2EPILoadModuleHookLength);
+
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_load_module hook length is %d bytes.", MGS1_M2EPILoadModuleHookLength);
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_load_module hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2EPILoadModuleAddress);
+        }
+        else if (!MGS1_M2EPILoadModuleScanResult)
+        {
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_load_module pattern scan failed.");
+        }
+
+        uint8_t* MGS1_M2EPIListInsertResult = Memory::PatternScan(baseModule, "83 EC 0C 89 4C 24 04 56 8D 74 24 04 57 8B FA 85");
+        if (MGS1_M2EPIListInsertResult)
+        {
+            uintptr_t MGS1_M2EPIListInsertAddress = (uintptr_t)MGS1_M2EPIListInsertResult;
+            int MGS1_M2EPIListInsertHookLength = Memory::GetHookLength((char*)MGS1_M2EPIListInsertAddress, 4);
+            MGS1_M2EPIListInsertReturnJMP = MGS1_M2EPIListInsertAddress + MGS1_M2EPIListInsertHookLength;
+            Memory::DetourFunction((void*)MGS1_M2EPIListInsertAddress, MGS1_M2EPIListInsert_CC, MGS1_M2EPIListInsertHookLength);
+
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_list_insert hook length is %d bytes.", MGS1_M2EPIListInsertHookLength);
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_list_insert hook address is 0x%" PRIxPTR ".", (uintptr_t)MGS1_M2EPIListInsertAddress);
+        }
+        else if (!MGS1_M2EPIListInsertResult)
+        {
+            LOG_F(INFO, "MGS 1: Emulator: m2epi_list_insert pattern scan failed.");
         }
     }
 }

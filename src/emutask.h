@@ -20,4 +20,6 @@ public:
 	bool SetScanline(SQBool enable);
 	bool SetInputDirectionMerge(SQInteger mode);
 	bool SetInputDeadzone(SQFloat value);
+
+	bool UpdateEmuScreen();
 };

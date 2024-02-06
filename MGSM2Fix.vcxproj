@@ -24,6 +24,8 @@
     <ClCompile Include="src\emulator.cpp" />
     <ClCompile Include="src\emutask.cpp" />
     <ClCompile Include="src\external\loguru\loguru.cpp" />
+    <ClCompile Include="src\external\psycross\src\gte\half_float.cpp" />
+    <ClCompile Include="src\external\psycross\src\gte\PsyX_GTE.cpp" />
     <ClCompile Include="src\external\squirrel\sqdbg\sqdbgserver.cpp" />
     <ClCompile Include="src\external\squirrel\sqdbg\sqrdbg.cpp" />
     <ClCompile Include="src\external\squirrel\sqstdlib\sqstdaux.cpp" />
@@ -52,10 +54,13 @@
     <ClCompile Include="src\m2object.cpp" />
     <ClCompile Include="src\ketchup.cpp" />
     <ClCompile Include="src\patch.cpp" />
+    <ClCompile Include="src\m2psyx.cpp" />
+    <ClCompile Include="src\r3000.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\emulator.h" />
     <ClInclude Include="src\emutask.h" />
     <ClInclude Include="src\external\loguru\loguru.hpp" />
     <ClInclude Include="src\helper.hpp" />
@@ -63,11 +68,12 @@
     <ClInclude Include="src\inputhub.h" />
     <ClInclude Include="src\m2binary.h" />
     <ClInclude Include="src\m2object.h" />
+    <ClInclude Include="src\m2psyx.h" />
+    <ClInclude Include="src\r3000.h" />
     <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MGSM2Fix.ini" />
-    <None Include="nut1.bin" />
     <None Include="src\external\squirrel\sqdbg\serialize_state.nut" />
   </ItemGroup>
   <ItemGroup>
@@ -126,19 +132,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg</IncludePath>
+    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg</IncludePath>
+    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg</IncludePath>
+    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg</IncludePath>
+    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -149,7 +155,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -168,7 +174,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
@@ -189,7 +195,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -208,7 +214,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>

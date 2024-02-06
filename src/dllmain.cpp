@@ -12,13 +12,15 @@
 #include "inputhub.h"
 #include "input.h"
 
+#include "emulator.h"
+
 using namespace std;
 namespace fs = std::filesystem;
 
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "1.2";
+string sFixVer = "2.0";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -37,11 +39,15 @@ optional<bool> bDotMatrix;
 int iLevel;
 int iNativeLevel;
 int iEmulatorLevel;
-bool bCustomResolution;
-int iCustomResX;
-int iCustomResY;
+bool bExternalEnabled;
+int iExternalWidth;
+int iExternalHeight;
 bool bWindowedMode;
 bool bBorderlessMode;
+bool bInternalEnabled;
+int iInternalHeight;
+int iInternalWidth;
+bool bInternalWidescreen;
 bool bAnalogMode;
 bool bLauncherSkipNotice;
 bool bLauncherStartGame;
@@ -55,8 +61,8 @@ bool bPatchesMedicine = true;
 
 // Variables
 string sFullscreenMode;
-string sCustomResX;
-string sCustomResY;
+string sExternalWidth;
+string sExternalHeight;
 
 std::filesystem::path sExePath;
 std::string sExeName;
@@ -66,13 +72,6 @@ struct GameInfo
     std::string GameTitle;
     std::string ExeName;
     int SteamAppId;
-};
-
-enum class MgsGame
-{
-    Unknown,
-    MGS1,
-    MGSR,
 };
 
 const std::map<MgsGame, GameInfo> kGames = {
@@ -88,56 +87,6 @@ typedef struct {
     SQChar src[MAX_PATH];
     SQInteger line;
 } FixData;
-
-typedef enum {
-    PAD_BUTTON_A     =        0x1,
-    PAD_BUTTON_B     =        0x2,
-    PAD_BUTTON_C     =        0x4,
-    PAD_BUTTON_X     =        0x8,
-    PAD_BUTTON_Y     =       0x10,
-    PAD_BUTTON_L     =       0x10,
-    PAD_BUTTON_Z     =       0x20,
-    PAD_BUTTON_R     =       0x20,
-    PAD_DOWN         =       0x40,
-    PAD_LEFT         =       0x80,
-    PAD_RIGHT        =      0x100,
-    PAD_COIN         =      0x200,
-    PAD_SELECT       =      0x200,
-    PAD_START        =      0x400,
-    PAD_UP           =      0x800,
-    PAD_DISCONNECTED =     0x1000,
-    PAD_BUTTON_L2    =     0x4000,
-    PAD_BUTTON_R2    =     0x8000,
-    PAD_RPD_GC_POS   =  0x2000000,
-    PAD_RPD_GC_NEG   =  0x4000000,
-    PAD_SHORTCUT     = 0x20000000,
-    PAD_MENU         = 0x40000000,
-    PAD_RPD          = 0x80000000,
-} M2EpiPadFlag;
-
-typedef enum {
-    MD_6B_DISABLE =  0x1,
-    MD_MULTITAP_0 =  0x2,
-    MD_MULTITAP_1 =  0x4,
-    USE_ANALOG    =  0x8,
-    DIRECTION_4   = 0x10,
-} M2EpiArchSubInfo;
-
-typedef enum {
-    BUTTON_CIRCLE   =  0,
-    BUTTON_CROSS    =  1,
-    BUTTON_TRIANGLE =  2,
-    BUTTON_SQUARE   =  3,
-    BUTTON_R1       =  4,
-    BUTTON_R2       =  5,
-    BUTTON_R3       =  6,
-    BUTTON_L1       =  7,
-    BUTTON_L2       =  8,
-    BUTTON_L3       =  9,
-    BUTTON_SELECT   = 10,
-    BUTTON_START    = 11,
-    BUTTON_TOUCH    = 12,
-} PlatformButtonId;
 
 void Logging()
 {
@@ -185,11 +134,17 @@ void ReadConfig()
     inipp::get_value(ini.sections["Tracing"], "NativeLevel", iNativeLevel);
     inipp::get_value(ini.sections["Tracing"], "EmulatorLevel", iEmulatorLevel);
 
-    inipp::get_value(ini.sections["Custom Resolution"], "Enabled", bCustomResolution);
-    inipp::get_value(ini.sections["Custom Resolution"], "Width", iCustomResX);
-    inipp::get_value(ini.sections["Custom Resolution"], "Height", iCustomResY);
-    inipp::get_value(ini.sections["Custom Resolution"], "Windowed", bWindowedMode);
-    inipp::get_value(ini.sections["Custom Resolution"], "Borderless", bBorderlessMode);
+    for (auto & section : { "Custom Resolution", "External Resolution" }) {
+        inipp::get_value(ini.sections[section], "Enabled", bExternalEnabled);
+        inipp::get_value(ini.sections[section], "Width", iExternalWidth);
+        inipp::get_value(ini.sections[section], "Height", iExternalHeight);
+        inipp::get_value(ini.sections[section], "Windowed", bWindowedMode);
+        inipp::get_value(ini.sections[section], "Borderless", bBorderlessMode);
+    }
+
+    inipp::get_value(ini.sections["Internal Resolution"], "Enabled", bInternalEnabled);
+    inipp::get_value(ini.sections["Internal Resolution"], "Height", iInternalHeight);
+    inipp::get_value(ini.sections["Internal Resolution"], "Widescreen", bInternalWidescreen);
 
     inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
 
@@ -217,11 +172,14 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: iLevel: %d", iLevel);
     LOG_F(INFO, "Config Parse: iNativeLevel: %d", iNativeLevel);
     LOG_F(INFO, "Config Parse: iEmulatorLevel: %d", iEmulatorLevel);
-    LOG_F(INFO, "Config Parse: bCustomResolution: %d", bCustomResolution);
-    LOG_F(INFO, "Config Parse: iCustomResX: %d", iCustomResX);
-    LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
+    LOG_F(INFO, "Config Parse: bExternalEnabled: %d", bExternalEnabled);
+    LOG_F(INFO, "Config Parse: iExternalWidth: %d", iExternalWidth);
+    LOG_F(INFO, "Config Parse: iExternalHeight: %d", iExternalHeight);
     LOG_F(INFO, "Config Parse: bWindowedMode: %d", bWindowedMode);
     LOG_F(INFO, "Config Parse: bBorderlessMode: %d", bBorderlessMode);
+    LOG_F(INFO, "Config Parse: bInternalEnabled: %d", bInternalEnabled);
+    LOG_F(INFO, "Config Parse: iInternalHeight: %d", iInternalHeight);
+    LOG_F(INFO, "Config Parse: bInternalWidescreen: %d", bInternalWidescreen);
     LOG_F(INFO, "Config Parse: bAnalogMode: %d", bAnalogMode);
     LOG_F(INFO, "Config Parse: bLauncherSkipNotice: %d", bLauncherSkipNotice);
     LOG_F(INFO, "Config Parse: bLauncherStartGame: %d", bLauncherStartGame);
@@ -250,18 +208,24 @@ void ReadConfig()
         LOG_F(INFO, "Config Parse: Analog mode enabled.");
     }
 
-    if (iCustomResX <= 0 || iCustomResY <= 0)
+    if (iExternalWidth <= 0 || iExternalHeight <= 0)
     {
         // Grab desktop resolution
         RECT desktop;
         GetWindowRect(GetDesktopWindow(), &desktop);
-        iCustomResX = (int)desktop.right;
-        iCustomResY = (int)desktop.bottom;
+        iExternalWidth = (int)desktop.right;
+        iExternalHeight = (int)desktop.bottom;
     }
 
+    if (iInternalHeight <= 0)
+    {
+        iInternalHeight = iExternalHeight;
+    }
+
+    iInternalWidth = (iInternalHeight * 4) / 3;
     sFullscreenMode = bWindowedMode ? "0" : "1";
-    sCustomResX = to_string(iCustomResX);
-    sCustomResY = to_string(iCustomResY);
+    sExternalWidth = to_string(iExternalWidth);
+    sExternalHeight = to_string(iExternalHeight);
 }
 
 bool DetectGame()
@@ -437,11 +401,11 @@ const char* M2_GetCfgValue(string *key)
     }
 
     if (*key == "WINDOW_W" || *key == "SCREEN_W" || *key == "LAST_CLIENT_SIZE_X") {
-        return sCustomResX.c_str();
+        return sExternalWidth.c_str();
     }
 
     if (*key == "WINDOW_H" || *key == "SCREEN_H" || *key == "LAST_CLIENT_SIZE_Y") {
-        return sCustomResY.c_str();
+        return sExternalHeight.c_str();
     }
 
     return NULL;
@@ -912,6 +876,52 @@ SQInteger SQReturn_onInitializeFinish(HSQUIRRELVM v)
     return 0;
 }
 
+SQInteger M2_ScreenWidth;
+SQInteger M2_ScreenHeight;
+SQInteger M2_ScreenScaleX;
+SQInteger M2_ScreenScaleY;
+SQInteger SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+
+    sq_pushobject(v, obj);
+    {
+        sq_pushstring(v, _SC("width"), -1);
+        sq_get(v, -2);
+        sq_getinteger(v, -1, &M2_ScreenWidth);
+        sq_pop(v, 1);
+
+        sq_pushstring(v, _SC("height"), -1);
+        sq_get(v, -2);
+        sq_getinteger(v, -1, &M2_ScreenHeight);
+        sq_pop(v, 1);
+    }
+    sq_pop(v, 1);
+
+    LOG_F(INFO, "M2: Screen bounds are %ux%u.", M2_ScreenWidth, M2_ScreenHeight);
+
+    SQInteger x = 4 * M2_ScreenHeight;
+    SQInteger y = 3 * M2_ScreenWidth;
+    SQInteger gcd = std::gcd(x, y);
+    M2_ScreenScaleX = y / gcd;
+    M2_ScreenScaleY = x / gcd;
+
+    return 0;
+}
+
+SQInteger M2_ScreenMode;
+SQInteger _SQReturn_setting_screen_set_parameter_auto_size(HSQUIRRELVM v)
+{
+
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 3];
+    M2_ScreenMode = _integer(obj);
+
+    LOG_F(INFO, "M2: Screen mode is %u.", M2_ScreenMode);
+    return 0;
+}
+
 vector<pair<const SQChar *, SQFUNCTION>> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
@@ -923,6 +933,8 @@ vector<pair<const SQChar *, SQFUNCTION>> M2_ReturnTable = {
     make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
     make_pair("set_game_regionTag", SQReturn_set_game_regionTag),
     make_pair("onInitializeFinish", SQReturn_onInitializeFinish),
+    make_pair("util_get_multimonitor_screen_bounds", SQReturn_util_get_multimonitor_screen_bounds),
+    make_pair("_setting_screen_set_parameter_auto_size", _SQReturn_setting_screen_set_parameter_auto_size),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
@@ -1057,10 +1069,12 @@ DWORD __stdcall Main(void*)
         CALL(ScanFunctions());
 
         CALL(M2Hook());
-        CALL(EmuHook());
         CALL(SquirrelHook());
 
-        if (bCustomResolution) CALL(ConfigHook());
+        CALL(EmuHook());
+        CALL(R3000Hook());
+
+        if (bExternalEnabled) CALL(ConfigHook());
         if (bBorderlessMode) CALL(BorderlessPatch());
         if (bAnalogMode) {
             CALL(AnalogPatch());

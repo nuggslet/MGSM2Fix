@@ -10,6 +10,7 @@ This is a fix that adds custom resolutions, analog input, mod support and more t
 See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in the collection.
 
 ## Features
+- Custom internal render resolution & widescreen support (MGS1).
 - Borderless/windowed mode.
 - Control over built-in filters and Master Collection game patches.
 - Analog input (MGS1).
@@ -70,9 +71,17 @@ Additional mod formats may be supported in future.
 Please report any issues you see.
 This list will contain bugs which may or may not be fixed.
 
+## Screenshots
+
+| ![MGS1](https://github.com/nuggslet/MGSM2Fix/assets/79752546/4000f0c3-9081-410c-80c8-e36f8444a32e) |
+|:--:|
+| Metal Gear Solid |
+
 ## Credits
 Many thanks to [@Lyall](https://github.com/Lyall) and co. for MGSHDFix, from which this project derives its general structure. <br />
 [Ultimate ASI Loader](https://github.com/ThirteenAG/Ultimate-ASI-Loader) for ASI loading. <br />
 [inipp](https://github.com/mcmtroffaes/inipp) for ini reading. <br />
 [Loguru](https://github.com/emilk/loguru) for logging. <br />
-[length-disassembler](https://github.com/Nomade040/length-disassembler) for length disassembly.
+[length-disassembler](https://github.com/Nomade040/length-disassembler) for length disassembly. <br />
+[Squirrel](http://squirrel-lang.org/) for one at least two virtual machines this project tinkers with. <br />
+[Psy-X](https://github.com/OpenDriver2/PsyCross) for PSX GTE implementation and an all-round nifty project.

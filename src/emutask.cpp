@@ -85,3 +85,8 @@ bool EmuTask::ReleaseCdRomPatch()
 {
     return Void(_SC("releaseCdRomPatch"));
 }
+
+bool EmuTask::UpdateEmuScreen()
+{
+    return Void(_SC("updateEmuScreen"));
+}
