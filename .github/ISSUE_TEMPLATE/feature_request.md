@@ -1,6 +1,8 @@
 ---
 name: Feature request 
 about: Suggest an idea for this project 
+title: '[Feature Request]: '
+labels: ["enhancement"]
 ---
 <!-- Write **BELOW** The Headers and **ABOVE** The comments else it may not be viewable -->
 
