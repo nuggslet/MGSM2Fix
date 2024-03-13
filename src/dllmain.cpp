@@ -592,7 +592,7 @@ SQInteger SQReturn_init_system_1st(HSQUIRRELVM v)
 
 SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM v)
 {
-    sq_pushinteger(v, bAnalogMode ? USE_ANALOG : 0);
+    sq_pushinteger(v, USE_ANALOG);
     return 1;
 }
 
