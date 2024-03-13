@@ -69,7 +69,6 @@
     <ClInclude Include="src\m2binary.h" />
     <ClInclude Include="src\m2object.h" />
     <ClInclude Include="src\m2psyx.h" />
-    <ClInclude Include="src\r3000.h" />
     <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
 
-string sFixVer = "2.1";
+string sFixVer = "2.2";
 inipp::Ini<char> ini;
 
 HSQREMOTEDBG gDBG;
@@ -1077,15 +1077,15 @@ DWORD __stdcall Main(void*)
         CALL(M2Hook());
         CALL(SquirrelHook());
 
-        CALL(EmuHook());
-        CALL(R3000Hook());
-
         if (bExternalEnabled) CALL(ConfigHook());
         if (bBorderlessMode) CALL(BorderlessPatch());
         if (bAnalogMode) {
             CALL(AnalogPatch());
             CALL(AnalogHook());
         }
+
+        CALL(EmuHook());
+        CALL(R3000Hook());
     }
 
     // Signal any threads which might be waiting for us before continuing
