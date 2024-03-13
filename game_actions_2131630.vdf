@@ -1,0 +1,68 @@
+"In Game Actions"
+{
+	"actions"
+	{
+		"InGameControls"
+		{
+			"title"		"#Set_Ingame"
+			"legacy_set"		"0"
+			"StickPadGyro"
+			{
+				"l_move"
+				{
+					"title"		"#Action_LMove"
+					"input_mode"		"joystick_move"
+				}
+				"r_move"
+				{
+					"title"		"#Action_RMove"
+					"input_mode"		"joystick_move"
+				}
+			}
+			"Button"
+			{
+				"key_up"		"#Action_Up"
+				"key_down"		"#Action_Down"
+				"key_left"		"#Action_Left"
+				"key_right"		"#Action_Right"
+				"a_button"		"#Action_A"
+				"b_button"		"#Action_B"
+				"x_button"		"#Action_X"
+				"y_button"		"#Action_Y"
+				"start_button"		"#Action_Start"
+				"select_button"		"#Action_Select"
+				"l1_button"		"#Action_L1"
+				"l2_button"		"#Action_L2"
+				"l3_button"		"#Action_L3"
+				"r1_button"		"#Action_R1"
+				"r2_button"		"#Action_R2"
+				"r3_button"		"#Action_R3"
+			}
+		}
+	}
+	"localization"
+	{
+		"english"
+		{
+			"Set_Ingame"		"In-Game Controls"
+			"Action_LMove"		"LeftStick"
+			"Action_RMove"		"RightStick"
+			"Action_Up"		"Up"
+			"Action_Down"		"Down"
+			"Action_Left"		"Left"
+			"Action_Right"		"Right"
+			"Action_A"		"A Button"
+			"Action_B"		"B Button"
+			"Action_X"		"X Button"
+			"Action_Y"		"Y Button"
+			"Action_Start"		"Start Button"
+			"Action_Select"		"Select Button"
+			"Action_L1"		"L1 Button"
+			"Action_L2"		"L2 Button"
+			"Action_L3"		"L3 Button"
+			"Action_R1"		"R1 Button"
+			"Action_R2"		"R2 Button"
+			"Action_R3"		"R3 Button"
+		}
+	}
+}
