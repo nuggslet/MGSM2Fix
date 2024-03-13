@@ -436,10 +436,10 @@ bool M2MachineCommand(unsigned int *args)
             unsigned int x = (gpu->VideoMode ? 256 : 240) << ((gpu->Status >> 22) & 1);
             unsigned int y = min(h, x);
 
-            (* (unsigned int *) args[3]) = (2560 - w) >> 1; // X
-            (* (unsigned int *) args[4]) = (x - y) >> 1;    // Y
-            (* (unsigned int *) args[5]) = iLayerWidth;     // W
-            (* (unsigned int *) args[6]) = iLayerHeight;    // H
+            (* (unsigned int *) args[3]) = (2560 - w) >> 1;                        // X
+            (* (unsigned int *) args[4]) = ((x - y) >> 1) * (iInternalHeight / x); // Y
+            (* (unsigned int *) args[5]) = iLayerWidth;                            // W
+            (* (unsigned int *) args[6]) = iLayerHeight;                           // H
 
             return true;
         }
