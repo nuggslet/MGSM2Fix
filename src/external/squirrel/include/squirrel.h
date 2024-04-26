@@ -47,6 +47,11 @@ extern "C" {
 #endif
 
 #define _SQ_M2
+
+#ifdef _SQ_M2
+#define SQUIRREL_VERSION_NUMBER 220
+#endif
+
 #ifdef _SQ_M2
 #undef _SQ64
 
