@@ -31,16 +31,19 @@ to the following restrictions:
 #ifndef _SQUIRREL_H_
 #define _SQUIRREL_H_
 
+#include <stdint.h>
+
 #include <loguru.hpp>
 #define scprintf(...) LOG_F(INFO, __VA_ARGS__)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifndef SQUIRREL_API
 #define SQUIRREL_API extern
 #endif
+
+enum class Squirk {
+	Standard,
+	AlignObject,
+};
 
 #if (defined(_WIN64) || defined(_LP64))
 #define _SQ64
@@ -49,7 +52,12 @@ extern "C" {
 #define _SQ_M2
 
 #ifdef _SQ_M2
-#define SQUIRREL_VERSION_NUMBER 220
+#define SQUIRREL_VERSION_NUMBER 224
+#define SCRAT_USE_CXX11_OPTIMIZATIONS
+//#define SCRAT_USE_EXCEPTIONS
+//#define SCRAT_NO_ERROR_CHECKING
+//#define SCRAT_IMPORT
+//#define SCRAT_EXPORT
 #endif
 
 #ifdef _SQ_M2
@@ -101,7 +109,7 @@ typedef __int64 SQRawObjectVal; //must be 64bits
 #else
 typedef long SQRawObjectVal; //must be 64bits
 #endif
-#define SQ_OBJECT_RAWINIT() { _unVal.raw = 0; }
+#define SQ_OBJECT_RAWINIT() { this->_unVal.raw = 0; }
 #else
 typedef SQUnsignedInteger SQRawObjectVal; //is 32 bits on 32 bits builds and 64 bits otherwise
 #define SQ_OBJECT_RAWINIT()
@@ -114,18 +122,31 @@ typedef SQInteger SQRESULT;
 #define SQTrue	(1)
 #define SQFalse	(0)
 
+template <Squirk T>
 struct SQVM;
+template <Squirk T>
 struct SQTable;
+template <Squirk T>
 struct SQArray;
+template <Squirk T>
 struct SQString;
+template <Squirk T>
 struct SQClosure;
+template <Squirk T>
 struct SQGenerator;
+template <Squirk T>
 struct SQNativeClosure;
+template <Squirk T>
 struct SQUserData;
+template <Squirk T>
 struct SQFunctionProto;
+template <Squirk T>
 struct SQRefCounted;
+template <Squirk T>
 struct SQClass;
+template <Squirk T>
 struct SQInstance;
+template <Squirk T>
 struct SQDelegable;
 
 #ifdef _UNICODE
@@ -247,35 +268,49 @@ typedef enum tagSQObjectType{
 
 #define ISREFCOUNTED(t) (t&SQOBJECT_REF_COUNTED)
 
+template <Squirk T>
+struct SQWeakRef;
 
-typedef union tagSQObjectValue
+template <Squirk T>
+union tagSQObjectValue
 {
-	struct SQTable *pTable;
-	struct SQArray *pArray;
-	struct SQClosure *pClosure;
-	struct SQGenerator *pGenerator;
-	struct SQNativeClosure *pNativeClosure;
-	struct SQString *pString;
-	struct SQUserData *pUserData;
+	struct SQTable<T> *pTable;
+	struct SQArray<T> *pArray;
+	struct SQClosure<T> *pClosure;
+	struct SQGenerator<T> *pGenerator;
+	struct SQNativeClosure<T> *pNativeClosure;
+	struct SQString<T> *pString;
+	struct SQUserData<T> *pUserData;
 	SQInteger nInteger;
 	SQFloat fFloat;
 	SQUserPointer pUserPointer;
-	struct SQFunctionProto *pFunctionProto;
-	struct SQRefCounted *pRefCounted;
-	struct SQDelegable *pDelegable;
-	struct SQVM *pThread;
-	struct SQClass *pClass;
-	struct SQInstance *pInstance;
-	struct SQWeakRef *pWeakRef;
+	struct SQFunctionProto<T> *pFunctionProto;
+	struct SQRefCounted<T> *pRefCounted;
+	struct SQDelegable<T> *pDelegable;
+	struct SQVM<T> *pThread;
+	struct SQClass<T> *pClass;
+	struct SQInstance<T> *pInstance;
+	struct SQWeakRef<T> *pWeakRef;
 	SQRawObjectVal raw;
-}SQObjectValue;
+};
+template <Squirk T>
+using SQObjectValue = tagSQObjectValue<T>;
 
-
-typedef struct tagSQObject
+template <Squirk T>
+struct tagSQObject
 {
 	SQObjectType _type;
-	SQObjectValue _unVal;
-}SQObject;
+	SQObjectValue<T> _unVal;
+};
+template <>
+struct __declspec(align(sizeof(int64_t))) tagSQObject<Squirk::AlignObject>
+{
+	SQObjectType _type;
+	SQObjectValue<Squirk::AlignObject> __declspec(align(sizeof(int64_t))) _unVal;
+};
+template <Squirk T>
+using SQObject = tagSQObject<T>;
+template SQObject<Squirk::Standard>;
 
 typedef struct  tagSQMemberHandle {
 	SQBool _static;
@@ -288,174 +323,182 @@ typedef struct tagSQStackInfos{
 	SQInteger line;
 }SQStackInfos;
 
-typedef struct SQVM* HSQUIRRELVM;
-typedef SQObject HSQOBJECT;
+template <Squirk T>
+using HSQUIRRELVM = SQVM<T>*;
+
+template <Squirk T>
+using HSQOBJECT = SQObject<T>;
 typedef SQMemberHandle HSQMEMBERHANDLE;
-typedef SQInteger (*SQFUNCTION)(HSQUIRRELVM);
+template <Squirk T>
+using SQFUNCTION = SQInteger(*)(HSQUIRRELVM<T>);
 typedef SQInteger (*SQRELEASEHOOK)(SQUserPointer,SQInteger size);
-typedef void (*SQCOMPILERERROR)(HSQUIRRELVM,const SQChar * /*desc*/,const SQChar * /*source*/,SQInteger /*line*/,SQInteger /*column*/);
-typedef void (*SQPRINTFUNCTION)(HSQUIRRELVM,const SQChar * ,...);
+template <Squirk T>
+using SQCOMPILERERROR = void(*)(HSQUIRRELVM<T>, const SQChar * /*desc*/, const SQChar * /*source*/, SQInteger /*line*/, SQInteger /*column*/);
+template <Squirk T>
+using SQPRINTFUNCTION = void(*)(HSQUIRRELVM<T>, const SQChar *, ...);
 
 typedef SQInteger (*SQWRITEFUNC)(SQUserPointer,SQUserPointer,SQInteger);
 typedef SQInteger (*SQREADFUNC)(SQUserPointer,SQUserPointer,SQInteger);
 
 typedef SQInteger (*SQLEXREADFUNC)(SQUserPointer);
 
-typedef struct tagSQRegFunction{
+template <Squirk T>
+struct tagSQRegFunction{
 	const SQChar *name;
-	SQFUNCTION f;
+	SQFUNCTION<T> f;
 	SQInteger nparamscheck;
 	const SQChar *typemask;
-}SQRegFunction;
+};
+template <Squirk T>
+using SQRegFunction = tagSQRegFunction<T>;
 
 typedef struct tagSQFunctionInfo {
 	SQUserPointer funcid;
 	const SQChar *name;
 	const SQChar *source;
-}SQFunctionInfo;
-
+} SQFunctionInfo;
 
 /*vm*/
-SQUIRREL_API HSQUIRRELVM sq_open(SQInteger initialstacksize);
-SQUIRREL_API HSQUIRRELVM sq_newthread(HSQUIRRELVM friendvm, SQInteger initialstacksize);
-SQUIRREL_API void sq_seterrorhandler(HSQUIRRELVM v);
-SQUIRREL_API void sq_close(HSQUIRRELVM v);
-SQUIRREL_API void sq_setforeignptr(HSQUIRRELVM v,SQUserPointer p);
-SQUIRREL_API SQUserPointer sq_getforeignptr(HSQUIRRELVM v);
-SQUIRREL_API void sq_setprintfunc(HSQUIRRELVM v, SQPRINTFUNCTION printfunc);
-SQUIRREL_API SQPRINTFUNCTION sq_getprintfunc(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sq_suspendvm(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool resumedret,SQBool retval,SQBool raiseerror,SQBool throwerror);
-SQUIRREL_API SQInteger sq_getvmstate(HSQUIRRELVM v);
+template <Squirk T> SQUIRREL_API HSQUIRRELVM<T> sq_open(SQInteger initialstacksize);
+template <Squirk T> SQUIRREL_API HSQUIRRELVM<T> sq_newthread(HSQUIRRELVM<T> friendvm, SQInteger initialstacksize);
+template <Squirk T> SQUIRREL_API void sq_seterrorhandler(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_close(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_setforeignptr(HSQUIRRELVM<T> v, SQUserPointer p);
+template <Squirk T> SQUIRREL_API SQUserPointer sq_getforeignptr(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_setprintfunc(HSQUIRRELVM<T> v, SQPRINTFUNCTION<T> printfunc);
+template <Squirk T> SQUIRREL_API SQPRINTFUNCTION<T> sq_getprintfunc(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_suspendvm(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_wakeupvm(HSQUIRRELVM<T> v, SQBool resumedret, SQBool retval, SQBool raiseerror, SQBool throwerror);
+template <Squirk T> SQUIRREL_API SQInteger sq_getvmstate(HSQUIRRELVM<T> v);
 
 /*compiler*/
-SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror);
-SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror);
-SQUIRREL_API void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable);
-SQUIRREL_API void sq_notifyallexceptions(HSQUIRRELVM v, SQBool enable);
-SQUIRREL_API void sq_setcompilererrorhandler(HSQUIRRELVM v,SQCOMPILERERROR f);
+template <Squirk T> SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM<T> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
+template <Squirk T> SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM<T> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+template <Squirk T> SQUIRREL_API void sq_enabledebuginfo(HSQUIRRELVM<T> v, SQBool enable);
+template <Squirk T> SQUIRREL_API void sq_notifyallexceptions(HSQUIRRELVM<T> v, SQBool enable);
+template <Squirk T> SQUIRREL_API void sq_setcompilererrorhandler(HSQUIRRELVM<T> v, SQCOMPILERERROR<T> f);
 
 /*stack operations*/
-SQUIRREL_API void sq_push(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API void sq_pop(HSQUIRRELVM v,SQInteger nelemstopop);
-SQUIRREL_API void sq_poptop(HSQUIRRELVM v);
-SQUIRREL_API void sq_remove(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQInteger sq_gettop(HSQUIRRELVM v);
-SQUIRREL_API void sq_settop(HSQUIRRELVM v,SQInteger newtop);
-SQUIRREL_API void sq_reservestack(HSQUIRRELVM v,SQInteger nsize);
-SQUIRREL_API SQInteger sq_cmp(HSQUIRRELVM v);
-SQUIRREL_API void sq_move(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_push(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_pop(HSQUIRRELVM<T> v, SQInteger nelemstopop);
+template <Squirk T> SQUIRREL_API void sq_poptop(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_remove(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQInteger sq_gettop(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_settop(HSQUIRRELVM<T> v, SQInteger newtop);
+template <Squirk T> SQUIRREL_API void sq_reservestack(HSQUIRRELVM<T> v, SQInteger nsize);
+template <Squirk T> SQUIRREL_API SQInteger sq_cmp(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_move(HSQUIRRELVM<T> dest, HSQUIRRELVM<T> src, SQInteger idx);
 
 /*object creation handling*/
-SQUIRREL_API SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size);
-SQUIRREL_API void sq_newtable(HSQUIRRELVM v);
-SQUIRREL_API void sq_newarray(HSQUIRRELVM v,SQInteger size);
-SQUIRREL_API void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars);
-SQUIRREL_API SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *typemask);
-SQUIRREL_API SQRESULT sq_bindenv(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API void sq_pushstring(HSQUIRRELVM v,const SQChar *s,SQInteger len);
-SQUIRREL_API void sq_pushfloat(HSQUIRRELVM v,SQFloat f);
-SQUIRREL_API void sq_pushinteger(HSQUIRRELVM v,SQInteger n);
-SQUIRREL_API void sq_pushbool(HSQUIRRELVM v,SQBool b);
-SQUIRREL_API void sq_pushuserpointer(HSQUIRRELVM v,SQUserPointer p);
-SQUIRREL_API void sq_pushnull(HSQUIRRELVM v);
-SQUIRREL_API SQObjectType sq_gettype(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQInteger sq_getsize(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getbase(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQBool sq_instanceof(HSQUIRRELVM v);
-SQUIRREL_API void sq_tostring(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API void sq_tobool(HSQUIRRELVM v, SQInteger idx, SQBool *b);
-SQUIRREL_API SQRESULT sq_getstring(HSQUIRRELVM v,SQInteger idx,const SQChar **c);
-SQUIRREL_API SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i);
-SQUIRREL_API SQRESULT sq_getfloat(HSQUIRRELVM v,SQInteger idx,SQFloat *f);
-SQUIRREL_API SQRESULT sq_getbool(HSQUIRRELVM v,SQInteger idx,SQBool *b);
-SQUIRREL_API SQRESULT sq_getthread(HSQUIRRELVM v,SQInteger idx,HSQUIRRELVM *thread);
-SQUIRREL_API SQRESULT sq_getuserpointer(HSQUIRRELVM v,SQInteger idx,SQUserPointer *p);
-SQUIRREL_API SQRESULT sq_getuserdata(HSQUIRRELVM v,SQInteger idx,SQUserPointer *p,SQUserPointer *typetag);
-SQUIRREL_API SQRESULT sq_settypetag(HSQUIRRELVM v,SQInteger idx,SQUserPointer typetag);
-SQUIRREL_API SQRESULT sq_gettypetag(HSQUIRRELVM v,SQInteger idx,SQUserPointer *typetag);
-SQUIRREL_API void sq_setreleasehook(HSQUIRRELVM v,SQInteger idx,SQRELEASEHOOK hook);
-SQUIRREL_API SQChar *sq_getscratchpad(HSQUIRRELVM v,SQInteger minsize);
-SQUIRREL_API SQRESULT sq_getfunctioninfo(HSQUIRRELVM v,SQInteger idx,SQFunctionInfo *fi);
-SQUIRREL_API SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger *nparams,SQUnsignedInteger *nfreevars);
-SQUIRREL_API SQRESULT sq_setnativeclosurename(HSQUIRRELVM v,SQInteger idx,const SQChar *name);
-SQUIRREL_API SQRESULT sq_setinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer p);
-SQUIRREL_API SQRESULT sq_getinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer *p,SQUserPointer typetag);
-SQUIRREL_API SQRESULT sq_setclassudsize(HSQUIRRELVM v, SQInteger idx, SQInteger udsize);
-SQUIRREL_API SQRESULT sq_newclass(HSQUIRRELVM v,SQBool hasbase);
-SQUIRREL_API SQRESULT sq_createinstance(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_setattributes(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getattributes(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getclass(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API void sq_weakref(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getdefaultdelegate(HSQUIRRELVM v,SQObjectType t);
-SQUIRREL_API SQRESULT sq_getmemberhandle(HSQUIRRELVM v, SQInteger idx, HSQMEMBERHANDLE *handle);
-SQUIRREL_API SQRESULT sq_getbyhandle(HSQUIRRELVM v, SQInteger idx, const HSQMEMBERHANDLE *handle);
-SQUIRREL_API SQRESULT sq_setbyhandle(HSQUIRRELVM v, SQInteger idx, const HSQMEMBERHANDLE *handle);
+template <Squirk T> SQUIRREL_API SQUserPointer sq_newuserdata(HSQUIRRELVM<T> v, SQUnsignedInteger size);
+template <Squirk T> SQUIRREL_API void sq_newtable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_newarray(HSQUIRRELVM<T> v, SQInteger size);
+template <Squirk T> SQUIRREL_API void sq_newclosure(HSQUIRRELVM<T> v, SQFUNCTION<T> func, SQUnsignedInteger nfreevars);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setparamscheck(HSQUIRRELVM<T> v, SQInteger nparamscheck, const SQChar *typemask);
+template <Squirk T> SQUIRREL_API SQRESULT sq_bindenv(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_pushstring(HSQUIRRELVM<T> v, const SQChar *s, SQInteger len);
+template <Squirk T> SQUIRREL_API void sq_pushfloat(HSQUIRRELVM<T> v, SQFloat f);
+template <Squirk T> SQUIRREL_API void sq_pushinteger(HSQUIRRELVM<T> v, SQInteger n);
+template <Squirk T> SQUIRREL_API void sq_pushbool(HSQUIRRELVM<T> v, SQBool b);
+template <Squirk T> SQUIRREL_API void sq_pushuserpointer(HSQUIRRELVM<T> v, SQUserPointer p);
+template <Squirk T> SQUIRREL_API void sq_pushnull(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQObjectType sq_gettype(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQInteger sq_getsize(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getbase(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQBool sq_instanceof(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_tostring(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_tobool(HSQUIRRELVM<T> v, SQInteger idx, SQBool *b);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getstring(HSQUIRRELVM<T> v, SQInteger idx, const SQChar **c);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getinteger(HSQUIRRELVM<T> v, SQInteger idx, SQInteger *i);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getfloat(HSQUIRRELVM<T> v, SQInteger idx, SQFloat *f);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getbool(HSQUIRRELVM<T> v, SQInteger idx, SQBool *b);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getthread(HSQUIRRELVM<T> v, SQInteger idx, HSQUIRRELVM<T> *thread);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getuserpointer(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer *p);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getuserdata(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer *p, SQUserPointer *typetag);
+template <Squirk T> SQUIRREL_API SQRESULT sq_settypetag(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer typetag);
+template <Squirk T> SQUIRREL_API SQRESULT sq_gettypetag(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer *typetag);
+template <Squirk T> SQUIRREL_API void sq_setreleasehook(HSQUIRRELVM<T> v, SQInteger idx, SQRELEASEHOOK hook);
+template <Squirk T> SQUIRREL_API SQChar *sq_getscratchpad(HSQUIRRELVM<T> v, SQInteger minsize);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getfunctioninfo(HSQUIRRELVM<T> v, SQInteger idx, SQFunctionInfo *fi);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getclosureinfo(HSQUIRRELVM<T> v, SQInteger idx, SQUnsignedInteger *nparams, SQUnsignedInteger *nfreevars);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setnativeclosurename(HSQUIRRELVM<T> v, SQInteger idx, const SQChar *name);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setinstanceup(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer p);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getinstanceup(HSQUIRRELVM<T> v, SQInteger idx, SQUserPointer *p, SQUserPointer typetag);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setclassudsize(HSQUIRRELVM<T> v, SQInteger idx, SQInteger udsize);
+template <Squirk T> SQUIRREL_API SQRESULT sq_newclass(HSQUIRRELVM<T> v, SQBool hasbase);
+template <Squirk T> SQUIRREL_API SQRESULT sq_createinstance(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setattributes(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getattributes(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getclass(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_weakref(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getdefaultdelegate(HSQUIRRELVM<T> v, SQObjectType t);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getmemberhandle(HSQUIRRELVM<T> v, SQInteger idx, HSQMEMBERHANDLE *handle);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getbyhandle(HSQUIRRELVM<T> v, SQInteger idx, const HSQMEMBERHANDLE *handle);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setbyhandle(HSQUIRRELVM<T> v, SQInteger idx, const HSQMEMBERHANDLE *handle);
 
 /*object manipulation*/
-SQUIRREL_API void sq_pushroottable(HSQUIRRELVM v);
-SQUIRREL_API void sq_pushregistrytable(HSQUIRRELVM v);
-SQUIRREL_API void sq_pushconsttable(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sq_setroottable(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sq_setconsttable(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic);
-SQUIRREL_API SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
-SQUIRREL_API SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_rawdeleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
-SQUIRREL_API SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_arraypop(HSQUIRRELVM v,SQInteger idx,SQBool pushval); 
-SQUIRREL_API SQRESULT sq_arrayresize(HSQUIRRELVM v,SQInteger idx,SQInteger newsize); 
-SQUIRREL_API SQRESULT sq_arrayreverse(HSQUIRRELVM v,SQInteger idx); 
-SQUIRREL_API SQRESULT sq_arrayremove(HSQUIRRELVM v,SQInteger idx,SQInteger itemidx);
-SQUIRREL_API SQRESULT sq_arrayinsert(HSQUIRRELVM v,SQInteger idx,SQInteger destpos);
-SQUIRREL_API SQRESULT sq_setdelegate(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getdelegate(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_clone(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_setfreevariable(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval);
-SQUIRREL_API SQRESULT sq_next(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_getweakrefval(HSQUIRRELVM v,SQInteger idx);
-SQUIRREL_API SQRESULT sq_clear(HSQUIRRELVM v,SQInteger idx);
+template <Squirk T> SQUIRREL_API void sq_pushroottable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_pushregistrytable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_pushconsttable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setroottable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setconsttable(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_newslot(HSQUIRRELVM<T> v, SQInteger idx, SQBool bstatic);
+template <Squirk T> SQUIRREL_API SQRESULT sq_deleteslot(HSQUIRRELVM<T> v, SQInteger idx, SQBool pushval);
+template <Squirk T> SQUIRREL_API SQRESULT sq_set(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_get(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_rawget(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_rawset(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_rawdeleteslot(HSQUIRRELVM<T> v, SQInteger idx, SQBool pushval);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arrayappend(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arraypop(HSQUIRRELVM<T> v, SQInteger idx, SQBool pushval);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arrayresize(HSQUIRRELVM<T> v, SQInteger idx, SQInteger newsize);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arrayreverse(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arrayremove(HSQUIRRELVM<T> v, SQInteger idx, SQInteger itemidx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_arrayinsert(HSQUIRRELVM<T> v, SQInteger idx, SQInteger destpos);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setdelegate(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getdelegate(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_clone(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_setfreevariable(HSQUIRRELVM<T> v, SQInteger idx, SQUnsignedInteger nval);
+template <Squirk T> SQUIRREL_API SQRESULT sq_next(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getweakrefval(HSQUIRRELVM<T> v, SQInteger idx);
+template <Squirk T> SQUIRREL_API SQRESULT sq_clear(HSQUIRRELVM<T> v, SQInteger idx);
 
 /*calls*/
-SQUIRREL_API SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror);
-SQUIRREL_API SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror);
-SQUIRREL_API const SQChar *sq_getlocal(HSQUIRRELVM v,SQUnsignedInteger level,SQUnsignedInteger idx);
-SQUIRREL_API const SQChar *sq_getfreevariable(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval);
-SQUIRREL_API SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err);
-SQUIRREL_API void sq_reseterror(HSQUIRRELVM v);
-SQUIRREL_API void sq_getlasterror(HSQUIRRELVM v);
+template <Squirk T> SQUIRREL_API SQRESULT sq_call(HSQUIRRELVM<T> v, SQInteger params, SQBool retval, SQBool raiseerror);
+template <Squirk T> SQUIRREL_API SQRESULT sq_resume(HSQUIRRELVM<T> v, SQBool retval, SQBool raiseerror);
+template <Squirk T> SQUIRREL_API const SQChar *sq_getlocal(HSQUIRRELVM<T> v, SQUnsignedInteger level, SQUnsignedInteger idx);
+template <Squirk T> SQUIRREL_API const SQChar *sq_getfreevariable(HSQUIRRELVM<T> v, SQInteger idx, SQUnsignedInteger nval);
+template <Squirk T> SQUIRREL_API SQRESULT sq_throwerror(HSQUIRRELVM<T> v, const SQChar *err);
+template <Squirk T> SQUIRREL_API void sq_reseterror(HSQUIRRELVM<T> v);
+template <Squirk T> SQUIRREL_API void sq_getlasterror(HSQUIRRELVM<T> v);
 
 /*raw object handling*/
-SQUIRREL_API SQRESULT sq_getstackobj(HSQUIRRELVM v,SQInteger idx,HSQOBJECT *po);
-SQUIRREL_API void sq_pushobject(HSQUIRRELVM v,HSQOBJECT obj);
-SQUIRREL_API void sq_addref(HSQUIRRELVM v,HSQOBJECT *po);
-SQUIRREL_API SQBool sq_release(HSQUIRRELVM v,HSQOBJECT *po);
-SQUIRREL_API void sq_resetobject(HSQOBJECT *po);
-SQUIRREL_API const SQChar *sq_objtostring(HSQOBJECT *o);
-SQUIRREL_API SQBool sq_objtobool(HSQOBJECT *o);
-SQUIRREL_API SQInteger sq_objtointeger(HSQOBJECT *o);
-SQUIRREL_API SQFloat sq_objtofloat(HSQOBJECT *o);
-SQUIRREL_API SQRESULT sq_getobjtypetag(HSQOBJECT *o,SQUserPointer * typetag);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getstackobj(HSQUIRRELVM<T> v, SQInteger idx, HSQOBJECT<T> *po);
+template <Squirk T> SQUIRREL_API void sq_pushobject(HSQUIRRELVM<T> v, HSQOBJECT<T> obj);
+template <Squirk T> SQUIRREL_API void sq_addref(HSQUIRRELVM<T> v, HSQOBJECT<T> *po);
+template <Squirk T> SQUIRREL_API SQBool sq_release(HSQUIRRELVM<T> v, HSQOBJECT<T> *po);
+template <Squirk T> SQUIRREL_API void sq_resetobject(HSQOBJECT<T> *po);
+template <Squirk T> SQUIRREL_API const SQChar *sq_objtostring(HSQOBJECT<T> *o);
+template <Squirk T> SQUIRREL_API SQBool sq_objtobool(HSQOBJECT<T> *o);
+template <Squirk T> SQUIRREL_API SQInteger sq_objtointeger(HSQOBJECT<T> *o);
+template <Squirk T> SQUIRREL_API SQFloat sq_objtofloat(HSQOBJECT<T> *o);
+template <Squirk T> SQUIRREL_API SQRESULT sq_getobjtypetag(HSQOBJECT<T> *o, SQUserPointer * typetag);
 
 /*GC*/
-SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM v);
+template <Squirk T> SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM<T> v);
 
 /*serialization*/
-SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up);
-SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM vm,SQREADFUNC readf,SQUserPointer up);
+template <Squirk T> SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM<T> vm, SQWRITEFUNC writef, SQUserPointer up);
+template <Squirk T> SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM<T> vm, SQREADFUNC readf, SQUserPointer up);
+
+/*debug*/
+template <Squirk T> SQUIRREL_API SQRESULT sq_stackinfos(HSQUIRRELVM<T> v, SQInteger level, SQStackInfos *si);
+template <Squirk T> SQUIRREL_API void sq_setdebughook(HSQUIRRELVM<T> v);
 
 /*mem allocation*/
 SQUIRREL_API void *sq_malloc(SQUnsignedInteger size);
-SQUIRREL_API void *sq_realloc(void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize);
-SQUIRREL_API void sq_free(void *p,SQUnsignedInteger size);
-
-/*debug*/
-SQUIRREL_API SQRESULT sq_stackinfos(HSQUIRRELVM v,SQInteger level,SQStackInfos *si);
-SQUIRREL_API void sq_setdebughook(HSQUIRRELVM v);
+SQUIRREL_API void *sq_realloc(void* p, SQUnsignedInteger oldsize, SQUnsignedInteger newsize);
+SQUIRREL_API void sq_free(void *p, SQUnsignedInteger size);
 
 /*UTILITY MACRO*/
 #define sq_isnumeric(o) ((o)._type&SQOBJECT_NUMERIC)
@@ -486,9 +529,5 @@ SQUIRREL_API void sq_setdebughook(HSQUIRRELVM v);
 
 #define SQ_FAILED(res) (res<0)
 #define SQ_SUCCEEDED(res) (res>=0)
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
 
 #endif /*_SQUIRREL_H_*/

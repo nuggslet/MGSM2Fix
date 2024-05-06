@@ -20,7 +20,8 @@
 #define screname rename
 #endif
 
-static SQInteger _system_getenv(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_getenv(HSQUIRRELVM<T> v)
 {
 	const SQChar *s;
 	if(SQ_SUCCEEDED(sq_getstring(v,2,&s))){
@@ -30,8 +31,8 @@ static SQInteger _system_getenv(HSQUIRRELVM v)
 	return 0;
 }
 
-
-static SQInteger _system_system(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_system(HSQUIRRELVM<T> v)
 {
 	const SQChar *s;
 	if(SQ_SUCCEEDED(sq_getstring(v,2,&s))){
@@ -41,14 +42,15 @@ static SQInteger _system_system(HSQUIRRELVM v)
 	return sq_throwerror(v,_SC("wrong param"));
 }
 
-
-static SQInteger _system_clock(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_clock(HSQUIRRELVM<T> v)
 {
 	sq_pushfloat(v,((SQFloat)clock())/(SQFloat)CLOCKS_PER_SEC);
 	return 1;
 }
 
-static SQInteger _system_time(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_time(HSQUIRRELVM<T> v)
 {
 	time_t t;
 	time(&t);
@@ -56,7 +58,8 @@ static SQInteger _system_time(HSQUIRRELVM v)
 	return 1;
 }
 
-static SQInteger _system_remove(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_remove(HSQUIRRELVM<T> v)
 {
 	const SQChar *s;
 	sq_getstring(v,2,&s);
@@ -65,7 +68,8 @@ static SQInteger _system_remove(HSQUIRRELVM v)
 	return 0;
 }
 
-static SQInteger _system_rename(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_rename(HSQUIRRELVM<T> v)
 {
 	const SQChar *oldn,*newn;
 	sq_getstring(v,2,&oldn);
@@ -75,14 +79,16 @@ static SQInteger _system_rename(HSQUIRRELVM v)
 	return 0;
 }
 
-static void _set_integer_slot(HSQUIRRELVM v,const SQChar *name,SQInteger val)
+template <Squirk T>
+static void _set_integer_slot(HSQUIRRELVM<T> v,const SQChar *name,SQInteger val)
 {
 	sq_pushstring(v,name,-1);
 	sq_pushinteger(v,val);
 	sq_rawset(v,-3);
 }
 
-static SQInteger _system_date(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _system_date(HSQUIRRELVM<T> v)
 {
 	time_t t;
 	SQInteger it;
@@ -119,7 +125,8 @@ static SQInteger _system_date(HSQUIRRELVM v)
 
 
 #define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_system_##name,nparams,pmask}
-static SQRegFunction systemlib_funcs[]={
+template <Squirk T>
+static SQRegFunction<T> systemlib_funcs[]={
 	_DECL_FUNC(getenv,2,_SC(".s")),
 	_DECL_FUNC(system,2,_SC(".s")),
 	_DECL_FUNC(clock,1,NULL),
@@ -130,16 +137,16 @@ static SQRegFunction systemlib_funcs[]={
 	{0,0}
 };
 
-
-SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger sqstd_register_systemlib(HSQUIRRELVM<T> v)
 {
 	SQInteger i=0;
-	while(systemlib_funcs[i].name!=0)
+	while(systemlib_funcs<T>[i].name!=0)
 	{
-		sq_pushstring(v,systemlib_funcs[i].name,-1);
-		sq_newclosure(v,systemlib_funcs[i].f,0);
-		sq_setparamscheck(v,systemlib_funcs[i].nparamscheck,systemlib_funcs[i].typemask);
-		sq_setnativeclosurename(v,-1,systemlib_funcs[i].name);
+		sq_pushstring(v,systemlib_funcs<T>[i].name,-1);
+		sq_newclosure(v,systemlib_funcs<T>[i].f,0);
+		sq_setparamscheck(v,systemlib_funcs<T>[i].nparamscheck,systemlib_funcs<T>[i].typemask);
+		sq_setnativeclosurename(v,-1,systemlib_funcs<T>[i].name);
 		sq_createslot(v,-3);
 		i++;
 	}

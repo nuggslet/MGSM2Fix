@@ -4,11 +4,12 @@
 #include "sqvm.h"
 #include "sqarray.h"
 
+template <Squirk T>
 class M2Object
 {
 public:
 	M2Object(const SQChar *name);
-	void SetVM(HSQUIRRELVM v);
+	void SetVM(HSQUIRRELVM<T> v);
 
 	bool Get();
 	bool Get(const SQChar *name, SQObjectType type);
@@ -30,5 +31,5 @@ public:
 
 protected:
 	const SQChar *m_name;
-	HSQUIRRELVM m_vm;
+	HSQUIRRELVM<T> m_vm;
 };

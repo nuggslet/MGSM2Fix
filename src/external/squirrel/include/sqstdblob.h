@@ -2,19 +2,15 @@
 #ifndef _SQSTDBLOB_H_
 #define _SQSTDBLOB_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+template <Squirk T>
+SQUIRREL_API SQUserPointer sqstd_createblob(HSQUIRRELVM<T> v, SQInteger size);
+template <Squirk T>
+SQUIRREL_API SQRESULT sqstd_getblob(HSQUIRRELVM<T> v,SQInteger idx,SQUserPointer *ptr);
+template <Squirk T>
+SQUIRREL_API SQInteger sqstd_getblobsize(HSQUIRRELVM<T> v,SQInteger idx);
 
-SQUIRREL_API SQUserPointer sqstd_createblob(HSQUIRRELVM v, SQInteger size);
-SQUIRREL_API SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr);
-SQUIRREL_API SQInteger sqstd_getblobsize(HSQUIRRELVM v,SQInteger idx);
-
-SQUIRREL_API SQRESULT sqstd_register_bloblib(HSQUIRRELVM v);
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
+template <Squirk T>
+SQUIRREL_API SQRESULT sqstd_register_bloblib(HSQUIRRELVM<T> v);
 
 #endif /*_SQSTDBLOB_H_*/
 

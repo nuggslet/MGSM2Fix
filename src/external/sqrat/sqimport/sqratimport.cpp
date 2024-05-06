@@ -42,14 +42,17 @@
 
 #endif
 
-typedef SQRESULT (*SQMODULELOAD)(HSQUIRRELVM v, HSQAPI sq);
+template <Squirk Q>
+using SQMODULELOAD = SQRESULT(*)(HSQUIRRELVM<Q> v, HSQAPI<Q> sq);
 
-static HSQAPI sqapi = NULL;
+template <Squirk Q>
+static HSQAPI<Q> sqapi = NULL;
 
 // Create and populate the HSQAPI structure with function pointers
 // If new functions are added to the Squirrel API, they should be added here too
-static HSQAPI sqrat_newapi() {
-    HSQAPI sq = (HSQAPI)sq_malloc(sizeof(sq_api));
+template <Squirk Q>
+static HSQAPI<Q> sqrat_newapi() {
+    HSQAPI<Q> sq = (HSQAPI<Q>)sq_malloc(sizeof(sq_api<Q>));
 
     /*vm*/
     sq->open = sq_open;
@@ -191,8 +194,8 @@ static HSQAPI sqrat_newapi() {
     return sq;
 }
 
-
-static SQRESULT sqrat_importscript(HSQUIRRELVM v, const SQChar* moduleName) {
+template <Squirk Q>
+static SQRESULT sqrat_importscript(HSQUIRRELVM<Q> v, const SQChar* moduleName) {
     std::basic_string<SQChar> filename(moduleName);
     filename += _SC(".nut");
     if(SQ_FAILED(sqstd_loadfile(v, moduleName, true))) {
@@ -205,12 +208,13 @@ static SQRESULT sqrat_importscript(HSQUIRRELVM v, const SQChar* moduleName) {
     return SQ_OK;
 }
 
-static SQRESULT sqrat_importbin(HSQUIRRELVM v, const SQChar* moduleName) {
+template <Squirk Q>
+static SQRESULT sqrat_importbin(HSQUIRRELVM<Q> v, const SQChar* moduleName) {
 #ifdef SQUNICODE
 #warning sqrat_importbin() Not Implemented
     return SQ_ERROR;
 #else
-    SQMODULELOAD modLoad = 0;
+    SQMODULELOAD<Q> modLoad = 0;
 
 #if defined(_WIN32)
     HMODULE mod;
@@ -222,7 +226,7 @@ static SQRESULT sqrat_importbin(HSQUIRRELVM v, const SQChar* moduleName) {
         }
     }
 
-    modLoad = (SQMODULELOAD)GetProcAddress(mod, "sqmodule_load");
+    modLoad = (SQMODULELOAD<Q>)GetProcAddress(mod, "sqmodule_load");
     if(modLoad == NULL) {
         FreeLibrary(mod);
         return SQ_ERROR;
@@ -235,26 +239,27 @@ static SQRESULT sqrat_importbin(HSQUIRRELVM v, const SQChar* moduleName) {
         if (mod == NULL)
             return SQ_ERROR;
     }
-    modLoad = (SQMODULELOAD) dlsym(mod, "sqmodule_load");
+    modLoad = (SQMODULELOAD<Q>) dlsym(mod, "sqmodule_load");
     if (modLoad == NULL) {
         dlclose(mod);
         return SQ_ERROR;
     }
 #endif
 
-    if(sqapi == NULL) {
-        sqapi = sqrat_newapi(); // Caching this for multiple imports is probably a very good idea
+    if(sqapi<Q> == NULL) {
+        sqapi<Q> = sqrat_newapi<Q>(); // Caching this for multiple imports is probably a very good idea
     }
 
-    SQRESULT res = modLoad(v, sqapi);
+    SQRESULT res = modLoad(v, sqapi<Q>);
 
     return res;
 #endif
 }
 
-SQRESULT sqrat_import(HSQUIRRELVM v) {
+template <Squirk Q>
+SQRESULT sqrat_import(HSQUIRRELVM<Q> v) {
     const SQChar* moduleName;
-    HSQOBJECT table;
+    HSQOBJECT<Q> table;
     SQRESULT res = SQ_OK;
 
 
@@ -276,7 +281,8 @@ SQRESULT sqrat_import(HSQUIRRELVM v) {
     return res;
 }
 
-static SQInteger sqratbase_import(HSQUIRRELVM v) {
+template <Squirk Q>
+static SQInteger sqratbase_import(HSQUIRRELVM<Q> v) {
     SQInteger args = sq_gettop(v);
     switch(args) {
     case 2:
@@ -295,7 +301,8 @@ static SQInteger sqratbase_import(HSQUIRRELVM v) {
     return 1;
 }
 
-SQRESULT sqrat_register_importlib(HSQUIRRELVM v) {
+template <Squirk Q>
+SQRESULT sqrat_register_importlib(HSQUIRRELVM<Q> v) {
     sq_pushroottable(v);
 
     sq_pushstring(v, _SC("import"), -1);

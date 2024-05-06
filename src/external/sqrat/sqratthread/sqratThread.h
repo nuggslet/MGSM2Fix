@@ -30,14 +30,8 @@
 
 #include "sqmodule.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    template <Squirk Q>
+    __declspec(dllexport) SQRESULT sqmodule_load(HSQUIRRELVM<Q> v, HSQAPI<Q> api);
 
-    __declspec(dllexport) SQRESULT sqmodule_load(HSQUIRRELVM v, HSQAPI api);
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
 
 #endif /*_SQRAT_THREAD_H_*/

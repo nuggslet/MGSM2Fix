@@ -11,19 +11,20 @@ inline SQHash _hashstr (const SQChar *s, size_t l)
 		return h;
 }
 
-struct SQString : public SQRefCounted
+template <Squirk T>
+struct SQString : public SQRefCounted<T>
 {
 	SQString(){}
 	~SQString(){}
 public:
-	static SQString *Create(SQSharedState *ss, const SQChar *, SQInteger len = -1 );
-	SQInteger Next(const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval);
+	static SQString *Create(SQSharedState<T> *ss, const SQChar *, SQInteger len = -1 );
+	SQInteger Next(const SQObjectPtr<T> &refpos, SQObjectPtr<T> &outkey, SQObjectPtr<T> &outval);
 	void Release();
-	SQSharedState *_sharedstate;
-	SQString *_next; //chain for the string table
+	SQSharedState<T> *_sharedstate;
+	SQString<T> *_next; //chain for the string table
 	SQInteger _len;
 
-#ifdef _WIN64
+#if defined(_SQ_M2) && defined(_WIN64)
 	SQInteger _m2_unknown;
 #endif
 
@@ -31,6 +32,7 @@ public:
 	SQChar _val[1];
 };
 
-
+template SQString<Squirk::Standard>;
+template SQString<Squirk::AlignObject>;
 
 #endif //_SQSTRING_H_

@@ -44,7 +44,8 @@ namespace Sqrat {
 /// values. Other types of enumerations can be bound using Class::SetStaticValue instead.
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Enumeration : public Object {
+template <Squirk Q>
+class Enumeration : public Object<Q> {
 public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Constructs the Enumeration object
@@ -59,12 +60,12 @@ public:
     /// \param createTable Whether the underlying table that values are bound to is created by the constructor
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Enumeration(HSQUIRRELVM v = DefaultVM::Get(), bool createTable = true) : Object(v, false) {
+    Enumeration(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get(), bool createTable = true) : Object<Q>(v, false) {
         if(createTable) {
-            sq_newtable(vm);
-            sq_getstackobj(vm,-1,&obj);
-            sq_addref(vm, &obj);
-            sq_pop(vm,1);
+            sq_newtable(this->vm);
+            sq_getstackobj(this->vm,-1,&this->obj);
+            sq_addref(this->vm, &this->obj);
+            sq_pop(this->vm,1);
         }
     }
 
@@ -77,8 +78,8 @@ public:
     /// \return The Enumeration itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual Enumeration& Const(const SQChar* name, const int val) {
-        BindValue<int>(name, val, false);
+    virtual Enumeration<Q>& Const(const SQChar* name, const int val) {
+        this->BindValue(name, val, false);
         return *this;
     }
 
@@ -91,8 +92,8 @@ public:
     /// \return The Enumeration itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual Enumeration& Const(const SQChar* name, const float val) {
-        BindValue<float>(name, val, false);
+    virtual Enumeration<Q>& Const(const SQChar* name, const float val) {
+        this->BindValue(name, val, false);
         return *this;
     }
 
@@ -105,8 +106,8 @@ public:
     /// \return The Enumeration itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual Enumeration& Const(const SQChar* name, const SQChar* val) {
-        BindValue<const SQChar*>(name, val, false);
+    virtual Enumeration<Q>& Const(const SQChar* name, const SQChar* val) {
+        this->BindValue(name, val, false);
         return *this;
     }
 };
@@ -120,7 +121,8 @@ public:
 /// values. Other types of constants can be bound using Class::SetStaticValue instead.
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ConstTable : public Enumeration {
+template <Squirk Q>
+class ConstTable : public Enumeration<Q> {
 public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Constructs a ConstTable object to represent the given VM's const table
@@ -128,9 +130,9 @@ public:
     /// \param v VM to get the ConstTable for
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ConstTable(HSQUIRRELVM v = DefaultVM::Get()) : Enumeration(v, false) {
-        sq_pushconsttable(vm);
-        sq_getstackobj(vm,-1, &obj);
+    ConstTable(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : Enumeration<Q>(v, false) {
+        sq_pushconsttable(this->vm);
+        sq_getstackobj(this->vm,-1, &this->obj);
         sq_pop(v,1); // No addref needed, since the consttable is always around
     }
 
@@ -143,8 +145,8 @@ public:
     /// \return The ConstTable itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual ConstTable& Const(const SQChar* name, const int val) {
-        Enumeration::Const(name, val);
+    virtual ConstTable<Q>& Const(const SQChar* name, const int val) {
+        Enumeration<Q>::Const(name, val);
         return *this;
     }
 
@@ -157,8 +159,8 @@ public:
     /// \return The ConstTable itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual ConstTable& Const(const SQChar* name, const float val) {
-        Enumeration::Const(name, val);
+    virtual ConstTable<Q>& Const(const SQChar* name, const float val) {
+        Enumeration<Q>::Const(name, val);
         return *this;
     }
 
@@ -171,8 +173,8 @@ public:
     /// \return The ConstTable itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual ConstTable& Const(const SQChar* name, const SQChar* val) {
-        Enumeration::Const(name, val);
+    virtual ConstTable<Q>& Const(const SQChar* name, const SQChar* val) {
+        Enumeration<Q>::Const(name, val);
         return *this;
     }
 
@@ -185,12 +187,12 @@ public:
     /// \return The ConstTable itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ConstTable& Enum(const SQChar* name, Enumeration& en) {
-        sq_pushobject(vm, GetObject());
-        sq_pushstring(vm, name, -1);
-        sq_pushobject(vm, en.GetObject());
-        sq_newslot(vm, -3, false);
-        sq_pop(vm,1); // pop table
+    ConstTable<Q>& Enum(const SQChar* name, Enumeration<Q>& en) {
+        sq_pushobject(this->vm, this->GetObject());
+        sq_pushstring(this->vm, name, -1);
+        sq_pushobject(this->vm, en.GetObject());
+        sq_newslot(this->vm, -3, false);
+        sq_pop(this->vm,1); // pop table
         return *this;
     }
 };

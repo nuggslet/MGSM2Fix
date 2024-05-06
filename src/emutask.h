@@ -2,10 +2,11 @@
 
 #include "m2object.h"
 
-class EmuTask : public M2Object
+template <Squirk T>
+class EmuTask : public M2Object<T>
 {
 public:
-	EmuTask() : M2Object(_SC("g_emu_task")) {}
+	EmuTask() : M2Object<T>(_SC("g_emu_task")) {}
 
 	bool SetInfoInteger(const SQChar *key, SQInteger value);
 	bool GetInfoInteger(const SQChar *key, SQInteger *value);
@@ -13,7 +14,7 @@ public:
 	bool GetRamValue(SQInteger width, SQInteger offset, SQInteger *value);
 	bool SetRamValue(SQInteger width, SQInteger offset, SQInteger value);
 
-	bool EntryCdRomPatch(SQInteger offset, SQArray *data);
+	bool EntryCdRomPatch(SQInteger offset, SQArray<T> *data);
 	bool ReleaseCdRomPatch();
 
 	bool SetSmoothing(SQBool enable);
@@ -23,3 +24,6 @@ public:
 
 	bool UpdateEmuScreen();
 };
+
+template EmuTask<Squirk::Standard>;
+template EmuTask<Squirk::AlignObject>;

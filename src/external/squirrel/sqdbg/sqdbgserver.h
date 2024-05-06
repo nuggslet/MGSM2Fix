@@ -59,7 +59,8 @@ struct VMState {
 	VMState() { _nestedcalls = 0;}
 	SQInteger _nestedcalls;
 };
-typedef std::map<HSQUIRRELVM,VMState*> VMStateMap;
+template <Squirk T>
+using VMStateMap = std::map<HSQUIRRELVM<T>, VMState*>;
 typedef std::set<BreakPoint> BreakPointSet;
 typedef BreakPointSet::iterator BreakPointSetItor;
 
@@ -67,6 +68,7 @@ typedef std::set<Watch> WatchSet;
 typedef WatchSet::iterator WatchSetItor;
 
 typedef std::vector<SQChar> SQCharVec;
+template <Squirk T>
 struct SQDbgServer{
 public:
 	enum eDbgState{
@@ -78,14 +80,14 @@ public:
 		eDBG_Disabled,
 	};
 
-	SQDbgServer(HSQUIRRELVM v);
+	SQDbgServer(HSQUIRRELVM<T> v);
 	~SQDbgServer();
-	bool Init(HSQUIRRELVM v);
+	bool Init(HSQUIRRELVM<T> v);
 	//returns true if a message has been received
 	bool WaitForClient();
 	bool ReadMsg();
 	void BusyWait();
-	void Hook(HSQUIRRELVM v,SQInteger type,SQInteger line,const SQChar *src,const SQChar *func);
+	void Hook(HSQUIRRELVM<T> v,SQInteger type,SQInteger line,const SQChar *src,const SQChar *func);
 	void ParseMsg(const char *msg);
 	bool ParseBreakpoint(const char *msg,BreakPoint &out);
 	bool ParseWatch(const char *msg,Watch &out);
@@ -95,10 +97,10 @@ public:
 	void BreakExecution();
 	void Send(const SQChar *s,...);
 	void SendChunk(const SQChar *chunk);
-	void Break(HSQUIRRELVM v,SQInteger line,const SQChar *src,const SQChar *type,const SQChar *error=NULL);
+	void Break(HSQUIRRELVM<T> v,SQInteger line,const SQChar *src,const SQChar *type,const SQChar *error=NULL);
 	
 
-	void SerializeState(HSQUIRRELVM v);
+	void SerializeState(HSQUIRRELVM<T> v);
 	//COMMANDS
 	void AddBreakpoint(BreakPoint &bp);
 	void AddWatch(Watch &w);
@@ -106,8 +108,8 @@ public:
 	void RemoveBreakpoint(BreakPoint &bp);
 
 	//
-	void SetErrorHandlers(HSQUIRRELVM v);
-	VMState *GetVMState(HSQUIRRELVM v);
+	void SetErrorHandlers(HSQUIRRELVM<T> v);
+	VMState *GetVMState(HSQUIRRELVM<T> v);
 
 	//XML RELATED STUFF///////////////////////
 	#define MAX_NESTING 10
@@ -127,8 +129,8 @@ public:
 
 	const SQChar *escape_xml(const SQChar *x);
 	//////////////////////////////////////////////
-	HSQUIRRELVM _v;
-	HSQOBJECT _debugroot;
+	HSQUIRRELVM<T> _v;
+	HSQOBJECT<T> _debugroot;
 	eDbgState _state;
 	SOCKET _accept;
 	SOCKET _endpoint;
@@ -140,13 +142,13 @@ public:
 	bool _ready;
 	bool _exclusive;
 	bool _autoupdate;
-	HSQOBJECT _serializefunc;
+	HSQOBJECT<T> _serializefunc;
 	SQCharVec _scratchstring;
 
 	SQInteger _line;
 	SQDBGString _src;
 	SQDBGString _break_type;
-	VMStateMap _vmstate;	
+	VMStateMap<T> _vmstate;	
 };
 
 #ifdef _WIN32
@@ -154,5 +156,8 @@ public:
 #else
 #define sqdbg_closesocket(x) close((x))
 #endif
+
+template SQDbgServer<Squirk::Standard>;
+template SQDbgServer<Squirk::AlignObject>;
 
 #endif //_SQ_DBGSERVER_H_ 

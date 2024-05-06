@@ -3,9 +3,10 @@
 #include <sqstdaux.h>
 #include <assert.h>
 
-void sqstd_printcallstack(HSQUIRRELVM v)
+template <Squirk T>
+void sqstd_printcallstack(HSQUIRRELVM<T> v)
 {
-	SQPRINTFUNCTION pf = sq_getprintfunc(v);
+	SQPRINTFUNCTION<T> pf = sq_getprintfunc(v);
 	if(pf) {
 		SQStackInfos si;
 		SQInteger i;
@@ -96,9 +97,10 @@ void sqstd_printcallstack(HSQUIRRELVM v)
 	}
 }
 
-static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _sqstd_aux_printerror(HSQUIRRELVM<T> v)
 {
-	SQPRINTFUNCTION pf = sq_getprintfunc(v);
+	SQPRINTFUNCTION<T> pf = sq_getprintfunc(v);
 	if(pf) {
 		const SQChar *sErr = 0;
 		if(sq_gettop(v)>=1) {
@@ -114,15 +116,17 @@ static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v)
 	return 0;
 }
 
-void _sqstd_compiler_error(HSQUIRRELVM v,const SQChar *sErr,const SQChar *sSource,SQInteger line,SQInteger column)
+template <Squirk T>
+void _sqstd_compiler_error(HSQUIRRELVM<T> v,const SQChar *sErr,const SQChar *sSource,SQInteger line,SQInteger column)
 {
-	SQPRINTFUNCTION pf = sq_getprintfunc(v);
+	SQPRINTFUNCTION<T> pf = sq_getprintfunc(v);
 	if(pf) {
 		pf(v,_SC("%s line = (%d) column = (%d) : error %s\n"),sSource,line,column,sErr);
 	}
 }
 
-void sqstd_seterrorhandlers(HSQUIRRELVM v)
+template <Squirk T>
+void sqstd_seterrorhandlers(HSQUIRRELVM<T> v)
 {
 	sq_setcompilererrorhandler(v,_sqstd_compiler_error);
 	sq_newclosure(v,_sqstd_aux_printerror,0);

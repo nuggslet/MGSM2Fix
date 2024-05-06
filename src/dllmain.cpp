@@ -4,6 +4,8 @@
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
 
+#include "sqrat.h"
+
 #include "resource.h"
 
 #include "m2binary.h"
@@ -15,7 +17,6 @@
 #include "emulator.h"
 
 using namespace std;
-namespace fs = std::filesystem;
 
 HMODULE baseModule = GetModuleHandle(NULL);
 HMODULE fixModule;
@@ -23,10 +24,14 @@ HMODULE fixModule;
 string sFixVer = "2.2";
 inipp::Ini<char> ini;
 
-HSQREMOTEDBG gDBG;
-EmuTask gEmuTask;
-InputHub gInputHub;
-Input gInput;
+template <Squirk T>
+HSQREMOTEDBG<T> gDBG;
+template <Squirk T>
+EmuTask<T> gEmuTask;
+template <Squirk T>
+InputHub<T> gInputHub;
+template <Squirk T>
+Input<T> gInput;
 
 // INI Variables
 bool bDebuggerEnabled;
@@ -36,6 +41,7 @@ bool bDebuggerExclusive;
 optional<bool> bSmoothing;
 optional<bool> bScanline;
 optional<bool> bDotMatrix;
+bool bError;
 int iLevel;
 int iNativeLevel;
 int iEmulatorLevel;
@@ -69,26 +75,31 @@ string sExternalHeight;
 std::filesystem::path sExePath;
 std::string sExeName;
 
-struct GameInfo
+struct M2FixInfo
 {
     std::string GameTitle;
     std::string ExeName;
     int SteamAppId;
 };
 
-const std::map<MgsGame, GameInfo> kGames = {
-    {MgsGame::MGS1, {"Metal Gear Solid", "METAL GEAR SOLID.exe", 2131630}},
-    {MgsGame::MGSR, {"Metal Gear / Snake's Revenge (NES)", "MGS MC1 Bonus Content.exe", 2306740}},
+const std::map<M2FixGame, M2FixInfo> kGames = {
+    {M2FixGame::MGS1,           {"Metal Gear Solid", "MGS1\\METAL GEAR SOLID.exe", 2131630}},
+    {M2FixGame::MGSR,           {"Metal Gear / Snake's Revenge (NES)", "MGS Master Collection Bonus Content\\MGS MC1 Bonus Content.exe", 2306740}},
+    {M2FixGame::Contra,         {"Contra Anniversary", "Contra Anniversary Collection\\game.exe", 1018020}},
+    {M2FixGame::Dracula,        {"Castlevania Anniversary", "Castlevania Anniversary Collection\\game.exe", 1018010}},
+    {M2FixGame::DraculaAdvance, {"Castlevania Advance", "Castlevania Advance Collection\\game.exe", 1552550}},
 };
 
-const GameInfo* game = nullptr;
-MgsGame eGameType = MgsGame::Unknown;
+const M2FixInfo* game = nullptr;
+M2FixGame eGameType = M2FixGame::Unknown;
+
+std::map<std::string, std::string> kEnv;
 
 typedef struct {
     bool hooked;
     SQChar src[MAX_PATH];
     SQInteger line;
-} FixData;
+} M2FixData;
 
 void Logging()
 {
@@ -132,6 +143,7 @@ void ReadConfig()
             bDotMatrix = _bDotMatrix;
     }
 
+    inipp::get_value(ini.sections["Tracing"], "Error", bError);
     inipp::get_value(ini.sections["Tracing"], "Level", iLevel);
     inipp::get_value(ini.sections["Tracing"], "NativeLevel", iNativeLevel);
     inipp::get_value(ini.sections["Tracing"], "EmulatorLevel", iEmulatorLevel);
@@ -237,17 +249,33 @@ void ReadConfig()
 bool DetectGame()
 {
     // Get game name and exe path
-    CHAR exePath[_MAX_PATH] = { 0 };
+    char exePath[_MAX_PATH] = { 0 };
     GetModuleFileName(baseModule, exePath, MAX_PATH);
     sExePath = exePath;
-    sExeName = sExePath.filename().string();
+    sExeName = sExePath.parent_path().filename().string() + '\\' + sExePath.filename().string();
+
+    {
+        auto envFree = [](char *p) { FreeEnvironmentStrings(p); };
+        auto envBlock = std::unique_ptr<char, decltype(envFree)>{
+            GetEnvironmentStrings(), envFree
+        };
+
+        for (char *i = envBlock.get(); *i != 0; ++i)
+        {
+            std::string key, value;
+            for (; *i != '='; ++i) key += *i;
+            ++i;
+            for (; *i != 0; ++i) value += *i;
+            kEnv[key] = value;
+        }
+    }
 
     LOG_F(INFO, "Module Name: %s", sExeName.c_str());
     LOG_F(INFO, "Module Path: %s", sExePath.string().c_str());
     LOG_F(INFO, "Module Address: %p", baseModule);
     LOG_F(INFO, "Module Timestamp: %u", Memory::ModuleTimestamp(baseModule));
 
-    eGameType = MgsGame::Unknown;
+    eGameType = M2FixGame::Unknown;
     for (const auto& [type, info] : kGames)
     {
         if (info.ExeName == sExeName)
@@ -285,33 +313,50 @@ uintptr_t M2_reallocAddress;
 uintptr_t M2_freeAddress;
 void *M2_malloc(size_t size)
 {
-    void * (*_M2_malloc)(size_t) = (void* (*)(size_t))M2_mallocAddress;
+    if (M2_mallocAddress == 0 && M2_freeAddress == 0) {
+        void * (_cdecl * _M2_realloc)(void *, size_t, size_t) = (void * (_cdecl *)(void *, size_t, size_t)) M2_reallocAddress;
+        return _M2_realloc(nullptr, 0, size);
+    }
+
+    void * (*_M2_malloc)(size_t) = (void* (*)(size_t)) M2_mallocAddress;
     return _M2_malloc(size);
 }
-void *M2_realloc(void *p, size_t size)
+void *M2_realloc(void *p, size_t length, size_t size)
 {
-    void * (*_M2_realloc)(void *, size_t) = (void * (*)(void *, size_t))M2_reallocAddress;
+    if (M2_mallocAddress == 0 && M2_freeAddress == 0) {
+        void * (_cdecl * _M2_realloc)(void *, size_t, size_t) = (void * (_cdecl *)(void *, size_t, size_t)) M2_reallocAddress;
+        return _M2_realloc(p, length, size);
+    }
+
+    void * (*_M2_realloc)(void *, size_t) = (void * (*)(void *, size_t)) M2_reallocAddress;
     return _M2_realloc(p, size);
 }
 void M2_free(void *p)
 {
-    void (*_M2_free)(void*) = (void (*)(void *))M2_freeAddress;
+    if (M2_mallocAddress == 0 && M2_freeAddress == 0) {
+        void * (_cdecl * _M2_realloc)(void *, size_t, size_t) = (void * (_cdecl *)(void *, size_t, size_t)) M2_reallocAddress;
+        _M2_realloc(p, 0, 0);
+        return;
+    }
+
+    void (*_M2_free)(void*) = (void (*)(void *)) M2_freeAddress;
     _M2_free(p);
 }
 
-void SetHook(HSQUIRRELVM v)
+template <Squirk T> SQInteger Hook(HSQUIRRELVM<T> v);
+template <Squirk T>
+void SetHook(HSQUIRRELVM<T> v)
 {
-    if (bDebuggerEnabled && !gDBG) {
-        gDBG = sq_rdbg_init(v, iDebuggerPort, bDebuggerAutoUpdate, bDebuggerExclusive);
-        sq_rdbg_waitforconnections(gDBG);
+    if (bDebuggerEnabled && !gDBG<T>) {
+        gDBG<T> = sq_rdbg_init(v, iDebuggerPort, bDebuggerAutoUpdate, bDebuggerExclusive);
+        sq_rdbg_waitforconnections(gDBG<T>);
     }
 
-    SQInteger Hook(HSQUIRRELVM v);
     if (sq_isnull(v->_debughook)) {
         sq_pushregistrytable(v);
         sq_pushstring(v, _SC("_m2_debug_hook_"), -1);
         sq_pushuserpointer(v, v);
-        sq_newclosure(v, Hook, 1);
+        sq_newclosure(v, Hook<T>, 1);
         sq_newslot(v, -3, false);
         sq_pop(v, 1);
 
@@ -323,13 +368,16 @@ void SetHook(HSQUIRRELVM v)
     }
 }
 
-void SQNew(HSQUIRRELVM v)
+template <Squirk T>
+void SQNew(HSQUIRRELVM<T> v)
 {
-    LOG_F(INFO, "Squirrel: SQVM is 0x%" PRIxPTR ", SQSharedState is 0x%" PRIxPTR ".", (uintptr_t)v, (uintptr_t)_ss(v));
+    LOG_F(INFO, "Squirrel: SQVM is 0x%" PRIxPTR ", SQSharedState is 0x%" PRIxPTR " & scratchpad is 0x%" PRIxPTR " (%" PRIuPTR " bytes).",
+        (uintptr_t) v, (uintptr_t) _ss(v), (uintptr_t) _ss(v)->_scratchpad, (uintptr_t) _ss(v)->_scratchpadsize);
     _ss(v)->_debuginfo = true;
 }
 
-void SQHookFunction(HSQUIRRELVM v, const SQChar *func, SQFUNCTION hook, HSQOBJECT *obj = NULL)
+template <Squirk T>
+void SQHookFunction(HSQUIRRELVM<T> v, const SQChar *func, SQFUNCTION<T> hook, HSQOBJECT<T> *obj = NULL)
 {
     sq_pushroottable(v);
     {
@@ -350,7 +398,8 @@ void SQHookFunction(HSQUIRRELVM v, const SQChar *func, SQFUNCTION hook, HSQOBJEC
     }
 }
 
-void SQHookMethod(HSQUIRRELVM v, const SQChar *name, const SQChar *func, SQFUNCTION hook, HSQOBJECT *obj = NULL)
+template <Squirk T>
+void SQHookMethod(HSQUIRRELVM<T> v, const SQChar *name, const SQChar *func, SQFUNCTION<T> hook, HSQOBJECT<T> *obj = NULL)
 {
     sq_pushroottable(v);
     {
@@ -385,7 +434,7 @@ void M2Print(const char *fmt, ...)
     vsprintf(buf, fmt, va);
     va_end(va);
 
-    buf[scstrcspn(buf, "\r\n")] = 0;
+    buf[strcspn(buf, "\r\n")] = 0;
     LOG_F(INFO, "Emulator: printf: %s", buf);
     free(buf);
 }
@@ -421,7 +470,7 @@ vector<string> M2_FileFilter;
 vector<vector<unsigned char>> M2_DataFilter;
 void FilterPatches()
 {
-    if (eGameType == MgsGame::MGS1 && bPatchesRemoveUnderpants) {
+    if (eGameType == M2FixGame::MGS1 && bPatchesRemoveUnderpants) {
         vector<string> MGS1_FileFilter_Underpants = {
             "0046a5", "0046a6",
             "0057c3", "0057c4", "0057c5",
@@ -433,11 +482,11 @@ void FilterPatches()
         );
     }
 
-    if (eGameType == MgsGame::MGS1 && bPatchesRestoreGhosts) {
+    if (eGameType == M2FixGame::MGS1 && bPatchesRestoreGhosts) {
         M2_FileFilter.push_back("shinrei");
     }
 
-    if (eGameType == MgsGame::MGS1 && bPatchesRestoreMedicine) {
+    if (eGameType == M2FixGame::MGS1 && bPatchesRestoreMedicine) {
         vector<unsigned char> MGS1_DataFilter_Medicine = { 0, 152, 0, 72, 152, 72, 152, 152, 152 };
         M2_DataFilter.push_back(MGS1_DataFilter_Medicine);
     }
@@ -453,23 +502,24 @@ void M2_ReadPad(unsigned int addr, unsigned int id, unsigned char* state)
     M2_PadPTR = state;
 }
 
-void AnalogLoop(HSQUIRRELVM v)
+template <Squirk T>
+void AnalogLoop(HSQUIRRELVM<T> v)
 {
     if (!M2_PadPTR) return;
 
-    gInputHub.SetDirectionMerge(0);
-    gEmuTask.SetInputDirectionMerge(0);
+    gInputHub<T>.SetDirectionMerge(0);
+    gEmuTask<T>.SetInputDirectionMerge(0);
 
-    gInputHub.SetDeadzone(0.0);
-    gEmuTask.SetInputDeadzone(0.0);
+    gInputHub<T>.SetDeadzone(0.0);
+    gEmuTask<T>.SetInputDeadzone(0.0);
 
     SQFloat xL = 0.0, yL = 0.0;
-    gInput.GetAnalogStickX(&xL);
-    gInput.GetAnalogStickY(&yL);
+    gInput<T>.GetAnalogStickX(&xL);
+    gInput<T>.GetAnalogStickY(&yL);
 
     SQFloat xR = 0.0, yR = 0.0;
-    gInput.GetRightAnalogStickX(&xR);
-    gInput.GetRightAnalogStickY(&yR);
+    gInput<T>.GetRightAnalogStickX(&xR);
+    gInput<T>.GetRightAnalogStickY(&yR);
 
     // Normalize an axis from (-1, 1) to (0, 255) with 128 = center
     // https://github.com/grumpycoders/pcsx-redux/blob/a072e38d78c12a4ce1dadf951d9cdfd7ea59220b/src/core/pad.cc#L664-L673
@@ -505,14 +555,16 @@ void AnalogLoop(HSQUIRRELVM v)
     }
 }
 
-SQInteger SQ_util_is_notice_skipable(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQ_util_is_notice_skipable(HSQUIRRELVM<T> v)
 {
     sq_pushbool(v, true);
     return 1;
 }
 
 bool M2_LaunchIntent = true;
-SQInteger SQ_util_get_launch_intent_id(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQ_util_get_launch_intent_id(HSQUIRRELVM<T> v)
 {
     if (M2_LaunchIntent)
         sq_pushstring(v, _SC("MAIN_STORY"), -1);
@@ -522,20 +574,23 @@ SQInteger SQ_util_get_launch_intent_id(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger SQ_util_clear_launch_intent_id(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQ_util_clear_launch_intent_id(HSQUIRRELVM<T> v)
 {
     M2_LaunchIntent = false;
     return 0;
 }
 
 SQInteger M2_StartPadId = 4;
-SQInteger SQ_SystemEtc_setStartPadId(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQ_SystemEtc_setStartPadId(HSQUIRRELVM<T> v)
 {
     sq_getinteger(v, 1, &M2_StartPadId);
     return 0;
 }
 
-SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM<T> v)
 {
     sq_pushinteger(v, M2_StartPadId);
     return 1;
@@ -544,16 +599,18 @@ SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM v)
 SQInteger MGS1_GlobalsPTR;
 SQInteger MGS1_LoaderPTR;
 
-SQObject SQObj_util_get_memory_define_table;
-SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM v)
+template <Squirk T>
+SQObject<T> SQObj_util_get_memory_define_table;
+template <Squirk T>
+SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM<T> v)
 {
     SQInteger nargs = sq_gettop(v);
 
-    SQObjectPtr ret;
-    SQObjectPtr closure = SQObj_util_get_memory_define_table;
+    SQObjectPtr<T> ret;
+    SQObjectPtr<T> closure = SQObj_util_get_memory_define_table<T>;
     bool res = v->Call(closure, nargs, v->_stackbase, ret, false);
     if (res) {
-        if (eGameType == MgsGame::MGS1) {
+        if (eGameType == M2FixGame::MGS1) {
             sq_pushobject(v, ret);
             sq_pushstring(v, _SC("scene_name"), -1);
             if (SQ_SUCCEEDED(sq_get(v, -2))) {
@@ -570,7 +627,8 @@ SQInteger SQ_util_get_memory_define_table(HSQUIRRELVM v)
     return -1;
 }
 
-SQInteger SQReturn_init_system_1st(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_init_system_1st(HSQUIRRELVM<T> v)
 {
     if (bLauncherSkipNotice) {
         SQHookFunction(v, _SC("util_is_notice_skipable"), SQ_util_is_notice_skipable);
@@ -585,24 +643,27 @@ SQInteger SQReturn_init_system_1st(HSQUIRRELVM v)
     SQHookMethod(v, _SC("SystemEtc"), _SC("getStartPadId"), SQ_SystemEtc_getStartPadId);
 
     SQHookFunction(v, _SC("util_get_memory_define_table"),
-        SQ_util_get_memory_define_table, &SQObj_util_get_memory_define_table);
+        SQ_util_get_memory_define_table, &SQObj_util_get_memory_define_table<T>);
 
     return 0;
 }
 
-SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM<T> v)
 {
     sq_pushinteger(v, USE_ANALOG);
     return 1;
 }
 
-SQInteger SQReturn_init_system_last(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_init_system_last(HSQUIRRELVM<T> v)
 {
     SQHookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
     return 0;
 }
 
-SQInteger _SQReturn_update_gadgets(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _SQReturn_update_gadgets(HSQUIRRELVM<T> v)
 {
     if (MGS1_GlobalsPTR != 0 && MGS1_LoaderPTR != 0) {
         SQInteger MGS1_StageNamePTR = MGS1_GlobalsPTR;
@@ -611,21 +672,21 @@ SQInteger _SQReturn_update_gadgets(HSQUIRRELVM v)
         char MGS1_StageName[8] = { 0 };
         char MGS1_LoaderName[8] = { 0 };
         for (int i = 0; i < sizeof(MGS1_StageName) / sizeof(uint32_t); i++) {
-            gEmuTask.GetRamValue(32, MGS1_StageNamePTR + (i * sizeof(uint32_t)),
+            gEmuTask<T>.GetRamValue(32, MGS1_StageNamePTR + (i * sizeof(uint32_t)),
                 (SQInteger *) &MGS1_StageName[i * sizeof(uint32_t)]);
-            gEmuTask.GetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
+            gEmuTask<T>.GetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
                 (SQInteger *) &MGS1_LoaderName[i * sizeof(uint32_t)]);
         }
 
         SQInteger MGS1_CurrentStagePTR = MGS1_GameStatePTR + (6 * sizeof(short));
         SQInteger MGS1_CurrentStage = 0;
-        gEmuTask.GetRamValue(16, MGS1_CurrentStagePTR, &MGS1_CurrentStage);
+        gEmuTask<T>.GetRamValue(16, MGS1_CurrentStagePTR, &MGS1_CurrentStage);
 
         if (bGameStageSelect) {
             if (strcmp(MGS1_LoaderName, "title") == 0 && strcmp(MGS1_StageName, "select") != 0) {
                 strcpy(MGS1_LoaderName, "select");
                 for (int i = 0; i < sizeof(MGS1_StageName) / sizeof(uint32_t); i++) {
-                    gEmuTask.SetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
+                    gEmuTask<T>.SetRamValue(32, MGS1_LoaderPTR + (i * sizeof(uint32_t)),
                         *(SQInteger *)&MGS1_LoaderName[i * sizeof(uint32_t)]);
                 }
             }
@@ -649,31 +710,34 @@ void *M2LoadImage(void *dst, void *src, size_t num)
 }
 
 SQInteger MGS1_PlaySide;
-SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM<T> v)
 {
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
     SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
     MGS1_PlaySide = _integer(obj);
     return 0;
 }
 
-SQInteger SQNative_setDotmatrix(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_setDotmatrix(HSQUIRRELVM<T> v)
 {
     if (bDotMatrix) {
         // Do this here as the native call is surprisingly expensive (?!)
-        SQObjectPtr* obj = &v->_stack._vals[v->_stackbase + 1];
+        SQObjectPtr<T>* obj = &v->_stack._vals[v->_stackbase + 1];
         _integer(*obj) = bDotMatrix.value();
     }
     return 0;
 }
 
-SQInteger SQNative_setRamValue(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_setRamValue(HSQUIRRELVM<T> v)
 {
-    SQObjectPtr* width = &v->_stack._vals[v->_stackbase + 1];
-    SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 2];
-    SQObjectPtr* value = &v->_stack._vals[v->_stackbase + 3];
+    SQObjectPtr<T>* width = &v->_stack._vals[v->_stackbase + 1];
+    SQObjectPtr<T>* offset = &v->_stack._vals[v->_stackbase + 2];
+    SQObjectPtr<T>* value = &v->_stack._vals[v->_stackbase + 3];
 
-    SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 5];
+    SQObjectPtr<T>* patch = &v->_stack._vals[v->_stackbase - 5];
     if (!sq_istable(*patch)) return 0;
 
     SQInteger address = 0;
@@ -696,12 +760,13 @@ SQInteger SQNative_setRamValue(HSQUIRRELVM v)
     return 0;
 }
 
-SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM<T> v)
 {
-    SQObjectPtr* offset = &v->_stack._vals[v->_stackbase + 1];
-    SQObjectPtr* data = &v->_stack._vals[v->_stackbase + 2];
+    SQObjectPtr<T>* offset = &v->_stack._vals[v->_stackbase + 1];
+    SQObjectPtr<T>* data = &v->_stack._vals[v->_stackbase + 2];
 
-    SQObjectPtr* patch = &v->_stack._vals[v->_stackbase - 3];
+    SQObjectPtr<T>* patch = &v->_stack._vals[v->_stackbase - 3];
     if (sq_isinstance(*data)) patch = &v->_stack._vals[v->_stackbase - 4];
 
     const SQChar *file = NULL;
@@ -715,7 +780,7 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
     }
     else if (sq_isarray(*data)) {
         int i = 0;
-        SQObjectPtr ent;
+        SQObjectPtr<T> ent;
         while (_array(*data)->Get(i++, ent)) {
             buffer.push_back(_integer(ent)); // lmao
         }
@@ -755,9 +820,10 @@ SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM v)
 }
 
 string M2_Disk;
-SQInteger SQNative_setupCdRom(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_setupCdRom(HSQUIRRELVM<T> v)
 {
-    HSQOBJECT obj; sq_getstackobj(v, 2, &obj);
+    HSQOBJECT<T> obj; sq_getstackobj(v, 2, &obj);
     M2_Disk.assign(_stringval(obj));
 
     LOG_F(INFO, "M2: Mounted CD-ROM image: %s.", M2_Disk.c_str());
@@ -765,9 +831,10 @@ SQInteger SQNative_setupCdRom(HSQUIRRELVM v)
 }
 
 SQInteger M2_Tray;
-SQInteger SQNative_setCdRomShellOpen(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_setCdRomShellOpen(HSQUIRRELVM<T> v)
 {
-    HSQOBJECT obj; sq_getstackobj(v, 2, &obj);
+    HSQOBJECT<T> obj; sq_getstackobj(v, 2, &obj);
     M2_Tray = _integer(obj);
 
     LOG_F(INFO, "M2: CD-ROM tray is %s.", M2_Tray ? "open" : "closed");
@@ -775,14 +842,15 @@ SQInteger SQNative_setCdRomShellOpen(HSQUIRRELVM v)
 }
 
 string M2_ROM;
-SQInteger SQNative_init(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQNative_init(HSQUIRRELVM<T> v)
 {
     // Do some strange things to confirm that this is EmuTask::init() and not another init().
-    gEmuTask.SetVM(v);
-    if (!gEmuTask.Get()) return 0;
+    gEmuTask<T>.SetVM(v);
+    if (!gEmuTask<T>.Get()) return 0;
 
-    HSQOBJECT obj; sq_getstackobj(v, -1, &obj);
-    HSQOBJECT instance; sq_getstackobj(v, 1, &instance);
+    HSQOBJECT<T> obj; sq_getstackobj(v, -1, &obj);
+    HSQOBJECT<T> instance; sq_getstackobj(v, 1, &instance);
     sq_pop(v, 2);
 
     // Check that `this` is g_emu_task, therefore g_emu_task.init()...
@@ -798,20 +866,22 @@ SQInteger SQNative_init(HSQUIRRELVM v)
     return 0;
 }
 
-vector<pair<const SQChar *, SQFUNCTION>> M2_NativeCallTable = {
-    make_pair("setDotmatrix", SQNative_setDotmatrix),
-    make_pair("setRamValue", SQNative_setRamValue),
-    make_pair("entryCdRomPatch", SQNative_entryCdRomPatch),
-    make_pair("setCdRomShellOpen", SQNative_setCdRomShellOpen),
-    make_pair("setupCdRom", SQNative_setupCdRom),
-    make_pair("init", SQNative_init),
+template <Squirk T>
+vector<pair<const SQChar *, SQFUNCTION<T>>> M2_NativeCallTable = {
+    make_pair("setDotmatrix", SQNative_setDotmatrix<T>),
+    make_pair("setRamValue", SQNative_setRamValue<T>),
+    make_pair("entryCdRomPatch", SQNative_entryCdRomPatch<T>),
+    make_pair("setCdRomShellOpen", SQNative_setCdRomShellOpen<T>),
+    make_pair("setupCdRom", SQNative_setupCdRom<T>),
+    make_pair("init", SQNative_init<T>),
 };
 
-bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
+template <Squirk T>
+bool FixNativeCall(HSQUIRRELVM<T> v, SQFUNCTION<T> func, SQNativeClosure<T> *closure, const SQChar *name)
 {
     if (!name) return true;
 
-    for (auto &func : M2_NativeCallTable) {
+    for (auto &func : M2_NativeCallTable<T>) {
         if (strcmp(name, func.first) == 0) {
             if (func.second(v)) return false;
             break;
@@ -821,25 +891,28 @@ bool FixNativeCall(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, con
     return true;
 }
 
-SQInteger SQReturn_setSmoothing(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_setSmoothing(HSQUIRRELVM<T> v)
 {
-    if (bSmoothing) gEmuTask.SetSmoothing(bSmoothing.value());
-    if (bScanline) gEmuTask.SetScanline(bScanline.value());
+    if (bSmoothing) gEmuTask<T>.SetSmoothing(bSmoothing.value());
+    if (bScanline) gEmuTask<T>.SetScanline(bScanline.value());
     return 0;
 }
 
-SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM v)
+template <Squirk T> bool Ketchup_Process(HSQUIRRELVM<T> v);
+template <Squirk T>
+SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM<T> v)
 {
-    extern bool Ketchup_Process(HSQUIRRELVM v);
-    gEmuTask.SetVM(v);
+    gEmuTask<T>.SetVM(v);
     Ketchup_Process(v);
     return 0;
 }
 
 SQInteger M2_DevId;
-SQInteger SQReturn_set_current_title_dev_id(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_set_current_title_dev_id(HSQUIRRELVM<T> v)
 {
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
     SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
     M2_DevId = _integer(obj);
 
@@ -848,10 +921,11 @@ SQInteger SQReturn_set_current_title_dev_id(HSQUIRRELVM v)
 }
 
 SQInteger M2_DiskId;
-SQInteger _SQReturn_get_disk_path(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _SQReturn_get_disk_path(HSQUIRRELVM<T> v)
 {
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 2];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr<T> obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 2];
     M2_DiskId = _integer(obj);
 
     LOG_F(INFO, "M2: Set disk ID: %d.", M2_DiskId);
@@ -859,10 +933,11 @@ SQInteger _SQReturn_get_disk_path(HSQUIRRELVM v)
 }
 
 string M2_DevType;
-SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM<T> v)
 {
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr<T> obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
     M2_DevType.assign(_stringval(obj));
 
     LOG_F(INFO, "M2: Set title version: %s.", M2_DevType.c_str());
@@ -870,7 +945,8 @@ SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM v)
 }
 
 SQInteger M2_InitializeFinish;
-SQInteger SQReturn_onInitializeFinish(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_onInitializeFinish(HSQUIRRELVM<T> v)
 {
     extern void FixModules();
 
@@ -886,10 +962,11 @@ SQInteger M2_ScreenWidth;
 SQInteger M2_ScreenHeight;
 SQInteger M2_ScreenScaleX;
 SQInteger M2_ScreenScaleY;
-SQInteger SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM<T> v)
 {
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr<T> obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
 
     sq_pushobject(v, obj);
     {
@@ -917,40 +994,42 @@ SQInteger SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM v)
 }
 
 SQInteger M2_ScreenMode;
-SQInteger _SQReturn_setting_screen_set_parameter_auto_size(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _SQReturn_setting_screen_set_parameter_auto_size(HSQUIRRELVM<T> v)
 {
-
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 3];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr<T> obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 3];
     M2_ScreenMode = _integer(obj);
 
     LOG_F(INFO, "M2: Screen mode is %u.", M2_ScreenMode);
     return 0;
 }
 
-vector<pair<const SQChar *, SQFUNCTION>> M2_ReturnTable = {
-    make_pair("init_system_1st", SQReturn_init_system_1st),
-    make_pair("init_system_last", SQReturn_init_system_last),
-    make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
-    make_pair("_update_gadgets", _SQReturn_update_gadgets),
-    make_pair("setSmoothing", SQReturn_setSmoothing),
-    make_pair("_set_disk_patch", _SQReturn_set_disk_patch),
-    make_pair("_get_disk_path", _SQReturn_get_disk_path),
-    make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
-    make_pair("set_game_regionTag", SQReturn_set_game_regionTag),
-    make_pair("onInitializeFinish", SQReturn_onInitializeFinish),
-    make_pair("util_get_multimonitor_screen_bounds", SQReturn_util_get_multimonitor_screen_bounds),
-    make_pair("_setting_screen_set_parameter_auto_size", _SQReturn_setting_screen_set_parameter_auto_size),
+template <Squirk T>
+vector<pair<const SQChar *, SQFUNCTION<T>>> M2_ReturnTable = {
+    make_pair("init_system_1st", SQReturn_init_system_1st<T>),
+    make_pair("init_system_last", SQReturn_init_system_last<T>),
+    make_pair("set_playside_mgs", SQReturn_set_playside_mgs<T>),
+    make_pair("_update_gadgets", _SQReturn_update_gadgets<T>),
+    make_pair("setSmoothing", SQReturn_setSmoothing<T>),
+    make_pair("_set_disk_patch", _SQReturn_set_disk_patch<T>),
+    make_pair("_get_disk_path", _SQReturn_get_disk_path<T>),
+    make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id<T>),
+    make_pair("set_game_regionTag", SQReturn_set_game_regionTag<T>),
+    make_pair("onInitializeFinish", SQReturn_onInitializeFinish<T>),
+    make_pair("util_get_multimonitor_screen_bounds", SQReturn_util_get_multimonitor_screen_bounds<T>),
+    make_pair("_setting_screen_set_parameter_auto_size", _SQReturn_setting_screen_set_parameter_auto_size<T>),
 };
 
-void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
+template <Squirk T>
+void FixLoop(HSQUIRRELVM<T> v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)
 {
-    gEmuTask.SetVM(v);
-    gInputHub.SetVM(v);
-    gInput.SetVM(v);
+    gEmuTask<T>.SetVM(v);
+    gInputHub<T>.SetVM(v);
+    gInput<T>.SetVM(v);
 
     if (name && event_type == _SC('r')) {
-        for (auto &func : M2_ReturnTable) {
+        for (auto &func : M2_ReturnTable<T>) {
             if (strcmp(name, func.first) == 0) {
                 func.second(v);
                 break;
@@ -961,16 +1040,26 @@ void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQCha
     if (bAnalogMode) AnalogLoop(v);
 }
 
-SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
+template <Squirk T>
+SQUIRREL_API SQRESULT _m2_sqstd_format(HSQUIRRELVM<T> v, SQInteger nformatstringidx, SQInteger *outlen, SQChar **output);
+
+template <Squirk T> void TraceNative(HSQUIRRELVM<T> v, SQFUNCTION<T> func, SQNativeClosure<T> *closure, const SQChar *name);
+template <Squirk T> SQInteger Hook(HSQUIRRELVM<T> v);
+template <Squirk T>
+SQInteger HookNative(SQFUNCTION<T> func, HSQUIRRELVM<T> v)
 {
     SetHook(v);
 
+    if (bError && sq_isstring(v->_lasterror)) {
+        LOG_F(INFO, "Squirrel: Error: %s", _stringval(v->_lasterror));
+        sq_reseterror(v);
+    }
+
     // Ignore the calls to the debug hook
-    SQInteger Hook(HSQUIRRELVM v);
-    if (func == Hook) return func(v);
+    if (func == Hook<T>) return func(v);
 
     const SQChar *name = NULL;
-    SQNativeClosure *closure = NULL;
+    SQNativeClosure<T> *closure = NULL;
     if (v && v->ci && sq_isnativeclosure(v->ci->_closure)) {
         closure = _nativeclosure(v->ci->_closure);
         if (sq_isstring(closure->_name)) {
@@ -979,16 +1068,22 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
     }
 
     if (iNativeLevel >= 1) {
-        void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name);
         TraceNative(v, func, closure, name);
     }
 
     if (name && (strcmp(name, "printf") == 0 || strcmp(name, "print") == 0)) {
         SQChar *print = NULL;
         SQInteger length = 0;
-        if (SQ_SUCCEEDED(sqstd_format(v, 2, &length, &print))) {
+
+        const SQChar *format = NULL;
+        sq_getstring(v, 2, &format);
+
+        if (format && *format != 0 && SQ_SUCCEEDED(_m2_sqstd_format(v, 2, &length, &print))) {
             print[scstrcspn(print, "\r\n")] = 0;
-            LOG_F(INFO, "Squirrel: printf: %s", print);
+            if (*print != 0) {
+                LOG_F(INFO, "Squirrel: printf: %s", print);
+            }
+            free(print);
         }
     }
 
@@ -999,36 +1094,45 @@ SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v)
     return 0;
 }
 
-bool SquirrelMain(HSQUIRRELVM v)
+template <Squirk T>
+bool SquirrelMain(HSQUIRRELVM<T> v)
 {
     LOG_F(INFO, "Squirrel: SQVM 0x%" PRIxPTR " hooked: debug info is %s, exceptions are %s.", (uintptr_t) v,
         (_ss(v)->_debuginfo ? "enabled" : "disabled"),
         (_ss(v)->_notifyallexceptions ? "enabled" : "disabled")
     );
 
-    if (bDebuggerEnabled && bDebuggerExclusive && gDBG) {
-        gDBG->Init(v);
+    if (bDebuggerEnabled && bDebuggerExclusive && gDBG<T>) {
+        gDBG<T>->Init(v);
         return true;
+        wmemcmp(NULL, NULL, 0);
     }
 
     return false;
 }
 
-SQInteger Hook(HSQUIRRELVM v)
+template <Squirk T> void Trace(HSQUIRRELVM<T> v);
+template <Squirk T> SQInteger debug_hook(HSQUIRRELVM<T> v, HSQUIRRELVM<T> _v, HSQREMOTEDBG<T> rdbg);
+template <Squirk T>
+SQInteger Hook(HSQUIRRELVM<T> v)
 {
     SQObjectPtr debughook = v->_debughook;
-    v->_debughook = _null_;
+    v->_debughook = _null_<T>;
 
-    if (bDebuggerEnabled && !bDebuggerExclusive && gDBG) {
-        extern SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
-        debug_hook(NULL, v, gDBG);
+    if (bError && sq_isstring(v->_lasterror)) {
+        LOG_F(INFO, "Squirrel: Error: %s", _stringval(v->_lasterror));
+        sq_reseterror(v);
     }
 
-    FixData* data = (FixData *) sq_getforeignptr(v);
+    if (bDebuggerEnabled && !bDebuggerExclusive && gDBG<T>) {
+        debug_hook(static_cast<HSQUIRRELVM<T>>(nullptr), v, gDBG<T>);
+    }
+
+    M2FixData* data = (M2FixData *) sq_getforeignptr(v);
 
     if (!data) {
-        sq_setforeignptr(v, calloc(1, sizeof(FixData)));
-        data = (FixData *) sq_getforeignptr(v);
+        sq_setforeignptr(v, calloc(1, sizeof(M2FixData)));
+        data = (M2FixData *) sq_getforeignptr(v);
     }
 
     if (!data->hooked) {
@@ -1049,7 +1153,6 @@ SQInteger Hook(HSQUIRRELVM v)
     }
 
     if (iLevel >= 1) {
-        void Trace(HSQUIRRELVM v);
         Trace(v);
     }
 
@@ -1057,6 +1160,39 @@ SQInteger Hook(HSQUIRRELVM v)
 
     v->_debughook = debughook;
     return 0;
+}
+
+template SQInteger Hook(HSQUIRRELVM<Squirk::Standard> v);
+template SQInteger Hook(HSQUIRRELVM<Squirk::AlignObject> v);
+
+void _SQNew_Standard(HSQUIRRELVM<Squirk::Standard> v)
+{
+    return SQNew<Squirk::Standard>(v);
+}
+
+void _SQNew_AlignObject(HSQUIRRELVM<Squirk::AlignObject> v)
+{
+    return SQNew<Squirk::AlignObject>(v);
+}
+
+SQInteger _HookNative_Standard(SQFUNCTION<Squirk::Standard> func, HSQUIRRELVM<Squirk::Standard> v)
+{
+    return HookNative<Squirk::Standard>(func, v);
+}
+
+SQInteger _HookNative_AlignObject(SQFUNCTION<Squirk::AlignObject> func, HSQUIRRELVM<Squirk::AlignObject> v)
+{
+    return HookNative<Squirk::AlignObject>(func, v);
+}
+
+SQRESULT _sq_setnativeclosurename_Standard(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, const SQChar *name)
+{
+    return sq_setnativeclosurename<Squirk::Standard>(v, idx, name);
+}
+
+SQRESULT _sq_setnativeclosurename_AlignObject(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, const SQChar *name)
+{
+    return sq_setnativeclosurename<Squirk::AlignObject>(v, idx, name);
 }
 
 #define CALL(func) { extern void func; func; }
@@ -1143,3 +1279,13 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
+
+#ifndef _WIN64
+static_assert(sizeof(SQVM<Squirk::Standard>) == 0xB0);              // MGS 1
+static_assert(sizeof(SQSharedState<Squirk::Standard>) == 0xB8);     // MGS 1
+static_assert(sizeof(SQVM<Squirk::AlignObject>) == 0xE0);           // CO | CA
+static_assert(sizeof(SQSharedState<Squirk::AlignObject>) == 0x138); // CO | CA
+#else
+static_assert(sizeof(SQVM<Squirk::Standard>) == 0x108);             // MG | SR
+static_assert(sizeof(SQSharedState<Squirk::Standard>) == 0x178);    // MG | SR
+#endif

@@ -6,9 +6,10 @@ typedef struct {
     bool hooked;
     SQChar src[MAX_PATH];
     SQInteger line;
-} FixData;
+} M2FixData;
 
-void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
+template <Squirk T>
+void TraceParameter(stringstream &trace, SQObjectPtr<T> obj, int level)
 {
     switch (obj._type) {
     case OT_BOOL:
@@ -30,11 +31,11 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
     case OT_ARRAY:
     {
         int i = 0;
-        SQObjectPtr ent;
+        SQObjectPtr<T> ent;
         trace << "[";
         if (level >= 1) {
             while (_array(obj)->Get(i++, ent)) {
-                TraceParameter(trace, ent, level - 1);
+                TraceParameter<T>(trace, ent, level - 1);
                 if (i != _array(obj)->_values.size()) trace << ", ";
             }
         }
@@ -43,15 +44,15 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
     }
     case OT_TABLE:
     {
-        SQObjectPtr i = SQObjectPtr(SQInteger(0));
-        SQObjectPtr key, value;
+        SQObjectPtr<T> i = SQObjectPtr<T>(SQInteger(0));
+        SQObjectPtr<T> key, value;
         trace << "{";
         if (level >= 1) {
             while (_table(obj)->Next(false, i, key, value) > 0) {
-                TraceParameter(trace, key, level - 1);
+                TraceParameter<T>(trace, key, level - 1);
                 trace << ": ";
-                TraceParameter(trace, value, level - 1);
-                i = SQObjectPtr(_integer(i) + 1);
+                TraceParameter<T>(trace, value, level - 1);
+                i = SQObjectPtr<T>(_integer(i) + 1);
                 if (_table(obj)->Next(false, i, key, value) > 0) trace << ", ";
             }
         }
@@ -62,19 +63,19 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
         trace << hex << "C" << (uintptr_t)_class(obj)->_typetag << dec;
         if (_class(obj)->_base) {
             trace << "::";
-            TraceParameter(trace, _class(obj)->_base, level);
+            TraceParameter<T>(trace, _class(obj)->_base, level);
         }
         break;
     case OT_INSTANCE:
         trace << hex << "I" << (uintptr_t)_instance(obj)->_userpointer << dec;
         if (_instance(obj)->_class) {
             trace << "?";
-            TraceParameter(trace, _instance(obj)->_class, level);
+            TraceParameter<T>(trace, _instance(obj)->_class, level);
         }
         break;
     case OT_CLOSURE:
     {
-        SQFunctionProto *proto = _funcproto(_closure(obj)->_function);
+        SQFunctionProto<T> *proto = _funcproto(_closure(obj)->_function);
         if (proto && sq_isstring(proto->_name)) {
             trace << _stringval(proto->_name);
         }
@@ -113,25 +114,29 @@ void TraceParameter(stringstream &trace, SQObjectPtr obj, int level)
     }
 }
 
-void TraceNext(stringstream &trace, HSQUIRRELVM v)
+template void TraceParameter(stringstream &trace, SQObjectPtr<Squirk::Standard> obj, int level);
+template void TraceParameter(stringstream &trace, SQObjectPtr<Squirk::AlignObject> obj, int level);
+
+template <Squirk T>
+void TraceNext(stringstream &trace, HSQUIRRELVM<T> v)
 {
     sq_pushnull(v);
     SQRESULT res = sq_next(v, -2);
     while (SQ_SUCCEEDED(res))
     {
-        HSQOBJECT key; sq_getstackobj(v, -2, &key);
-        HSQOBJECT value; sq_getstackobj(v, -1, &value);
+        HSQOBJECT<T> key; sq_getstackobj(v, -2, &key);
+        HSQOBJECT<T> value; sq_getstackobj(v, -1, &value);
 
-        TraceParameter(trace, key, 1);
+        TraceParameter<T>(trace, key, 1);
         trace << ": ";
 
         if (sq_isinstance(value)) {
             trace << "{";
-            TraceNext(trace, v);
+            TraceNext<T>(trace, v);
             trace << "}";
         }
         else {
-            TraceParameter(trace, value, 1);
+            TraceParameter<T>(trace, value, 1);
         }
 
         sq_pop(v, 2);
@@ -143,11 +148,15 @@ void TraceNext(stringstream &trace, HSQUIRRELVM v)
     sq_pop(v, 1);
 }
 
-void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const SQChar *name)
+template void TraceNext(stringstream &trace, HSQUIRRELVM<Squirk::Standard> v);
+template void TraceNext(stringstream &trace, HSQUIRRELVM<Squirk::AlignObject> v);
+
+template <Squirk T>
+void TraceNative(HSQUIRRELVM<T> v, SQFUNCTION<T> func, SQNativeClosure<T> *closure, const SQChar *name)
 {
     stringstream trace;
 
-    FixData* data = (FixData *) sq_getforeignptr(v);
+    M2FixData* data = (M2FixData *) sq_getforeignptr(v);
     if (data && data->src[0] != 0) {
         trace << data->src << ":" << data->line << " -> ";
         data->src[0] = 0;
@@ -175,7 +184,11 @@ void TraceNative(HSQUIRRELVM v, SQFUNCTION func, SQNativeClosure *closure, const
     LOG_F(INFO, "Squirrel: CallNative: %s", tracestring.c_str());
 }
 
-void Trace(HSQUIRRELVM v)
+template void TraceNative(HSQUIRRELVM<Squirk::Standard> v, SQFUNCTION<Squirk::Standard> func, SQNativeClosure<Squirk::Standard> *closure, const SQChar *name);
+template void TraceNative(HSQUIRRELVM<Squirk::AlignObject> v, SQFUNCTION<Squirk::AlignObject> func, SQNativeClosure<Squirk::AlignObject> *closure, const SQChar *name);
+
+template <Squirk T>
+void Trace(HSQUIRRELVM<T> v)
 {
     SQUserPointer up;
     SQInteger event_type, line;
@@ -185,13 +198,13 @@ void Trace(HSQUIRRELVM v)
     sq_getinteger(v, 4, &line);
     if (sq_gettype(v, 5) == OT_STRING) sq_getstring(v, 5, &func);
 
-    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
-    SQVM::CallInfo &ci = v->_callsstack[v->_callsstacksize - 2];
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    auto &ci = v->_callsstack[v->_callsstacksize - 2];
 
     if (event_type == _SC('c') || event_type == _SC('r')) {
-        SQClosure *closure = _closure(ci._closure);
+        SQClosure<T> *closure = _closure(ci._closure);
         if (closure) {
-            SQFunctionProto *proto = _funcproto(closure->_function);
+            SQFunctionProto<T> *proto = _funcproto(closure->_function);
             if (proto && sq_isstring(proto->_name)) {
                 stringstream trace;
 
@@ -228,3 +241,6 @@ void Trace(HSQUIRRELVM v)
         LOG_F(INFO, "Squirrel: Line: %s:%d", src, line);
     }
 }
+
+template void Trace(HSQUIRRELVM<Squirk::Standard> v);
+template void Trace(HSQUIRRELVM<Squirk::AlignObject> v);

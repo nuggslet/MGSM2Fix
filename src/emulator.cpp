@@ -4,7 +4,7 @@
 
 using namespace std;
 
-extern MgsGame eGameType;
+extern M2FixGame eGameType;
 extern int iEmulatorLevel;
 
 typedef struct {
@@ -400,7 +400,7 @@ void FixUserModules(const char *basename = "mgs_r3000_int")
 void FixModules()
 {
     switch (eGameType) {
-        case MgsGame::MGS1:
+        case M2FixGame::MGS1:
             FixUserModules();
             FixKernelModules();
         default: break;

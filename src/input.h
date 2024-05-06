@@ -2,13 +2,17 @@
 
 #include "m2object.h"
 
-class Input : public M2Object
+template <Squirk T>
+class Input : public M2Object<T>
 {
 public:
-	Input() : M2Object(_SC("g_input")) {}
+	Input() : M2Object<T>(_SC("g_input")) {}
 
 	bool GetAnalogStickX(SQFloat *value);
 	bool GetAnalogStickY(SQFloat *value);
 	bool GetRightAnalogStickX(SQFloat *value);
 	bool GetRightAnalogStickY(SQFloat *value);
 };
+
+template Input<Squirk::Standard>;
+template Input<Squirk::AlignObject>;

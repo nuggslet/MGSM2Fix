@@ -45,19 +45,20 @@ typedef sqvector<ExpState> ExpStateVec;
 					if(__nbreaks__>0)ResolveBreaks(_fs,__nbreaks__); \
 					_fs->_breaktargets.pop_back();_fs->_continuetargets.pop_back();}
 
+template <Squirk T>
 class SQCompiler
 {
 public:
-	SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, bool raiseerror, bool lineinfo)
+	SQCompiler(SQVM<T> *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, bool raiseerror, bool lineinfo)
 	{
 		_vm=v;
 		_lex.Init(_ss(v), rg, up,ThrowError,this);
-		_sourcename = SQString::Create(_ss(v), sourcename);
+		_sourcename = SQString<T>::Create(_ss(v), sourcename);
 		_lineinfo = lineinfo;_raiseerror = raiseerror;
 		compilererror = NULL;
 	}
 	static void ThrowError(void *ud, const SQChar *s) {
-		SQCompiler *c = (SQCompiler *)ud;
+		SQCompiler<T> *c = (SQCompiler<T> *)ud;
 		c->Error(s);
 	}
 	void Error(const SQChar *s, ...)
@@ -86,7 +87,7 @@ public:
 		_expstates.pop_back();
 		return ret;
 	}
-	SQObject Expect(SQInteger tok)
+	SQObject<T> Expect(SQInteger tok)
 	{
 		
 		if(_token != tok) {
@@ -119,7 +120,7 @@ public:
 				Error(_SC("expected '%c'"), tok);
 			}
 		}
-		SQObjectPtr ret;
+		SQObjectPtr<T> ret;
 		switch(tok)
 		{
 		case TK_IDENTIFIER:
@@ -129,10 +130,10 @@ public:
 			ret = _fs->CreateString(_lex._svalue,_lex._longstr.size()-1);
 			break;
 		case TK_INTEGER:
-			ret = SQObjectPtr(_lex._nvalue);
+			ret = SQObjectPtr<T>(_lex._nvalue);
 			break;
 		case TK_FLOAT:
-			ret = SQObjectPtr(_lex._fvalue);
+			ret = SQObjectPtr<T>(_lex._fvalue);
 			break;
 		}
 		Lex();
@@ -153,13 +154,13 @@ public:
 			_fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), trg);
 		}
 	}
-	bool Compile(SQObjectPtr &o)
+	bool Compile(SQObjectPtr<T> &o)
 	{
 		_debugline = 1;
 		_debugop = 0;
 
-		SQFuncState funcstate(_ss(_vm), NULL,ThrowError,this);
-		funcstate._name = SQString::Create(_ss(_vm), _SC("main"));
+		SQFuncState<T> funcstate(_ss(_vm), NULL,ThrowError,this);
+		funcstate._name = SQString<T>::Create(_ss(_vm), _SC("main"));
 		_fs = &funcstate;
 		_fs->AddParameter(_fs->CreateString(_SC("this")));
 		_fs->_sourcename = _sourcename;
@@ -184,7 +185,7 @@ public:
 				_ss(_vm)->_compilererrorhandler(_vm, compilererror, type(_sourcename) == OT_STRING?_stringval(_sourcename):_SC("unknown"),
 					_lex._currentline, _lex._currentcolumn);
 			}
-			_vm->_lasterror = SQString::Create(_ss(_vm), compilererror, -1);
+			_vm->_lasterror = SQString<T>::Create(_ss(_vm), compilererror, -1);
 			return false;
 		}
 		return true;
@@ -281,13 +282,13 @@ public:
 		case TK_CONST:
 			{
 			Lex();
-			SQObject id = Expect(TK_IDENTIFIER);
+			SQObject<T> id = Expect(TK_IDENTIFIER);
 			Expect('=');
-			SQObject val = ExpectScalar();
+			SQObject<T> val = ExpectScalar();
 			OptionalSemicolon();
-			SQTable *enums = _table(_ss(_vm)->_consts);
-			SQObjectPtr strongid = id; 
-			enums->NewSlot(strongid,SQObjectPtr(val));
+			SQTable<T> *enums = _table(_ss(_vm)->_consts);
+			SQObjectPtr<T> strongid = id;
+			enums->NewSlot(strongid,SQObjectPtr<T>(val));
 			strongid.Null();
 			}
 			break;
@@ -410,7 +411,7 @@ public:
 		}
 		return PopExpState();
 	}
-	void BIN_EXP(SQOpcode op, void (SQCompiler::*f)(void),SQInteger op3 = 0)
+	void BIN_EXP(SQOpcode op, void (SQCompiler<T>::*f)(void),SQInteger op3 = 0)
 	{
 		Lex(); (this->*f)();
 		SQInteger op1 = _fs->PopTarget();SQInteger op2 = _fs->PopTarget();
@@ -615,8 +616,8 @@ public:
 		case TK_CONSTRUCTOR:
 		case TK_THIS:{
 			_exst._freevar = false;
-			SQObject id;
-			SQObject constant;
+			SQObject<T> id;
+			SQObject<T> constant;
 				switch(_token) {
 					case TK_IDENTIFIER: id = _fs->CreateString(_lex._svalue); break;
 					case TK_THIS: id = _fs->CreateString(_SC("this")); break;
@@ -632,8 +633,8 @@ public:
 						_exst._freevar = true;
 					}
 					else if(_fs->IsConstant(id,constant)) { //line 634
-						SQObjectPtr constval;
-						SQObject constid;
+						SQObjectPtr<T> constval;
+						SQObject<T> constid;
 						if(type(constant) == OT_TABLE) {
 							Expect('.'); constid = Expect(TK_IDENTIFIER);
 							if(!_table(constant)->Get(constid,constval)) {
@@ -805,7 +806,7 @@ public:
 				case TK_CONSTRUCTOR:{
 					SQInteger tk = _token;
 					Lex();
-					SQObject id = tk == TK_FUNCTION ? Expect(TK_IDENTIFIER) : _fs->CreateString(_SC("constructor"));
+					SQObject<T> id = tk == TK_FUNCTION ? Expect(TK_IDENTIFIER) : _fs->CreateString(_SC("constructor"));
 					Expect(_SC('('));
 					_fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
 					CreateFunction(id);
@@ -838,7 +839,7 @@ public:
 	}
 	void LocalDeclStatement()
 	{
-		SQObject varname;
+		SQObject<T> varname;
 		do {
 			Lex(); varname = Expect(TK_IDENTIFIER);
 			if(_token == _SC('=')) {
@@ -963,7 +964,7 @@ public:
 	}
 	void ForEachStatement()
 	{
-		SQObject idxname, valname;
+		SQObject<T> idxname, valname;
 		Lex(); Expect(_SC('(')); valname = Expect(TK_IDENTIFIER);
 		if(_token == _SC(',')) {
 			idxname = valname;
@@ -1052,7 +1053,7 @@ public:
 	}
 	void FunctionStatement()
 	{
-		SQObject id;
+		SQObject<T> id;
 		Lex(); id = Expect(TK_IDENTIFIER);
 		_fs->PushTarget(0);
 		_fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
@@ -1086,9 +1087,9 @@ public:
 		}
 		else Error(_SC("cannot create a class in a local with the syntax(class <local>)"));
 	}
-	SQObject ExpectScalar()
+	SQObject<T> ExpectScalar()
 	{
-		SQObject val;
+		SQObject<T> val;
 		switch(_token) {
 			case TK_INTEGER:
 				val._type = OT_INTEGER;
@@ -1127,14 +1128,14 @@ public:
 	{
 		
 		Lex(); 
-		SQObject id = Expect(TK_IDENTIFIER);
+		SQObject<T> id = Expect(TK_IDENTIFIER);
 		Expect(_SC('{'));
 		
-		SQObject table = _fs->CreateTable();
+		SQObject<T> table = _fs->CreateTable();
 		SQInteger nval = 0;
 		while(_token != _SC('}')) {
-			SQObject key = Expect(TK_IDENTIFIER);
-			SQObject val;
+			SQObject<T> key = Expect(TK_IDENTIFIER);
+			SQObject<T> val;
 			if(_token == _SC('=')) {
 				Lex();
 				val = ExpectScalar();
@@ -1146,21 +1147,21 @@ public:
 			_table(table)->NewSlot(SQObjectPtr(key),SQObjectPtr(val));
 			if(_token == ',') Lex();
 		}
-		SQTable *enums = _table(_ss(_vm)->_consts);
-		SQObjectPtr strongid = id; 
+		SQTable<T> *enums = _table(_ss(_vm)->_consts);
+		SQObjectPtr<T> strongid = id;
 		/*SQObjectPtr dummy;
 		if(enums->Get(strongid,dummy)) {
 			dummy.Null(); strongid.Null();
 			Error(_SC("enumeration already exists"));
 		}*/
-		enums->NewSlot(SQObjectPtr(strongid),SQObjectPtr(table));
+		enums->NewSlot(SQObjectPtr<T>(strongid),SQObjectPtr<T>(table));
 		strongid.Null();
 		Lex();
 		
 	}
 	void TryCatchStatement()
 	{
-		SQObject exid;
+		SQObject<T> exid;
 		Lex();
 		_fs->AddInstruction(_OP_PUSHTRAP,0,0);
 		_fs->_traps++;
@@ -1186,7 +1187,7 @@ public:
 	void FunctionExp(SQInteger ftype)
 	{
 		Lex(); Expect(_SC('('));
-		CreateFunction(_null_);
+		CreateFunction(_null_<T>);
 		_fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, ftype == TK_FUNCTION?0:1);
 	}
 	void ClassExp()
@@ -1243,12 +1244,12 @@ public:
 			_fs->AddInstruction(_OP_INCL, _fs->PushTarget(), src, 0, token == TK_MINUSMINUS?-1:1);
 		}
 	}
-	void CreateFunction(SQObject &name)
+	void CreateFunction(SQObject<T> &name)
 	{
 		
-		SQFuncState *funcstate = _fs->PushChildState(_ss(_vm));
+		SQFuncState<T> *funcstate = _fs->PushChildState(_ss(_vm));
 		funcstate->_name = name;
-		SQObject paramname;
+		SQObject<T> paramname;
 		funcstate->AddParameter(_fs->CreateString(_SC("this")));
 		funcstate->_sourcename = _sourcename;
 		SQInteger defparams = 0;
@@ -1293,14 +1294,14 @@ public:
 			Lex();
 		}
 		
-		SQFuncState *currchunk = _fs;
+		SQFuncState<T> *currchunk = _fs;
 		_fs = funcstate;
 		Statement();
 		funcstate->AddLineInfos(_lex._prevtoken == _SC('\n')?_lex._lasttokenline:_lex._currentline, _lineinfo, true);
         funcstate->AddInstruction(_OP_RETURN, -1);
 		funcstate->SetStackSize(0);
 		//_fs->->_stacksize = _fs->_stacksize;
-		SQFunctionProto *func = funcstate->BuildProto();
+		SQFunctionProto<T> *func = funcstate->BuildProto();
 #ifdef _DEBUG_DUMP
 		funcstate->Dump(func);
 #endif
@@ -1313,7 +1314,7 @@ public:
 		if(_fs->GetStackSize() != stacksize)
 			_fs->SetStackSize(stacksize);
 	}
-	void ResolveBreaks(SQFuncState *funcstate, SQInteger ntoresolve)
+	void ResolveBreaks(SQFuncState<T> *funcstate, SQInteger ntoresolve)
 	{
 		while(ntoresolve > 0) {
 			SQInteger pos = funcstate->_unresolvedbreaks.back();
@@ -1323,7 +1324,7 @@ public:
 			ntoresolve--;
 		}
 	}
-	void ResolveContinues(SQFuncState *funcstate, SQInteger ntoresolve, SQInteger targetpos)
+	void ResolveContinues(SQFuncState<T> *funcstate, SQInteger ntoresolve, SQInteger targetpos)
 	{
 		while(ntoresolve > 0) {
 			SQInteger pos = funcstate->_unresolvedcontinues.back();
@@ -1335,9 +1336,9 @@ public:
 	}
 private:
 	SQInteger _token;
-	SQFuncState *_fs;
-	SQObjectPtr _sourcename;
-	SQLexer _lex;
+	SQFuncState<T> *_fs;
+	SQObjectPtr<T> _sourcename;
+	SQLexer<T> _lex;
 	bool _lineinfo;
 	bool _raiseerror;
 	SQInteger _debugline;
@@ -1345,11 +1346,15 @@ private:
 	ExpStateVec _expstates;
 	SQChar *compilererror;
 	jmp_buf _errorjmp;
-	SQVM *_vm;
+	SQVM<T> *_vm;
 };
 
-bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+template <Squirk T>
+bool Compile(SQVM<T> *vm,SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr<T> &out, bool raiseerror, bool lineinfo)
 {
-	SQCompiler p(vm, rg, up, sourcename, raiseerror, lineinfo);
+	SQCompiler<T> p(vm, rg, up, sourcename, raiseerror, lineinfo);
 	return p.Compile(out);
 }
+
+template bool Compile(SQVM<Squirk::Standard> *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr<Squirk::Standard> &out, bool raiseerror, bool lineinfo);
+template bool Compile(SQVM<Squirk::AlignObject> *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr<Squirk::AlignObject> &out, bool raiseerror, bool lineinfo);

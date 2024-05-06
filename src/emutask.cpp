@@ -1,92 +1,103 @@
 #include "emutask.h"
 
-bool EmuTask::SetSmoothing(SQBool enable)
+template <Squirk T>
+bool EmuTask<T>::SetSmoothing(SQBool enable)
 {
     // g_emu_task.setSmoothing(g_emu_task, enable);
-    return SetBool(_SC("setSmoothing"), enable);
+    return M2Object<T>::SetBool(_SC("setSmoothing"), enable);
 }
 
-bool EmuTask::SetScanline(SQBool enable)
+template <Squirk T>
+bool EmuTask<T>::SetScanline(SQBool enable)
 {
     // g_emu_task.setScanline(g_emu_task, enable);
-    return SetBool(_SC("setScanline"), enable);
+    return M2Object<T>::SetBool(_SC("setScanline"), enable);
 }
 
-bool EmuTask::SetInputDirectionMerge(SQInteger mode)
+template <Squirk T>
+bool EmuTask<T>::SetInputDirectionMerge(SQInteger mode)
 {
     // g_emu_task.setInputDirectionMerge(g_emu_task, mode);
-    return SetInteger(_SC("setInputDirectionMerge"), mode);
+    return M2Object<T>::SetInteger(_SC("setInputDirectionMerge"), mode);
 }
 
-bool EmuTask::SetInputDeadzone(SQFloat value)
+template <Squirk T>
+bool EmuTask<T>::SetInputDeadzone(SQFloat value)
 {
     // g_emu_task.setInputDeadzone(g_emu_task, value);
-    return SetFloat(_SC("setInputDeadzone"), value);
+    return M2Object<T>::SetFloat(_SC("setInputDeadzone"), value);
 }
 
-bool EmuTask::SetInfoInteger(const SQChar *key, SQInteger value)
+template <Squirk T>
+bool EmuTask<T>::SetInfoInteger(const SQChar *key, SQInteger value)
 {
     // g_emu_task.setInfoInteger(g_emu_task, key, value);
-    return M2Object::SetInfoInteger(_SC("setInfoInteger"), key, value);
+    return M2Object<T>::SetInfoInteger(_SC("setInfoInteger"), key, value);
 }
 
-bool EmuTask::GetInfoInteger(const SQChar *key, SQInteger *value)
+template <Squirk T>
+bool EmuTask<T>::GetInfoInteger(const SQChar *key, SQInteger *value)
 {
     // g_emu_task.getInfoInteger(g_emu_task, key, value);
-    return M2Object::GetInfoInteger(_SC("getInfoInteger"), key, value);
+    return M2Object<T>::GetInfoInteger(_SC("getInfoInteger"), key, value);
 }
 
-bool EmuTask::GetRamValue(SQInteger width, SQInteger offset, SQInteger *value)
+template <Squirk T>
+bool EmuTask<T>::GetRamValue(SQInteger width, SQInteger offset, SQInteger *value)
 {
-    if (!GetClosure(_SC("getRamValue"))) return false;
+    if (!M2Object<T>::GetClosure(_SC("getRamValue"))) return false;
 
-    sq_push(m_vm, -2);
-    sq_pushinteger(m_vm, width);
-    sq_pushinteger(m_vm, offset);
-    SQRESULT res = sq_call(m_vm, 3, true, false);
-    sq_getinteger(m_vm, -1, value);
-    sq_pop(m_vm, 3);
+    sq_push<T>(M2Object<T>::m_vm, -2);
+    sq_pushinteger<T>(M2Object<T>::m_vm, width);
+    sq_pushinteger<T>(M2Object<T>::m_vm, offset);
+    SQRESULT res = sq_call<T>(M2Object<T>::m_vm, 3, true, false);
+    sq_getinteger<T>(M2Object<T>::m_vm, -1, value);
+    sq_pop<T>(M2Object<T>::m_vm, 3);
 
     if (SQ_SUCCEEDED(res)) return true;
     return false;
 }
 
-bool EmuTask::SetRamValue(SQInteger width, SQInteger offset, SQInteger value)
+template <Squirk T>
+bool EmuTask<T>::SetRamValue(SQInteger width, SQInteger offset, SQInteger value)
 {
-    if (!GetClosure(_SC("setRamValue"))) return false;
+    if (!M2Object<T>::GetClosure(_SC("setRamValue"))) return false;
 
-    sq_push(m_vm, -2);
-    sq_pushinteger(m_vm, width);
-    sq_pushinteger(m_vm, offset);
-    sq_pushinteger(m_vm, value);
-    SQRESULT res = sq_call(m_vm, 4, false, false);
-    sq_pop(m_vm, 2);
+    sq_push<T>(M2Object<T>::m_vm, -2);
+    sq_pushinteger<T>(M2Object<T>::m_vm, width);
+    sq_pushinteger<T>(M2Object<T>::m_vm, offset);
+    sq_pushinteger<T>(M2Object<T>::m_vm, value);
+    SQRESULT res = sq_call<T>(M2Object<T>::m_vm, 4, false, false);
+    sq_pop<T>(M2Object<T>::m_vm, 2);
 
     if (SQ_SUCCEEDED(res)) return true;
     return false;
 }
 
-bool EmuTask::EntryCdRomPatch(SQInteger offset, SQArray *data)
+template <Squirk T>
+bool EmuTask<T>::EntryCdRomPatch(SQInteger offset, SQArray<T> *data)
 {
-    SQObjectPtr dataObj(data);
-    if (!GetClosure(_SC("entryCdRomPatch"))) return false;
+    SQObjectPtr<T> dataObj(data);
+    if (!M2Object<T>::GetClosure(_SC("entryCdRomPatch"))) return false;
 
-    sq_push(m_vm, -2);
-    sq_pushinteger(m_vm, offset);
-    sq_pushobject(m_vm, dataObj);
-    SQRESULT res = sq_call(m_vm, 3, false, false);
-    sq_pop(m_vm, 2);
+    sq_push<T>(M2Object<T>::m_vm, -2);
+    sq_pushinteger<T>(M2Object<T>::m_vm, offset);
+    sq_pushobject<T>(M2Object<T>::m_vm, dataObj);
+    SQRESULT res = sq_call<T>(M2Object<T>::m_vm, 3, false, false);
+    sq_pop<T>(M2Object<T>::m_vm, 2);
 
     if (SQ_SUCCEEDED(res)) return true;
     return false;
 }
 
-bool EmuTask::ReleaseCdRomPatch()
+template <Squirk T>
+bool EmuTask<T>::ReleaseCdRomPatch()
 {
-    return Void(_SC("releaseCdRomPatch"));
+    return M2Object<T>::Void(_SC("releaseCdRomPatch"));
 }
 
-bool EmuTask::UpdateEmuScreen()
+template <Squirk T>
+bool EmuTask<T>::UpdateEmuScreen()
 {
-    return Void(_SC("updateEmuScreen"));
+    return M2Object<T>::Void(_SC("updateEmuScreen"));
 }

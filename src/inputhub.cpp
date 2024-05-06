@@ -1,13 +1,15 @@
 #include "inputhub.h"
 
-bool InputHub::SetDirectionMerge(SQInteger mode)
+template <Squirk T>
+bool InputHub<T>::SetDirectionMerge(SQInteger mode)
 {
     // g_inputHub.setDirectionMerge(g_inputHub, mode);
-    return SetInteger(_SC("setDirectionMerge"), mode);
+    return M2Object<T>::SetInteger(_SC("setDirectionMerge"), mode);
 }
 
-bool InputHub::SetDeadzone(SQFloat value)
+template <Squirk T>
+bool InputHub<T>::SetDeadzone(SQFloat value)
 {
     // g_inputHub.setDeadzone(g_inputHub, value);
-    return SetFloat(_SC("setDeadzone"), value);
+    return M2Object<T>::SetFloat(_SC("setDeadzone"), value);
 }

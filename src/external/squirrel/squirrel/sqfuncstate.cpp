@@ -74,7 +74,8 @@ SQInstructionDesc g_InstrDesc[]={
 	{_SC("_OP_NEWSLOTA")}
 };
 #endif
-void DumpLiteral(SQObjectPtr &o)
+template <Squirk T>
+void DumpLiteral(SQObjectPtr<T> &o)
 {
 	switch(type(o)){
 		case OT_STRING:	scprintf(_SC("\"%s\""),_stringval(o));break;
@@ -85,11 +86,12 @@ void DumpLiteral(SQObjectPtr &o)
 	}
 }
 
-SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed)
+template <Squirk T>
+SQFuncState<T>::SQFuncState(SQSharedState<T> *ss,SQFuncState<T> *parent,CompilerErrorFunc efunc,void *ed)
 {
 		_nliterals = 0;
-		_literals = SQTable::Create(ss,0);
-		_strings =  SQTable::Create(ss,0);
+		_literals = SQTable<T>::Create(ss,0);
+		_strings =  SQTable<T>::Create(ss,0);
 		_sharedstate = ss;
 		_lastline = 0;
 		_optimization = true;
@@ -104,24 +106,26 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
 
 }
 
-void SQFuncState::Error(const SQChar *err)
+template <Squirk T>
+void SQFuncState<T>::Error(const SQChar *err)
 {
 	_errfunc(_errtarget,err);
 }
 
 #ifdef _DEBUG_DUMP
-void SQFuncState::Dump(SQFunctionProto *func)
+template <Squirk T>
+void SQFuncState<T>::Dump(SQFunctionProto<T> *func)
 {
 	SQUnsignedInteger n=0,i;
 	SQInteger si;
 	scprintf(_SC("SQInstruction sizeof %d\n"),sizeof(SQInstruction));
-	scprintf(_SC("SQObject sizeof %d\n"),sizeof(SQObject));
+	scprintf(_SC("SQObject sizeof %d\n"),sizeof(SQObject<T>));
 	scprintf(_SC("--------------------------------------------------------------------\n"));
 	scprintf(_SC("*****FUNCTION [%s]\n"),type(func->_name)==OT_STRING?_stringval(func->_name):_SC("unknown"));
 	scprintf(_SC("-----LITERALS\n"));
-	SQObjectPtr refidx,key,val;
+	SQObjectPtr<T> refidx,key,val;
 	SQInteger idx;
-	SQObjectPtrVec templiterals;
+	SQObjectPtrVec<T> templiterals;
 	templiterals.resize(_nliterals);
 	while((idx=_table(_literals)->Next(false,refidx,key,val))!=-1) {
 		refidx=idx;
@@ -167,7 +171,7 @@ void SQFuncState::Dump(SQFunctionProto *func)
 				scprintf(_SC("null"));
 			else {
 				SQInteger refidx;
-				SQObjectPtr val,key,refo;
+				SQObjectPtr<T> val,key,refo;
 				while(((refidx=_table(_literals)->Next(false,refo,key,val))!= -1) && (_integer(val) != lidx)) {
 					refo = refidx;	
 				}
@@ -183,7 +187,7 @@ void SQFuncState::Dump(SQFunctionProto *func)
 					scprintf(_SC("null"));
 				else {
 					SQInteger refidx;
-					SQObjectPtr val,key,refo;
+					SQObjectPtr<T> val,key,refo;
 					while(((refidx=_table(_literals)->Next(false,refo,key,val))!= -1) && (_integer(val) != lidx)) {
 						refo = refidx;	
 				}
@@ -208,19 +212,22 @@ void SQFuncState::Dump(SQFunctionProto *func)
 }
 #endif
 
-SQInteger SQFuncState::GetNumericConstant(const SQInteger cons)
+template <Squirk T>
+SQInteger SQFuncState<T>::GetNumericConstant(const SQInteger cons)
 {
-	return GetConstant(SQObjectPtr(cons));
+	return GetConstant(SQObjectPtr<T>(cons));
 }
 
-SQInteger SQFuncState::GetNumericConstant(const SQFloat cons)
+template <Squirk T>
+SQInteger SQFuncState<T>::GetNumericConstant(const SQFloat cons)
 {
-	return GetConstant(SQObjectPtr(cons));
+	return GetConstant(SQObjectPtr<T>(cons));
 }
 
-SQInteger SQFuncState::GetConstant(const SQObject &cons)
+template <Squirk T>
+SQInteger SQFuncState<T>::GetConstant(const SQObject<T> &cons)
 {
-	SQObjectPtr val;
+	SQObjectPtr<T> val;
 	if(!_table(_literals)->Get(cons,val))
 	{
 		val = _nliterals;
@@ -234,7 +241,8 @@ SQInteger SQFuncState::GetConstant(const SQObject &cons)
 	return _integer(val);
 }
 
-void SQFuncState::SetIntructionParams(SQInteger pos,SQInteger arg0,SQInteger arg1,SQInteger arg2,SQInteger arg3)
+template <Squirk T>
+void SQFuncState<T>::SetIntructionParams(SQInteger pos,SQInteger arg0,SQInteger arg1,SQInteger arg2,SQInteger arg3)
 {
 	_instructions[pos]._arg0=(unsigned char)*((SQUnsignedInteger *)&arg0);
 	_instructions[pos]._arg1=(SQInt32)*((SQUnsignedInteger *)&arg1);
@@ -242,7 +250,8 @@ void SQFuncState::SetIntructionParams(SQInteger pos,SQInteger arg0,SQInteger arg
 	_instructions[pos]._arg3=(unsigned char)*((SQUnsignedInteger *)&arg3);
 }
 
-void SQFuncState::SetIntructionParam(SQInteger pos,SQInteger arg,SQInteger val)
+template <Squirk T>
+void SQFuncState<T>::SetIntructionParam(SQInteger pos,SQInteger arg,SQInteger val)
 {
 	switch(arg){
 		case 0:_instructions[pos]._arg0=(unsigned char)*((SQUnsignedInteger *)&val);break;
@@ -252,10 +261,11 @@ void SQFuncState::SetIntructionParam(SQInteger pos,SQInteger arg,SQInteger val)
 	};
 }
 
-SQInteger SQFuncState::AllocStackPos()
+template <Squirk T>
+SQInteger SQFuncState<T>::AllocStackPos()
 {
 	SQInteger npos=_vlocals.size();
-	_vlocals.push_back(SQLocalVarInfo());
+	_vlocals.push_back(SQLocalVarInfo<T>());
 	if(_vlocals.size()>((SQUnsignedInteger)_stacksize)) {
 		if(_stacksize>MAX_FUNC_STACKSIZE) Error(_SC("internal compiler error: too many locals"));
 		_stacksize=_vlocals.size();
@@ -263,7 +273,8 @@ SQInteger SQFuncState::AllocStackPos()
 	return npos;
 }
 
-SQInteger SQFuncState::PushTarget(SQInteger n)
+template <Squirk T>
+SQInteger SQFuncState<T>::PushTarget(SQInteger n)
 {
 	if(n!=-1){
 		_targetstack.push_back(n);
@@ -274,14 +285,18 @@ SQInteger SQFuncState::PushTarget(SQInteger n)
 	return n;
 }
 
-SQInteger SQFuncState::GetUpTarget(SQInteger n){
+template <Squirk T>
+SQInteger SQFuncState<T>::GetUpTarget(SQInteger n){
 	return _targetstack[((_targetstack.size()-1)-n)];
 }
 
-SQInteger SQFuncState::TopTarget(){
+template <Squirk T>
+SQInteger SQFuncState<T>::TopTarget(){
 	return _targetstack.back();
 }
-SQInteger SQFuncState::PopTarget()
+
+template <Squirk T>
+SQInteger SQFuncState<T>::PopTarget()
 {
 	SQInteger npos=_targetstack.back();
 	SQLocalVarInfo t=_vlocals[_targetstack.back()];
@@ -292,12 +307,14 @@ SQInteger SQFuncState::PopTarget()
 	return npos;
 }
 
-SQInteger SQFuncState::GetStackSize()
+template <Squirk T>
+SQInteger SQFuncState<T>::GetStackSize()
 {
 	return _vlocals.size();
 }
 
-void SQFuncState::SetStackSize(SQInteger n)
+template <Squirk T>
+void SQFuncState<T>::SetStackSize(SQInteger n)
 {
 	SQInteger size=_vlocals.size();
 	while(size>n){
@@ -311,9 +328,10 @@ void SQFuncState::SetStackSize(SQInteger n)
 	}
 }
 
-bool SQFuncState::IsConstant(const SQObject &name,SQObject &e)
+template <Squirk T>
+bool SQFuncState<T>::IsConstant(const SQObject<T> &name,SQObject<T> &e)
 {
-	SQObjectPtr val;
+	SQObjectPtr<T> val;
 	if(_table(_sharedstate->_consts)->Get(name,val)) {
 		e = val;
 		return true;
@@ -321,17 +339,19 @@ bool SQFuncState::IsConstant(const SQObject &name,SQObject &e)
 	return false;
 }
 
-bool SQFuncState::IsLocal(SQUnsignedInteger stkpos)
+template <Squirk T>
+bool SQFuncState<T>::IsLocal(SQUnsignedInteger stkpos)
 {
 	if(stkpos>=_vlocals.size())return false;
 	else if(type(_vlocals[stkpos]._name)!=OT_NULL)return true;
 	return false;
 }
 
-SQInteger SQFuncState::PushLocalVariable(const SQObject &name)
+template <Squirk T>
+SQInteger SQFuncState<T>::PushLocalVariable(const SQObject<T> &name)
 {
 	SQInteger pos=_vlocals.size();
-	SQLocalVarInfo lvi;
+	SQLocalVarInfo<T> lvi;
 	lvi._name=name;
 	lvi._start_op=GetCurrentPos()+1;
 	lvi._pos=_vlocals.size();
@@ -341,7 +361,8 @@ SQInteger SQFuncState::PushLocalVariable(const SQObject &name)
 	return pos;
 }
 
-SQInteger SQFuncState::GetLocalVariable(const SQObject &name)
+template <Squirk T>
+SQInteger SQFuncState<T>::GetLocalVariable(const SQObject<T> &name)
 {
 	SQInteger locals=_vlocals.size();
 	while(locals>=1){
@@ -353,7 +374,8 @@ SQInteger SQFuncState::GetLocalVariable(const SQObject &name)
 	return -1;
 }
 
-SQInteger SQFuncState::GetOuterVariable(const SQObject &name)
+template <Squirk T>
+SQInteger SQFuncState<T>::GetOuterVariable(const SQObject<T> &name)
 {
 	SQInteger outers = _outervalues.size();
 	for(SQInteger i = 0; i<outers; i++) {
@@ -363,7 +385,8 @@ SQInteger SQFuncState::GetOuterVariable(const SQObject &name)
 	return -1;
 }
 
-void SQFuncState::AddOuterValue(const SQObject &name)
+template <Squirk T>
+void SQFuncState<T>::AddOuterValue(const SQObject<T> &name)
 {
 	SQInteger pos=-1;
 	if(_parent) { 
@@ -371,25 +394,27 @@ void SQFuncState::AddOuterValue(const SQObject &name)
 		if(pos == -1) {
 			pos = _parent->GetOuterVariable(name);
 			if(pos != -1) {
-				_outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otOUTER)); //local
+				_outervalues.push_back(SQOuterVar<T>(name,SQObjectPtr<T>(SQInteger(pos)),otOUTER)); //local
 				return;
 			}
 		}
 		else {
-			_outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otLOCAL)); //local
+			_outervalues.push_back(SQOuterVar<T>(name,SQObjectPtr<T>(SQInteger(pos)),otLOCAL)); //local
 			return;
 		}
 	}	
-	_outervalues.push_back(SQOuterVar(name,name,otSYMBOL)); //global
+	_outervalues.push_back(SQOuterVar<T>(name,name,otSYMBOL)); //global
 }
 
-void SQFuncState::AddParameter(const SQObject &name)
+template <Squirk T>
+void SQFuncState<T>::AddParameter(const SQObject<T> &name)
 {
 	PushLocalVariable(name);
 	_parameters.push_back(name);
 }
 
-void SQFuncState::AddLineInfos(SQInteger line,bool lineop,bool force)
+template <Squirk T>
+void SQFuncState<T>::AddLineInfos(SQInteger line,bool lineop,bool force)
 {
 	if(_lastline!=line || force){
 		SQLineInfo li;
@@ -400,7 +425,8 @@ void SQFuncState::AddLineInfos(SQInteger line,bool lineop,bool force)
 	}
 }
 
-void SQFuncState::AddInstruction(SQInstruction &i)
+template <Squirk T>
+void SQFuncState<T>::AddInstruction(SQInstruction &i)
 {
 	SQInteger size = _instructions.size();
 	if(size > 0 && _optimization){ //simple optimizer
@@ -496,27 +522,30 @@ void SQFuncState::AddInstruction(SQInstruction &i)
 	_instructions.push_back(i);
 }
 
-SQObject SQFuncState::CreateString(const SQChar *s,SQInteger len)
+template <Squirk T>
+SQObject<T> SQFuncState<T>::CreateString(const SQChar *s,SQInteger len)
 {
-	SQObjectPtr ns(SQString::Create(_sharedstate,s,len));
+	SQObjectPtr<T> ns(SQString<T>::Create(_sharedstate,s,len));
 	_table(_strings)->NewSlot(ns,(SQInteger)1);
 	return ns;
 }
 
-SQObject SQFuncState::CreateTable()
+template <Squirk T>
+SQObject<T> SQFuncState<T>::CreateTable()
 {
-	SQObjectPtr nt(SQTable::Create(_sharedstate,0));
+	SQObjectPtr<T> nt(SQTable<T>::Create(_sharedstate,0));
 	_table(_strings)->NewSlot(nt,(SQInteger)1);
 	return nt;
 }
 
-SQFunctionProto *SQFuncState::BuildProto()
+template <Squirk T>
+SQFunctionProto<T> *SQFuncState<T>::BuildProto()
 {
-	SQFunctionProto *f=SQFunctionProto::Create(_instructions.size(),
+	SQFunctionProto<T> *f=SQFunctionProto<T>::Create(_instructions.size(),
 		_nliterals,_parameters.size(),_functions.size(),_outervalues.size(),
 		_lineinfos.size(),_localvarinfos.size(),_defaultparams.size());
 
-	SQObjectPtr refidx,key,val;
+	SQObjectPtr<T> refidx,key,val;
 	SQInteger idx;
 
 	f->_stacksize = _stacksize;
@@ -543,7 +572,8 @@ SQFunctionProto *SQFuncState::BuildProto()
 	return f;
 }
 
-SQFuncState *SQFuncState::PushChildState(SQSharedState *ss)
+template <Squirk T>
+SQFuncState<T> *SQFuncState<T>::PushChildState(SQSharedState<T> *ss)
 {
 	SQFuncState *child = (SQFuncState *)sq_malloc(sizeof(SQFuncState));
 	new (child) SQFuncState(ss,this,_errfunc,_errtarget);
@@ -551,14 +581,16 @@ SQFuncState *SQFuncState::PushChildState(SQSharedState *ss)
 	return child;
 }
 
-void SQFuncState::PopChildState()
+template <Squirk T>
+void SQFuncState<T>::PopChildState()
 {
 	SQFuncState *child = _childstates.back();
 	sq_delete(child,SQFuncState);
 	_childstates.pop_back();
 }
 
-SQFuncState::~SQFuncState()
+template <Squirk T>
+SQFuncState<T>::~SQFuncState()
 {
 	while(_childstates.size() > 0)
 	{

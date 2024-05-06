@@ -12,7 +12,8 @@
 
 #define hashptr(p)  ((SQHash)(((SQInteger)p) >> 3))
 
-inline SQHash HashObj(const SQObjectPtr &key)
+template <Squirk T>
+inline SQHash HashObj(const SQObjectPtr<T> &key)
 {
 	switch(type(key)) {
 		case OT_STRING:		return _string(key)->_hash;
@@ -22,14 +23,15 @@ inline SQHash HashObj(const SQObjectPtr &key)
 	}
 }
 
-struct SQTable : public SQDelegable 
+template <Squirk T>
+struct SQTable : public SQDelegable<T>
 {
 private:
 	struct _HashNode
 	{
 		_HashNode() { next = NULL; }
-		SQObjectPtr val;
-		SQObjectPtr key;
+		SQObjectPtr<T> val;
+		SQObjectPtr<T> key;
 		_HashNode *next;
 	};
 	_HashNode *_firstfree;
@@ -40,29 +42,29 @@ private:
 ///////////////////////////
 	void AllocNodes(SQInteger nSize);
 	void Rehash(bool force);
-	SQTable(SQSharedState *ss, SQInteger nInitialSize);
+	SQTable(SQSharedState<T> *ss, SQInteger nInitialSize);
 	void _ClearNodes();
 public:
-	static SQTable* Create(SQSharedState *ss,SQInteger nInitialSize)
+	static SQTable<T>* Create(SQSharedState<T> *ss,SQInteger nInitialSize)
 	{
-		SQTable *newtable = (SQTable*)SQ_MALLOC(sizeof(SQTable));
-		new (newtable) SQTable(ss, nInitialSize);
+		SQTable<T> *newtable = (SQTable<T>*)SQ_MALLOC(sizeof(SQTable<T>));
+		new (newtable) SQTable<T>(ss, nInitialSize);
 		newtable->_delegate = NULL;
 		return newtable;
 	}
 	void Finalize();
-	SQTable *Clone();
+	SQTable<T> *Clone();
 	~SQTable()
 	{
-		SetDelegate(NULL);
-		REMOVE_FROM_CHAIN(&_sharedstate->_gc_chain, this);
+		SQDelegable<T>::SetDelegate(NULL);
+		REMOVE_FROM_CHAIN(&SQDelegable<T>::_sharedstate->_gc_chain, this);
 		for (SQInteger i = 0; i < _numofnodes; i++) _nodes[i].~_HashNode();
 		SQ_FREE(_nodes, _numofnodes * sizeof(_HashNode));
 	}
 #ifndef NO_GARBAGE_COLLECTOR 
-	void Mark(SQCollectable **chain);
+	void Mark(SQCollectable<T> **chain);
 #endif
-	inline _HashNode *_Get(const SQObjectPtr &key,SQHash hash)
+	inline _HashNode *_Get(const SQObjectPtr<T> &key,SQHash hash)
 	{
 		_HashNode *n = &_nodes[hash];
 		do{
@@ -72,20 +74,23 @@ public:
 		}while((n = n->next));
 		return NULL;
 	}
-	bool Get(const SQObjectPtr &key,SQObjectPtr &val);
-	void Remove(const SQObjectPtr &key);
-	bool Set(const SQObjectPtr &key, const SQObjectPtr &val);
+	bool Get(const SQObjectPtr<T> &key,SQObjectPtr<T> &val);
+	void Remove(const SQObjectPtr<T> &key);
+	bool Set(const SQObjectPtr<T> &key, const SQObjectPtr<T> &val);
 	//returns true if a new slot has been created false if it was already present
-	bool NewSlot(const SQObjectPtr &key,const SQObjectPtr &val);
-	SQInteger Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval);
+	bool NewSlot(const SQObjectPtr<T> &key,const SQObjectPtr<T> &val);
+	SQInteger Next(bool getweakrefs,const SQObjectPtr<T> &refpos, SQObjectPtr<T> &outkey, SQObjectPtr<T> &outval);
 	
 	SQInteger CountUsed(){ return _usednodes;}
 	void Clear();
 	void Release()
 	{
-		sq_delete(this, SQTable);
+		sq_delete(this, SQTable<T>);
 	}
 	
 };
+
+template SQTable<Squirk::Standard>;
+template SQTable<Squirk::AlignObject>;
 
 #endif //_SQTABLE_H_

@@ -30,171 +30,165 @@
 
 #include "squirrel.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// @cond DEV
     /// Allows modules to interface with Squirrel's C api without linking to the squirrel library
     /// If new functions are added to the Squirrel API, they should be added here too
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    typedef struct {
+    template <Squirk Q>
+    struct sq_api {
         /*vm*/
-        HSQUIRRELVM     (*open)(SQInteger initialstacksize);
-        HSQUIRRELVM     (*newthread)(HSQUIRRELVM friendvm, SQInteger initialstacksize);
-        void            (*seterrorhandler)(HSQUIRRELVM v);
-        void            (*close)(HSQUIRRELVM v);
-        void            (*setforeignptr)(HSQUIRRELVM v,SQUserPointer p);
-        SQUserPointer   (*getforeignptr)(HSQUIRRELVM v);
+        HSQUIRRELVM<Q>     (*open)(SQInteger initialstacksize);
+        HSQUIRRELVM<Q>     (*newthread)(HSQUIRRELVM<Q> friendvm, SQInteger initialstacksize);
+        void               (*seterrorhandler)(HSQUIRRELVM<Q> v);
+        void               (*close)(HSQUIRRELVM<Q> v);
+        void               (*setforeignptr)(HSQUIRRELVM<Q> v,SQUserPointer p);
+        SQUserPointer      (*getforeignptr)(HSQUIRRELVM<Q> v);
 #if SQUIRREL_VERSION_NUMBER >= 300
-        void            (*setprintfunc)(HSQUIRRELVM v, SQPRINTFUNCTION printfunc, SQPRINTFUNCTION);
+        void               (*setprintfunc)(HSQUIRRELVM<Q> v, SQPRINTFUNCTION<Q> printfunc, SQPRINTFUNCTION<Q>);
 #else
-        void            (*setprintfunc)(HSQUIRRELVM v, SQPRINTFUNCTION printfunc);
+        void               (*setprintfunc)(HSQUIRRELVM<Q> v, SQPRINTFUNCTION<Q> printfunc);
 #endif
-        SQPRINTFUNCTION (*getprintfunc)(HSQUIRRELVM v);
-        SQRESULT        (*suspendvm)(HSQUIRRELVM v);
-        SQRESULT        (*wakeupvm)(HSQUIRRELVM v,SQBool resumedret,SQBool retval,SQBool raiseerror,SQBool throwerror);
-        SQInteger       (*getvmstate)(HSQUIRRELVM v);
+        SQPRINTFUNCTION<Q> (*getprintfunc)(HSQUIRRELVM<Q> v);
+        SQRESULT           (*suspendvm)(HSQUIRRELVM<Q> v);
+        SQRESULT           (*wakeupvm)(HSQUIRRELVM<Q> v,SQBool resumedret,SQBool retval,SQBool raiseerror,SQBool throwerror);
+        SQInteger          (*getvmstate)(HSQUIRRELVM<Q> v);
 
         /*compiler*/
-        SQRESULT        (*compile)(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror);
-        SQRESULT        (*compilebuffer)(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror);
-        void            (*enabledebuginfo)(HSQUIRRELVM v, SQBool enable);
-        void            (*notifyallexceptions)(HSQUIRRELVM v, SQBool enable);
-        void            (*setcompilererrorhandler)(HSQUIRRELVM v,SQCOMPILERERROR f);
+        SQRESULT           (*compile)(HSQUIRRELVM<Q> v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror);
+        SQRESULT           (*compilebuffer)(HSQUIRRELVM<Q> v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror);
+        void               (*enabledebuginfo)(HSQUIRRELVM<Q> v, SQBool enable);
+        void               (*notifyallexceptions)(HSQUIRRELVM<Q> v, SQBool enable);
+        void               (*setcompilererrorhandler)(HSQUIRRELVM<Q> v,SQCOMPILERERROR<Q> f);
 
         /*stack operations*/
-        void            (*push)(HSQUIRRELVM v,SQInteger idx);
-        void            (*pop)(HSQUIRRELVM v,SQInteger nelemstopop);
-        void            (*poptop)(HSQUIRRELVM v);
-        void            (*remove)(HSQUIRRELVM v,SQInteger idx);
-        SQInteger       (*gettop)(HSQUIRRELVM v);
-        void            (*settop)(HSQUIRRELVM v,SQInteger newtop);
+        void               (*push)(HSQUIRRELVM<Q> v,SQInteger idx);
+        void               (*pop)(HSQUIRRELVM<Q> v,SQInteger nelemstopop);
+        void               (*poptop)(HSQUIRRELVM<Q> v);
+        void               (*remove)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQInteger          (*gettop)(HSQUIRRELVM<Q> v);
+        void               (*settop)(HSQUIRRELVM<Q> v,SQInteger newtop);
 #if SQUIRREL_VERSION_NUMBER >= 300
-        SQRESULT            (*reservestack)(HSQUIRRELVM v,SQInteger nsize);
+        SQRESULT           (*reservestack)(HSQUIRRELVM<Q> v,SQInteger nsize);
 #else
-        void            (*reservestack)(HSQUIRRELVM v,SQInteger nsize);
+        void               (*reservestack)(HSQUIRRELVM<Q> v,SQInteger nsize);
 #endif
-        SQInteger       (*cmp)(HSQUIRRELVM v);
-        void            (*move)(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx);
+        SQInteger          (*cmp)(HSQUIRRELVM<Q> v);
+        void               (*move)(HSQUIRRELVM<Q> dest,HSQUIRRELVM<Q> src,SQInteger idx);
 
         /*object creation handling*/
-        SQUserPointer   (*newuserdata)(HSQUIRRELVM v,SQUnsignedInteger size);
-        void            (*newtable)(HSQUIRRELVM v);
-        void            (*newarray)(HSQUIRRELVM v,SQInteger size);
-        void            (*newclosure)(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars);
-        SQRESULT        (*setparamscheck)(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *typemask);
-        SQRESULT        (*bindenv)(HSQUIRRELVM v,SQInteger idx);
-        void            (*pushstring)(HSQUIRRELVM v,const SQChar *s,SQInteger len);
-        void            (*pushfloat)(HSQUIRRELVM v,SQFloat f);
-        void            (*pushinteger)(HSQUIRRELVM v,SQInteger n);
-        void            (*pushbool)(HSQUIRRELVM v,SQBool b);
-        void            (*pushuserpointer)(HSQUIRRELVM v,SQUserPointer p);
-        void            (*pushnull)(HSQUIRRELVM v);
-        SQObjectType    (*gettype)(HSQUIRRELVM v,SQInteger idx);
-        SQInteger       (*getsize)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getbase)(HSQUIRRELVM v,SQInteger idx);
-        SQBool          (*instanceof)(HSQUIRRELVM v);
+        SQUserPointer      (*newuserdata)(HSQUIRRELVM<Q> v,SQUnsignedInteger size);
+        void               (*newtable)(HSQUIRRELVM<Q> v);
+        void               (*newarray)(HSQUIRRELVM<Q> v,SQInteger size);
+        void               (*newclosure)(HSQUIRRELVM<Q> v,SQFUNCTION<Q> func,SQUnsignedInteger nfreevars);
+        SQRESULT           (*setparamscheck)(HSQUIRRELVM<Q> v,SQInteger nparamscheck,const SQChar *typemask);
+        SQRESULT           (*bindenv)(HSQUIRRELVM<Q> v,SQInteger idx);
+        void               (*pushstring)(HSQUIRRELVM<Q> v,const SQChar *s,SQInteger len);
+        void               (*pushfloat)(HSQUIRRELVM<Q> v,SQFloat f);
+        void               (*pushinteger)(HSQUIRRELVM<Q> v,SQInteger n);
+        void               (*pushbool)(HSQUIRRELVM<Q> v,SQBool b);
+        void               (*pushuserpointer)(HSQUIRRELVM<Q> v,SQUserPointer p);
+        void               (*pushnull)(HSQUIRRELVM<Q> v);
+        SQObjectType       (*gettype)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQInteger          (*getsize)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getbase)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQBool             (*instanceof)(HSQUIRRELVM<Q> v);
 #if SQUIRREL_VERSION_NUMBER >= 300
-        SQRESULT            (*tostring)(HSQUIRRELVM v,SQInteger idx);
+        SQRESULT           (*tostring)(HSQUIRRELVM<Q> v,SQInteger idx);
 #else
-        void            (*tostring)(HSQUIRRELVM v,SQInteger idx);
+        void               (*tostring)(HSQUIRRELVM<Q> v,SQInteger idx);
 #endif
-        void            (*tobool)(HSQUIRRELVM v, SQInteger idx, SQBool *b);
-        SQRESULT        (*getstring)(HSQUIRRELVM v,SQInteger idx,const SQChar **c);
-        SQRESULT        (*getinteger)(HSQUIRRELVM v,SQInteger idx,SQInteger *i);
-        SQRESULT        (*getfloat)(HSQUIRRELVM v,SQInteger idx,SQFloat *f);
-        SQRESULT        (*getbool)(HSQUIRRELVM v,SQInteger idx,SQBool *b);
-        SQRESULT        (*getthread)(HSQUIRRELVM v,SQInteger idx,HSQUIRRELVM *thread);
-        SQRESULT        (*getuserpointer)(HSQUIRRELVM v,SQInteger idx,SQUserPointer *p);
-        SQRESULT        (*getuserdata)(HSQUIRRELVM v,SQInteger idx,SQUserPointer *p,SQUserPointer *typetag);
-        SQRESULT        (*settypetag)(HSQUIRRELVM v,SQInteger idx,SQUserPointer typetag);
-        SQRESULT        (*gettypetag)(HSQUIRRELVM v,SQInteger idx,SQUserPointer *typetag);
-        void            (*setreleasehook)(HSQUIRRELVM v,SQInteger idx,SQRELEASEHOOK hook);
-        SQChar*         (*getscratchpad)(HSQUIRRELVM v,SQInteger minsize);
-        SQRESULT        (*getclosureinfo)(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger *nparams,SQUnsignedInteger *nfreevars);
-        SQRESULT        (*setnativeclosurename)(HSQUIRRELVM v,SQInteger idx,const SQChar *name);
-        SQRESULT        (*setinstanceup)(HSQUIRRELVM v, SQInteger idx, SQUserPointer p);
-        SQRESULT        (*getinstanceup)(HSQUIRRELVM v, SQInteger idx, SQUserPointer *p,SQUserPointer typetag);
-        SQRESULT        (*setclassudsize)(HSQUIRRELVM v, SQInteger idx, SQInteger udsize);
-        SQRESULT        (*newclass)(HSQUIRRELVM v,SQBool hasbase);
-        SQRESULT        (*createinstance)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*setattributes)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getattributes)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getclass)(HSQUIRRELVM v,SQInteger idx);
-        void            (*weakref)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getdefaultdelegate)(HSQUIRRELVM v,SQObjectType t);
+        void               (*tobool)(HSQUIRRELVM<Q> v, SQInteger idx, SQBool *b);
+        SQRESULT           (*getstring)(HSQUIRRELVM<Q> v,SQInteger idx,const SQChar **c);
+        SQRESULT           (*getinteger)(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger *i);
+        SQRESULT           (*getfloat)(HSQUIRRELVM<Q> v,SQInteger idx,SQFloat *f);
+        SQRESULT           (*getbool)(HSQUIRRELVM<Q> v,SQInteger idx,SQBool *b);
+        SQRESULT           (*getthread)(HSQUIRRELVM<Q> v,SQInteger idx,HSQUIRRELVM<Q> *thread);
+        SQRESULT           (*getuserpointer)(HSQUIRRELVM<Q> v,SQInteger idx,SQUserPointer *p);
+        SQRESULT           (*getuserdata)(HSQUIRRELVM<Q> v,SQInteger idx,SQUserPointer *p,SQUserPointer *typetag);
+        SQRESULT           (*settypetag)(HSQUIRRELVM<Q> v,SQInteger idx,SQUserPointer typetag);
+        SQRESULT           (*gettypetag)(HSQUIRRELVM<Q> v,SQInteger idx,SQUserPointer *typetag);
+        void               (*setreleasehook)(HSQUIRRELVM<Q> v,SQInteger idx,SQRELEASEHOOK hook);
+        SQChar*            (*getscratchpad)(HSQUIRRELVM<Q> v,SQInteger minsize);
+        SQRESULT           (*getclosureinfo)(HSQUIRRELVM<Q> v,SQInteger idx,SQUnsignedInteger *nparams,SQUnsignedInteger *nfreevars);
+        SQRESULT           (*setnativeclosurename)(HSQUIRRELVM<Q> v,SQInteger idx,const SQChar *name);
+        SQRESULT           (*setinstanceup)(HSQUIRRELVM<Q> v, SQInteger idx, SQUserPointer p);
+        SQRESULT           (*getinstanceup)(HSQUIRRELVM<Q> v, SQInteger idx, SQUserPointer *p,SQUserPointer typetag);
+        SQRESULT           (*setclassudsize)(HSQUIRRELVM<Q> v, SQInteger idx, SQInteger udsize);
+        SQRESULT           (*newclass)(HSQUIRRELVM<Q> v,SQBool hasbase);
+        SQRESULT           (*createinstance)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*setattributes)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getattributes)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getclass)(HSQUIRRELVM<Q> v,SQInteger idx);
+        void               (*weakref)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getdefaultdelegate)(HSQUIRRELVM<Q> v,SQObjectType t);
 
         /*object manipulation*/
-        void            (*pushroottable)(HSQUIRRELVM v);
-        void            (*pushregistrytable)(HSQUIRRELVM v);
-        void            (*pushconsttable)(HSQUIRRELVM v);
-        SQRESULT        (*setroottable)(HSQUIRRELVM v);
-        SQRESULT        (*setconsttable)(HSQUIRRELVM v);
-        SQRESULT        (*newslot)(HSQUIRRELVM v, SQInteger idx, SQBool bstatic);
-        SQRESULT        (*deleteslot)(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
-        SQRESULT        (*set)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*get)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*rawget)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*rawset)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*rawdeleteslot)(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
-        SQRESULT        (*arrayappend)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*arraypop)(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
-        SQRESULT        (*arrayresize)(HSQUIRRELVM v,SQInteger idx,SQInteger newsize);
-        SQRESULT        (*arrayreverse)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*arrayremove)(HSQUIRRELVM v,SQInteger idx,SQInteger itemidx);
-        SQRESULT        (*arrayinsert)(HSQUIRRELVM v,SQInteger idx,SQInteger destpos);
-        SQRESULT        (*setdelegate)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getdelegate)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*clone)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*setfreevariable)(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval);
-        SQRESULT        (*next)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*getweakrefval)(HSQUIRRELVM v,SQInteger idx);
-        SQRESULT        (*clear)(HSQUIRRELVM v,SQInteger idx);
+        void               (*pushroottable)(HSQUIRRELVM<Q> v);
+        void               (*pushregistrytable)(HSQUIRRELVM<Q> v);
+        void               (*pushconsttable)(HSQUIRRELVM<Q> v);
+        SQRESULT           (*setroottable)(HSQUIRRELVM<Q> v);
+        SQRESULT           (*setconsttable)(HSQUIRRELVM<Q> v);
+        SQRESULT           (*newslot)(HSQUIRRELVM<Q> v, SQInteger idx, SQBool bstatic);
+        SQRESULT           (*deleteslot)(HSQUIRRELVM<Q> v,SQInteger idx,SQBool pushval);
+        SQRESULT           (*set)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*get)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*rawget)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*rawset)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*rawdeleteslot)(HSQUIRRELVM<Q> v,SQInteger idx,SQBool pushval);
+        SQRESULT           (*arrayappend)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*arraypop)(HSQUIRRELVM<Q> v,SQInteger idx,SQBool pushval);
+        SQRESULT           (*arrayresize)(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger newsize);
+        SQRESULT           (*arrayreverse)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*arrayremove)(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger itemidx);
+        SQRESULT           (*arrayinsert)(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger destpos);
+        SQRESULT           (*setdelegate)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getdelegate)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*clone)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*setfreevariable)(HSQUIRRELVM<Q> v,SQInteger idx,SQUnsignedInteger nval);
+        SQRESULT           (*next)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*getweakrefval)(HSQUIRRELVM<Q> v,SQInteger idx);
+        SQRESULT           (*clear)(HSQUIRRELVM<Q> v,SQInteger idx);
 
         /*calls*/
-        SQRESULT        (*call)(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror);
-        SQRESULT        (*resume)(HSQUIRRELVM v,SQBool retval,SQBool raiseerror);
-        const SQChar*   (*getlocal)(HSQUIRRELVM v,SQUnsignedInteger level,SQUnsignedInteger idx);
-        const SQChar*   (*getfreevariable)(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval);
-        SQRESULT        (*throwerror)(HSQUIRRELVM v,const SQChar *err);
-        void            (*reseterror)(HSQUIRRELVM v);
-        void            (*getlasterror)(HSQUIRRELVM v);
+        SQRESULT           (*call)(HSQUIRRELVM<Q> v,SQInteger params,SQBool retval,SQBool raiseerror);
+        SQRESULT           (*resume)(HSQUIRRELVM<Q> v,SQBool retval,SQBool raiseerror);
+        const SQChar*      (*getlocal)(HSQUIRRELVM<Q> v,SQUnsignedInteger level,SQUnsignedInteger idx);
+        const SQChar*      (*getfreevariable)(HSQUIRRELVM<Q> v,SQInteger idx,SQUnsignedInteger nval);
+        SQRESULT           (*throwerror)(HSQUIRRELVM<Q> v,const SQChar *err);
+        void               (*reseterror)(HSQUIRRELVM<Q> v);
+        void               (*getlasterror)(HSQUIRRELVM<Q> v);
 
         /*raw object handling*/
-        SQRESULT        (*getstackobj)(HSQUIRRELVM v,SQInteger idx,HSQOBJECT *po);
-        void            (*pushobject)(HSQUIRRELVM v,HSQOBJECT obj);
-        void            (*addref)(HSQUIRRELVM v,HSQOBJECT *po);
-        SQBool          (*release)(HSQUIRRELVM v,HSQOBJECT *po);
-        void            (*resetobject)(HSQOBJECT *po);
-        const SQChar*   (*objtostring)(HSQOBJECT *o);
-        SQBool          (*objtobool)(HSQOBJECT *o);
-        SQInteger       (*objtointeger)(HSQOBJECT *o);
-        SQFloat         (*objtofloat)(HSQOBJECT *o);
-        SQRESULT        (*getobjtypetag)(HSQOBJECT *o,SQUserPointer * typetag);
+        SQRESULT           (*getstackobj)(HSQUIRRELVM<Q> v,SQInteger idx,HSQOBJECT<Q> *po);
+        void               (*pushobject)(HSQUIRRELVM<Q> v,HSQOBJECT<Q> obj);
+        void               (*addref)(HSQUIRRELVM<Q> v,HSQOBJECT<Q> *po);
+        SQBool             (*release)(HSQUIRRELVM<Q> v,HSQOBJECT<Q> *po);
+        void               (*resetobject)(HSQOBJECT<Q> *po);
+        const SQChar*      (*objtostring)(HSQOBJECT<Q> *o);
+        SQBool             (*objtobool)(HSQOBJECT<Q> *o);
+        SQInteger          (*objtointeger)(HSQOBJECT<Q> *o);
+        SQFloat            (*objtofloat)(HSQOBJECT<Q> *o);
+        SQRESULT           (*getobjtypetag)(HSQOBJECT<Q> *o,SQUserPointer * typetag);
 
         /*GC*/
-        SQInteger       (*collectgarbage)(HSQUIRRELVM v);
+        SQInteger          (*collectgarbage)(HSQUIRRELVM<Q> v);
 
         /*serialization*/
-        SQRESULT        (*writeclosure)(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up);
-        SQRESULT        (*readclosure)(HSQUIRRELVM vm,SQREADFUNC readf,SQUserPointer up);
+        SQRESULT           (*writeclosure)(HSQUIRRELVM<Q> vm,SQWRITEFUNC writef,SQUserPointer up);
+        SQRESULT           (*readclosure)(HSQUIRRELVM<Q> vm,SQREADFUNC readf,SQUserPointer up);
 
         /*mem allocation*/
-        void*           (*malloc)(SQUnsignedInteger size);
-        void*           (*realloc)(void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize);
-        void            (*free)(void *p,SQUnsignedInteger size);
+        void*              (*malloc)(SQUnsignedInteger size);
+        void*              (*realloc)(void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize);
+        void               (*free)(void *p,SQUnsignedInteger size);
 
         /*debug*/
-        SQRESULT        (*stackinfos)(HSQUIRRELVM v,SQInteger level,SQStackInfos *si);
-        void            (*setdebughook)(HSQUIRRELVM v);
-    } sq_api;
-    typedef sq_api* HSQAPI;
+        SQRESULT           (*stackinfos)(HSQUIRRELVM<Q> v,SQInteger level,SQStackInfos *si);
+        void               (*setdebughook)(HSQUIRRELVM<Q> v);
+    };
+    template <Squirk Q>
+    using HSQAPI = struct sq_api<Q>*;
     /// @endcond
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
 
 #endif /*_SQ_MODULE_H_*/

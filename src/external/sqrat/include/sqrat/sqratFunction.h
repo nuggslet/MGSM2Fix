@@ -37,17 +37,21 @@ namespace Sqrat {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Represents a function in Squirrel
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <Squirk Q>
 class Function  {
 
+    template <Squirk Q>
     friend class TableBase;
+    template <Squirk Q>
     friend class Table;
+    template <Squirk Q>
     friend class ArrayBase;
-    friend struct Var<Function>;
+    friend struct Var<Function<Q>, Q>;
 
 private:
 
-    HSQUIRRELVM vm;
-    HSQOBJECT env, obj;
+    HSQUIRRELVM<Q> vm;
+    HSQOBJECT<Q> env, obj;
 
 public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +69,7 @@ public:
     /// \param sf Function to copy
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function(const Function& sf) : vm(sf.vm), env(sf.env), obj(sf.obj) {
+    Function(const Function<Q>& sf) : vm(sf.vm), env(sf.env), obj(sf.obj) {
         sq_addref(vm, &env);
         sq_addref(vm, &obj);
     }
@@ -80,9 +84,9 @@ public:
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function(const Object& e, const SQChar* slot) : vm(e.GetVM()), env(e.GetObject()) {
+    Function(const Object<Q>& e, const SQChar* slot) : vm(e.GetVM()), env(e.GetObject()) {
         sq_addref(vm, &env);
-        Object so = e.GetSlot(slot);
+        Object<Q> so = e.GetSlot(slot);
         obj = so.GetObject();
         sq_addref(vm, &obj);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -102,7 +106,7 @@ public:
     /// \param o Squirrel object that should already represent a Squirrel function
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function(HSQUIRRELVM v, HSQOBJECT e, HSQOBJECT o) : vm(v), env(e), obj(o) {
+    Function(HSQUIRRELVM<Q> v, HSQOBJECT<Q> e, HSQOBJECT<Q> o) : vm(v), env(e), obj(o) {
         sq_addref(vm, &env);
         sq_addref(vm, &obj);
     }
@@ -123,7 +127,7 @@ public:
     /// \return The Function itself
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function& operator=(const Function& sf) {
+    Function<Q>& operator=(const Function<Q>& sf) {
         Release();
         vm = sf.vm;
         env = sf.env;
@@ -149,7 +153,7 @@ public:
     /// \return Squirrel object representing the Function environment
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQOBJECT GetEnv() const {
+    HSQOBJECT<Q> GetEnv() const {
         return env;
     }
 
@@ -159,7 +163,7 @@ public:
     /// \return Squirrel object representing the Function environment
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQOBJECT& GetEnv() {
+    HSQOBJECT<Q>& GetEnv() {
         return env;
     }
 
@@ -169,7 +173,7 @@ public:
     /// \return Squirrel object representing the Function
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQOBJECT GetFunc() const {
+    HSQOBJECT<Q> GetFunc() const {
         return obj;
     }
 
@@ -179,7 +183,7 @@ public:
     /// \return Squirrel object representing the Function
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQOBJECT& GetFunc() {
+    HSQOBJECT<Q>& GetFunc() {
         return obj;
     }
 
@@ -189,7 +193,7 @@ public:
     /// \return Squirrel VM associated with the Function
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQUIRRELVM GetVM() const {
+    HSQUIRRELVM<Q> GetVM() const {
         return vm;
     }
 
@@ -199,7 +203,7 @@ public:
     /// \return Squirrel VM associated with the Function
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQUIRRELVM& GetVM() {
+    HSQUIRRELVM<Q>& GetVM() {
         return vm;
     }
 
@@ -256,7 +260,7 @@ public:
         sq_call(vm, 1, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -308,7 +312,7 @@ public:
         sq_call(vm, 2, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -363,7 +367,7 @@ public:
         sq_call(vm, 3, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -420,7 +424,7 @@ public:
         sq_call(vm, 4, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -480,7 +484,7 @@ public:
         sq_call(vm, 5, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -543,7 +547,7 @@ public:
         sq_call(vm, 6, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -610,7 +614,7 @@ public:
         sq_call(vm, 7, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -679,7 +683,7 @@ public:
         sq_call(vm, 8, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -751,7 +755,7 @@ public:
         sq_call(vm, 9, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -826,7 +830,7 @@ public:
         sq_call(vm, 10, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -904,7 +908,7 @@ public:
         sq_call(vm, 11, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -985,7 +989,7 @@ public:
         sq_call(vm, 12, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -1069,7 +1073,7 @@ public:
         sq_call(vm, 13, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -1156,7 +1160,7 @@ public:
         sq_call(vm, 14, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -1246,7 +1250,7 @@ public:
         sq_call(vm, 15, true, ErrorHandling::IsEnabled());
 #endif
 
-        SharedPtr<R> ret = Var<SharedPtr<R> >(vm, -1).value;
+        SharedPtr<R> ret = Var<SharedPtr<R>, Q>(vm, -1).value;
         sq_settop(vm, top);
         return ret;
     }
@@ -2612,10 +2616,10 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Function instances to and from the stack as references (functions are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Function> {
+template<Squirk Q>
+struct Var<Function<Q>, Q> {
 
-    Function value; ///< The actual value of get operations
+    Function<Q> value; ///< The actual value of get operations
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Attempts to get the value off the stack at idx as a Function
@@ -2630,9 +2634,9 @@ struct Var<Function> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
-        HSQOBJECT sqEnv;
-        HSQOBJECT sqValue;
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
+        HSQOBJECT<Q> sqEnv;
+        HSQOBJECT<Q> sqValue;
         sq_getstackobj(vm, 1, &sqEnv);
         sq_getstackobj(vm, idx, &sqValue);
         value = Function(vm, sqEnv, sqValue);
@@ -2651,7 +2655,7 @@ struct Var<Function> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const Function& value) {
+    static void push(HSQUIRRELVM<Q> vm, const Function<Q>& value) {
         sq_pushobject(vm, value.GetFunc());
     }
 };
@@ -2659,14 +2663,14 @@ struct Var<Function> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Function instances to and from the stack as references (functions are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Function&> : Var<Function> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Function>(vm, idx) {}};
+template<Squirk Q>
+struct Var<Function<Q>&, Q> : Var<Function<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Function<Q>, Q>(vm, idx) {}};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Function instances to and from the stack as references (functions are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const Function&> : Var<Function> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Function>(vm, idx) {}};
+template<Squirk Q>
+struct Var<const Function<Q>&, Q> : Var<Function<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Function<Q>, Q>(vm, idx) {}};
 
 }
 

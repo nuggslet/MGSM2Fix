@@ -2,15 +2,9 @@
 #ifndef _SQSTD_AUXLIB_H_
 #define _SQSTD_AUXLIB_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-SQUIRREL_API void sqstd_seterrorhandlers(HSQUIRRELVM v);
-SQUIRREL_API void sqstd_printcallstack(HSQUIRRELVM v);
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
+template <Squirk T>
+SQUIRREL_API void sqstd_seterrorhandlers(HSQUIRRELVM<T> v);
+template <Squirk T>
+SQUIRREL_API void sqstd_printcallstack(HSQUIRRELVM<T> v);
 
 #endif /* _SQSTD_AUXLIB_H_ */

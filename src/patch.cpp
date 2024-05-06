@@ -6,14 +6,17 @@ using namespace std;
 
 extern HMODULE baseModule;
 
-enum class MgsGame
+enum class M2FixGame
 {
     Unknown,
     MGS1,
     MGSR,
+    Contra,
+    Dracula,
+    DraculaAdvance,
 };
 
-extern MgsGame eGameType;
+extern M2FixGame eGameType;
 
 void ScanFunctions()
 {
@@ -22,7 +25,8 @@ void ScanFunctions()
     extern uintptr_t M2_freeAddress;
 
     // MGS 1: Squirrel call
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1    || eGameType == M2FixGame::Contra ||
+        eGameType == M2FixGame::Dracula || eGameType == M2FixGame::DraculaAdvance)
     {
         uint8_t* M2_mallocScanResult = Memory::PatternScan(baseModule, "8B FF 55 8B EC 56 8B 75 08 83 FE E0 77 30 85 F6");
         if (M2_mallocScanResult)
@@ -59,7 +63,7 @@ void ScanFunctions()
     }
 
     // MG | SR: Squirrel call
-    if (eGameType == MgsGame::MGSR)
+    if (eGameType == M2FixGame::MGSR)
     {
         uint8_t* M2_mallocScanResult = Memory::PatternScan(baseModule, "40 53 48 83 EC 20 48 8B D9 48 83 F9 E0 77 3C 48");
         if (M2_mallocScanResult)
@@ -96,9 +100,11 @@ void ScanFunctions()
     }
 }
 
+extern void _SQNew_Standard(HSQUIRRELVM<Squirk::Standard> v);
+extern void _SQNew_AlignObject(HSQUIRRELVM<Squirk::AlignObject> v);
+
 // MGS 1: Squirrel hook
 uintptr_t MGS1_SQVMReturnJMP;
-extern void SQNew(HSQUIRRELVM v);
 void __declspec(naked) MGS1_SQVM_CC()
 {
 #ifndef _WIN64
@@ -112,7 +118,7 @@ void __declspec(naked) MGS1_SQVM_CC()
         mov ebp, esp
 
         push esi
-        call SQNew
+        call _SQNew_Standard
 
         mov esp, ebp
         pop ebp
@@ -123,6 +129,35 @@ void __declspec(naked) MGS1_SQVM_CC()
 
         mov dword ptr[esi + 0A4h], 0FFFFFFFFh
         jmp[MGS1_SQVMReturnJMP]
+    }
+#endif
+}
+
+uintptr_t COCA_SQVMReturnJMP;
+void __declspec(naked) COCA_SQVM_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push esi
+        push eax
+        push ecx
+
+        push ebp
+        mov ebp, esp
+
+        push esi
+        call _SQNew_AlignObject
+
+        mov esp, ebp
+        pop ebp
+
+        pop ecx
+        pop eax
+        pop esi
+
+        mov dword ptr[esi + 0D4h], 0FFFFFFFFh
+        jmp[COCA_SQVMReturnJMP]
     }
 #endif
 }
@@ -139,7 +174,7 @@ void __declspec(naked) MGSR_SQVM_CC()
         push r8
         push r9
 
-        call SQNew
+        call _SQNew_Standard
 
         pop r9
         pop r8
@@ -153,7 +188,9 @@ void __declspec(naked) MGSR_SQVM_CC()
 #endif
 }
 
-SQInteger HookNative(SQFUNCTION func, HSQUIRRELVM v);
+SQInteger _HookNative_Standard(SQFUNCTION<Squirk::Standard> func, HSQUIRRELVM<Squirk::Standard> v);
+SQInteger _HookNative_AlignObject(SQFUNCTION<Squirk::AlignObject> func, HSQUIRRELVM<Squirk::AlignObject> v);
+
 uintptr_t MGS1_SQVMCallNativeReturnJMP;
 void __declspec(naked) MGS1_SQVMCallNative_CC()
 {
@@ -165,13 +202,35 @@ void __declspec(naked) MGS1_SQVMCallNative_CC()
 
         push esi
         push eax
-        call HookNative
+        call _HookNative_Standard
 
         mov esp, ebp
         pop ebp
 
         mov ecx, [ebp + 18h]
         jmp[MGS1_SQVMCallNativeReturnJMP]
+    }
+#endif
+}
+
+uintptr_t COCA_SQVMCallNativeReturnJMP;
+void __declspec(naked) COCA_SQVMCallNative_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push ebp
+        mov ebp, esp
+
+        push esi
+        push eax
+        call _HookNative_AlignObject
+
+        mov esp, ebp
+        pop ebp
+
+        mov ecx, [ebp + 18h]
+        jmp[COCA_SQVMCallNativeReturnJMP]
     }
 #endif
 }
@@ -189,7 +248,7 @@ void __declspec(naked) MGSR_SQVMCallNative_CC()
 
         mov rdx, rcx
         mov rcx, qword ptr[rbx + 68h]
-        call HookNative
+        call _HookNative_Standard
 
         pop r9
         pop r8
@@ -203,6 +262,9 @@ void __declspec(naked) MGSR_SQVMCallNative_CC()
 #endif
 }
 
+extern SQRESULT _sq_setnativeclosurename_Standard(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, const SQChar *name);
+extern SQRESULT _sq_setnativeclosurename_AlignObject(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, const SQChar *name);
+
 uintptr_t MGS1_SqratBindFuncReturnJMP;
 void __declspec(naked) MGS1_SqratBindFunc_CC()
 {
@@ -210,13 +272,31 @@ void __declspec(naked) MGS1_SqratBindFunc_CC()
     __asm
     {
         push[esp + 10h]
-        push - 1
+        push -1
         push[edi + 4]
-        call sq_setnativeclosurename
+        call _sq_setnativeclosurename_Standard
         add esp, 12
 
         movzx eax, [esp + 20h]
         jmp[MGS1_SqratBindFuncReturnJMP]
+    }
+#endif
+}
+
+uintptr_t COCA_SqratBindFuncReturnJMP;
+void __declspec(naked) COCA_SqratBindFunc_CC()
+{
+#ifndef _WIN64
+    __asm
+    {
+        push[esp + 10h]
+        push -1
+        push[edi + 8]
+        call _sq_setnativeclosurename_AlignObject
+        add esp, 12
+
+        movzx eax, [esp + 20h]
+        jmp[COCA_SqratBindFuncReturnJMP]
     }
 #endif
 }
@@ -233,7 +313,7 @@ void __declspec(naked) MGSR_SqratBindFunc_CC()
         mov r8, [r8 + 18h]
         add r8, 38h
 
-        call sq_setnativeclosurename
+        call _sq_setnativeclosurename_Standard
 
         movzx r8d, [rsp + 78h]
         mov edx, 0FFFFFFFDh
@@ -246,7 +326,7 @@ void __declspec(naked) MGSR_SqratBindFunc_CC()
 void SquirrelHook()
 {
     // MGS 1: Squirrel hook
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1)
     {
         uint8_t* MGS1_SQVMScanResult = Memory::PatternScan(baseModule, "C7 86 A4 00 00 00 FF FF FF FF 89 86 A0 00 00 00");
         if (MGS1_SQVMScanResult)
@@ -297,8 +377,59 @@ void SquirrelHook()
         }
     }
 
+    if (eGameType == M2FixGame::Contra || eGameType == M2FixGame::Dracula || eGameType == M2FixGame::DraculaAdvance)
+    {
+        uint8_t* COCA_SQVMScanResult = Memory::PatternScan(baseModule, "C7 86 D4 00 00 00 FF FF FF FF 89 86 D0 00 00 00");
+        if (COCA_SQVMScanResult)
+        {
+            uintptr_t COCA_SQVMAddress = (uintptr_t)COCA_SQVMScanResult;
+            int COCA_SQVMHookLength = Memory::GetHookLength((char*)COCA_SQVMAddress, 4);
+            COCA_SQVMReturnJMP = COCA_SQVMAddress + COCA_SQVMHookLength;
+            Memory::DetourFunction((void*)COCA_SQVMAddress, COCA_SQVM_CC, COCA_SQVMHookLength);
+
+            LOG_F(INFO, "CO | CA: SQVM::SQVM hook length is %d bytes.", COCA_SQVMHookLength);
+            LOG_F(INFO, "CO | CA: SQVM::SQVM hook address is 0x%" PRIxPTR ".", (uintptr_t)COCA_SQVMAddress);
+        }
+        else if (!COCA_SQVMScanResult)
+        {
+            LOG_F(INFO, "CO | CA: SQVM::SQVM pattern scan failed.");
+        }
+
+        uint8_t* COCA_SQVMCallNativeScanResult = Memory::PatternScan(baseModule, "FF D0 8B 4D 18 83 C4 04 FF 8E C8 00 00 00 C6 01");
+        if (COCA_SQVMCallNativeScanResult)
+        {
+            uintptr_t COCA_SQVMCallNativeAddress = (uintptr_t)COCA_SQVMCallNativeScanResult;
+            int COCA_SQVMCallNativeHookLength = Memory::GetHookLength((char*)COCA_SQVMCallNativeAddress, 4);
+            COCA_SQVMCallNativeReturnJMP = COCA_SQVMCallNativeAddress + COCA_SQVMCallNativeHookLength;
+            Memory::DetourFunction((void*)COCA_SQVMCallNativeAddress, COCA_SQVMCallNative_CC, COCA_SQVMCallNativeHookLength);
+
+            LOG_F(INFO, "CO | CA: SQVM::CallNative hook length is %d bytes.", COCA_SQVMCallNativeHookLength);
+            LOG_F(INFO, "CO | CA: SQVM::CallNative hook address is 0x%" PRIxPTR ".", (uintptr_t)COCA_SQVMCallNativeAddress);
+        }
+        else if (!COCA_SQVMCallNativeScanResult)
+        {
+            LOG_F(INFO, "CO | CA: SQVM::CallNative pattern scan failed.");
+        }
+
+        uint8_t* COCA_SqratBindFuncScanResult = Memory::PatternScan(baseModule, "0F B6 44 24 20 83 C4 04 8B 4F 08 BA FD FF FF FF");
+        if (COCA_SqratBindFuncScanResult)
+        {
+            uintptr_t COCA_SqratBindFuncAddress = (uintptr_t)COCA_SqratBindFuncScanResult;
+            int COCA_SqratBindFuncHookLength = Memory::GetHookLength((char*)COCA_SqratBindFuncAddress, 4);
+            COCA_SqratBindFuncReturnJMP = COCA_SqratBindFuncAddress + COCA_SqratBindFuncHookLength;
+            Memory::DetourFunction((void*)COCA_SqratBindFuncAddress, COCA_SqratBindFunc_CC, COCA_SqratBindFuncHookLength);
+
+            LOG_F(INFO, "CO | CA: Sqrat::BindFunc hook length is %d bytes.", COCA_SqratBindFuncHookLength);
+            LOG_F(INFO, "CO | CA: Sqrat::BindFunc hook address is 0x%" PRIxPTR ".", (uintptr_t)COCA_SqratBindFuncAddress);
+        }
+        else if (!COCA_SqratBindFuncScanResult)
+        {
+            LOG_F(INFO, "CO | CA: Sqrat::BindFunc pattern scan failed.");
+        }
+    }
+
     // MG | SR: Squirrel hook
-    if (eGameType == MgsGame::MGSR)
+    if (eGameType == M2FixGame::MGSR)
     {
         uint8_t* MGSR_SQVMScanResult = Memory::PatternScan(baseModule, "48 C7 81 FC 00 00 00 FF FF FF FF 48 89 B1 E0 00");
         if (MGSR_SQVMScanResult)
@@ -355,7 +486,8 @@ void M2Hook()
     // MGS 1: M2 hook
     extern void M2Print(const char *fmt, ...);
 
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1    || eGameType == M2FixGame::Contra ||
+        eGameType == M2FixGame::Dracula || eGameType == M2FixGame::DraculaAdvance)
     {
         uint8_t* MGS1_M2PrintScanResult = Memory::PatternScan(baseModule, "8B 4C 24 04 8D 54 24 08 E8 ?? ?? FF FF 85 C0 74");
         if (MGS1_M2PrintScanResult)
@@ -374,7 +506,7 @@ void M2Hook()
     }
 
     // MG | SR: M2 hook
-    if (eGameType == MgsGame::MGSR)
+    if (eGameType == M2FixGame::MGSR)
     {
         uint8_t* MGSR_M2PrintScanResult = Memory::PatternScan(baseModule, "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C 89 4C 24 20 48 83 EC 28 48 8D 54 24 38 E8 ?? ?? ?? ?? 48 85 C0 74 08 48 8B C8 E8 ?? ??");
         if (MGSR_M2PrintScanResult)
@@ -474,9 +606,10 @@ void __declspec(naked) MGSR_MWinResCfgGetValue_CC()
 void ConfigHook()
 {
     // MGS 1: Configuration hook
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1    || eGameType == M2FixGame::Contra ||
+        eGameType == M2FixGame::Dracula || eGameType == M2FixGame::DraculaAdvance)
     {
-        uint8_t* MGS1_MWinResCfgGetValueScanResult = Memory::PatternScan(baseModule, "50 C6 01 00 E8 ?? ?? ?? FF 8B CF E8 78 0B 00 00");
+        uint8_t* MGS1_MWinResCfgGetValueScanResult = Memory::PatternScan(baseModule, "50 C6 01 00 E8 ?? ?? ?? FF 8B CF E8 ?? ?? ?? ?? 85 C0 78 1E 8B 57 04 8D 34 C0 8B 45 20 8D 0C 40");
         if (MGS1_MWinResCfgGetValueScanResult)
         {
             uintptr_t MGS1_MWinResCfgGetValueAddress = (uintptr_t)(MGS1_MWinResCfgGetValueScanResult - 0x48);
@@ -494,7 +627,7 @@ void ConfigHook()
     }
 
     // MG | SR: Configuration hook
-    if (eGameType == MgsGame::MGSR)
+    if (eGameType == M2FixGame::MGSR)
     {
         uint8_t* MGSR_MWinResCfgGetValueScanResult = Memory::PatternScan(baseModule, "48 33 C4 48 89 44 24 50 48 8B FA 48 8B D9 48 89 54 24 48 48 8D 4C 24 28 E8 ?? ?? ?? ?? 48");
         if (MGSR_MWinResCfgGetValueScanResult)
@@ -517,7 +650,7 @@ void ConfigHook()
 void BorderlessPatch()
 {
     // MGS 1: Borderless patch
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1)
     {
         uint8_t* MGS1_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "B8 00 00 CE 02 BE 00 00 CA 02");
         if (MGS1_MWinResCfgSetWindowScanResult)
@@ -533,8 +666,24 @@ void BorderlessPatch()
         }
     }
 
+    if (eGameType == M2FixGame::Contra || eGameType == M2FixGame::Dracula || eGameType == M2FixGame::DraculaAdvance)
+    {
+        uint8_t* COCA_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "B8 00 00 0B 02 C7 85 70 FF FF FF 00 00 CB 00 74 0F B8 00 00 0F 02 C7 85 70 FF FF FF 00 00 CF 00");
+        if (COCA_MWinResCfgSetWindowScanResult)
+        {
+            uint8_t* COCA_MWinResCfgSetWindowPTR = (uint8_t*)COCA_MWinResCfgSetWindowScanResult;
+            uint8_t COCA_MWinResCfgSetWindowFlags[] = { "\xB8\x00\x00\x00\x90\xC7\x85\x70\xFF\xFF\xFF\x00\x00\xCB\x00\x74\x0F\xB8\x00\x00\x00\x90\xC7\x85\x70\xFF\xFF\xFF\x00\x00\xCF\x00" };
+            Memory::PatchBytes((uintptr_t)COCA_MWinResCfgSetWindowPTR, (const char*)COCA_MWinResCfgSetWindowFlags, sizeof(COCA_MWinResCfgSetWindowFlags) - 1);
+            LOG_F(INFO, "CO | CA: Borderless: MWinResCfg::SetWindow patched.");
+        }
+        else if (!COCA_MWinResCfgSetWindowScanResult)
+        {
+            LOG_F(INFO, "CO | CA: Borderless: MWinResCfg::SetWindow pattern scan failed.");
+        }
+    }
+
     // MG | SR: Borderless patch
-    if (eGameType == MgsGame::MGSR)
+    if (eGameType == M2FixGame::MGSR)
     {
         uint8_t* MGSR_MWinResCfgSetWindowScanResult = Memory::PatternScan(baseModule, "BE 00 00 CB 02 41 BE 00 00 CB 00 44 ?? ?? ?? ?? ?? ?? 74 0B BE 00 00 CF 02 41 BE 00 00 CF 00");
         if (MGSR_MWinResCfgSetWindowScanResult)
@@ -554,7 +703,7 @@ void BorderlessPatch()
 void AnalogPatch()
 {
     // MGS 1: Analog patch
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1)
     {
         uint8_t* MGS1_MInputHubDMGetWinScanResult = Memory::PatternScan(baseModule, "66 89 4F 0C F3 0F 2C C0 0F B7 C0 66 89 47 0E 75");
         if (MGS1_MInputHubDMGetWinScanResult)
@@ -611,7 +760,7 @@ void __declspec(naked) MGS1_SIOReadPad_CC()
 void AnalogHook()
 {
     // MGS 1: Analog hook
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1)
     {
         uint8_t* MGS1_SIOReadPadScanResult = Memory::PatternScan(baseModule, "C7 44 24 08 F3 5A 00 00 C7 44 24 0C 00 00 00 00");
         if (MGS1_SIOReadPadScanResult)
@@ -754,7 +903,7 @@ void __declspec(naked) MGS1_M2EPIListInsert_CC()
 
 void EmuHook()
 {
-    if (eGameType == MgsGame::MGS1)
+    if (eGameType == M2FixGame::MGS1)
     {
         uint8_t* MGS1_PSXLoadImageScanResult = Memory::PatternScan(baseModule, "51 FF 70 04 FF 33 E8 ?? ?? ?? ?? 83 C4 0C 6A 06");
         if (MGS1_PSXLoadImageScanResult)

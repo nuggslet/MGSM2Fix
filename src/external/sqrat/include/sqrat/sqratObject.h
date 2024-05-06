@@ -45,15 +45,16 @@ namespace Sqrat {
 /// All Object and derived classes MUST be destroyed before calling sq_close or your application will crash when exiting.
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <Squirk Q>
 class Object {
 protected:
 
 /// @cond DEV
-    HSQUIRRELVM vm;
-    HSQOBJECT obj;
+    HSQUIRRELVM<Q> vm;
+    HSQOBJECT<Q> obj;
     bool release;
 
-    Object(HSQUIRRELVM v, bool releaseOnDestroy = true) : vm(v), release(releaseOnDestroy) {
+    Object(HSQUIRRELVM<Q> v, bool releaseOnDestroy = true) : vm(v), release(releaseOnDestroy) {
         sq_resetobject(&obj);
     }
 /// @endcond
@@ -74,7 +75,7 @@ public:
     /// \param so Object to copy
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Object(const Object& so) : vm(so.vm), obj(so.obj), release(so.release) {
+    Object(const Object<Q>& so) : vm(so.vm), obj(so.obj), release(so.release) {
         sq_addref(vm, &obj);
     }
 
@@ -85,7 +86,7 @@ public:
     /// \param v VM that the object will exist in
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Object(HSQOBJECT o, HSQUIRRELVM v = DefaultVM::Get()) : vm(v), obj(o), release(true) {
+    Object(HSQOBJECT<Q> o, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), obj(o), release(true) {
         sq_addref(vm, &obj);
     }
 
@@ -99,8 +100,8 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class T>
-    Object(T* instance, HSQUIRRELVM v = DefaultVM::Get()) : vm(v), release(true) {
-        ClassType<T>::PushInstance(vm, instance);
+    Object(T* instance, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        ClassType<T, Q>::PushInstance(vm, instance);
         sq_getstackobj(vm, -1, &obj);
         sq_addref(vm, &obj);
     }
@@ -124,7 +125,7 @@ public:
     /// \return The Object itself
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Object& operator=(const Object& so) {
+    Object<Q>& operator=(const Object<Q>& so) {
         if(release) {
             Release();
         }
@@ -141,7 +142,7 @@ public:
     /// \return Squirrel VM associated with the Object
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQUIRRELVM& GetVM() {
+    HSQUIRRELVM<Q>& GetVM() {
         return vm;
     }
 
@@ -151,7 +152,7 @@ public:
     /// \return Squirrel VM associated with the Object
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    HSQUIRRELVM GetVM() const {
+    HSQUIRRELVM<Q> GetVM() const {
         return vm;
     }
 
@@ -181,7 +182,7 @@ public:
     /// \return Squirrel object
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual HSQOBJECT GetObject() const {
+    virtual HSQOBJECT<Q> GetObject() const {
         return obj;
     }
 
@@ -191,7 +192,7 @@ public:
     /// \return Squirrel object
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual HSQOBJECT& GetObject() {
+    virtual HSQOBJECT<Q>& GetObject() {
         return obj;
     }
 
@@ -199,7 +200,7 @@ public:
     /// Allows the Object to be inputted directly into places that expect a HSQOBJECT
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    operator HSQOBJECT&() {
+    operator HSQOBJECT<Q>&() {
         return GetObject();
     }
 
@@ -220,8 +221,8 @@ public:
     /// \return An Object representing the value of the slot (can be a null object if nothing was found)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Object GetSlot(const SQChar* slot) const {
-        HSQOBJECT slotObj;
+    Object<Q> GetSlot(const SQChar* slot) const {
+        HSQOBJECT<Q> slotObj;
         sq_pushobject(vm, GetObject());
         sq_pushstring(vm, slot, -1);
 
@@ -231,14 +232,14 @@ public:
             return Object(vm); // Return a NULL object
         } else {
             sq_getstackobj(vm, -1, &slotObj);
-            Object ret(slotObj, vm); // must addref before the pop!
+            Object<Q> ret(slotObj, vm); // must addref before the pop!
             sq_pop(vm, 2);
             return ret;
         }
 #else
         sq_get(vm, -2);
         sq_getstackobj(vm, -1, &slotObj);
-        Object ret(slotObj, vm); // must addref before the pop!
+        Object<Q> ret(slotObj, vm); // must addref before the pop!
         sq_pop(vm, 2);
         return ret;
 #endif
@@ -252,25 +253,25 @@ public:
     /// \return An Object representing the value of the slot (can be a null object if nothing was found)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Object GetSlot(SQInteger index) const {
-        HSQOBJECT slotObj;
+    Object<Q> GetSlot(SQInteger index) const {
+        HSQOBJECT<Q> slotObj;
         sq_pushobject(vm, GetObject());
         sq_pushinteger(vm, index);
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if(SQ_FAILED(sq_get(vm, -2))) {
             sq_pop(vm, 1);
-            return Object(vm); // Return a NULL object
+            return Object<Q>(vm); // Return a NULL object
         } else {
             sq_getstackobj(vm, -1, &slotObj);
-            Object ret(slotObj, vm); // must addref before the pop!
+            Object<Q> ret(slotObj, vm); // must addref before the pop!
             sq_pop(vm, 2);
             return ret;
         }
 #else
         sq_get(vm, -2);
         sq_getstackobj(vm, -1, &slotObj);
-        Object ret(slotObj, vm); // must addref before the pop!
+        Object<Q> ret(slotObj, vm); // must addref before the pop!
         sq_pop(vm, 2);
         return ret;
 #endif
@@ -290,7 +291,7 @@ public:
     template <class T>
     T Cast() const {
         sq_pushobject(vm, GetObject());
-        T ret = Var<T>(vm, -1).value;
+        T ret = Var<T, Q>(vm, -1).value;
         sq_pop(vm, 1);
         return ret;
     }
@@ -306,7 +307,7 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template <class T>
-    inline Object operator[](T slot)
+    inline Object<Q> operator[](T slot)
     {
         return GetSlot(slot);
     }
@@ -360,7 +361,7 @@ public:
         /// \return HSQOBJECT representing a key
         ///
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        HSQOBJECT getKey() { return Key; }
+        HSQOBJECT<Q> getKey() { return Key; }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// Gets the Squirrel object for the value the iterator is on
@@ -368,11 +369,11 @@ public:
         /// \return HSQOBJECT representing a value
         ///
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        HSQOBJECT getValue() { return Value; }
+        HSQOBJECT<Q> getValue() { return Value; }
     private:
 
-        HSQOBJECT Key;
-        HSQOBJECT Value;
+        HSQOBJECT<Q> Key;
+        HSQOBJECT<Q> Value;
         SQInteger Index;
     };
 
@@ -407,7 +408,7 @@ protected:
 /// @cond DEV
 
     // Bind a function and it's associated Squirrel closure to the object
-    inline void BindFunc(const SQChar* name, void* method, size_t methodSize, SQFUNCTION func, bool staticVar = false) {
+    inline void BindFunc(const SQChar* name, void* method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar = false) {
         sq_pushobject(vm, GetObject());
         sq_pushstring(vm, name, -1);
 
@@ -419,7 +420,7 @@ protected:
         sq_pop(vm,1); // pop table
     }
 
-    inline void BindFunc(const SQInteger index, void* method, size_t methodSize, SQFUNCTION func, bool staticVar = false) {
+    inline void BindFunc(const SQInteger index, void* method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar = false) {
         sq_pushobject(vm, GetObject());
         sq_pushinteger(vm, index);
 
@@ -433,7 +434,7 @@ protected:
 
 
     // Bind a function and it's associated Squirrel closure to the object
-    inline void BindOverload(const SQChar* name, void* method, size_t methodSize, SQFUNCTION func, SQFUNCTION overload, int argCount, bool staticVar = false) {
+    inline void BindOverload(const SQChar* name, void* method, size_t methodSize, SQFUNCTION<Q> func, SQFUNCTION<Q> overload, int argCount, bool staticVar = false) {
         string overloadName = SqOverloadName::Get(name, argCount);
 
         sq_pushobject(vm, GetObject());
@@ -472,6 +473,15 @@ protected:
         sq_pop(vm,1); // pop table
     }
 
+    template<>
+    inline void BindValue<int>(const SQChar* name, const int & val, bool staticVar /*= false*/) {
+        sq_pushobject(vm, GetObject());
+        sq_pushstring(vm, name, -1);
+        PushVar<int>(vm, val);
+        sq_newslot(vm, -3, staticVar);
+        sq_pop(vm, 1); // pop table
+    }
+
     // Set the value of an instance on the object. Changes to values set this way are reciprocated back to the source instance
     template<class V>
     inline void BindInstance(const SQChar* name, V* val, bool staticVar = false) {
@@ -493,24 +503,13 @@ protected:
 /// @endcond
 };
 
-/// @cond DEV
-template<>
-inline void Object::BindValue<int>(const SQChar* name, const int & val, bool staticVar /* = false */) {
-    sq_pushobject(vm, GetObject());
-    sq_pushstring(vm, name, -1);
-    PushVar<int>(vm, val);
-    sq_newslot(vm, -3, staticVar);
-    sq_pop(vm,1); // pop table
-}
-/// @endcond
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Object instances to and from the stack as references (Object is always a reference)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Object> {
+template<Squirk Q>
+struct Var<Object<Q>, Q> {
 
-    Object value; ///< The actual value of get operations
+    Object<Q> value; ///< The actual value of get operations
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Attempts to get the value off the stack at idx as an Object
@@ -522,10 +521,10 @@ struct Var<Object> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
-        HSQOBJECT sqValue;
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
+        HSQOBJECT<Q> sqValue;
         sq_getstackobj(vm, idx, &sqValue);
-        value = Object(sqValue, vm);
+        value = Object<Q>(sqValue, vm);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -535,7 +534,7 @@ struct Var<Object> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const Object& value) {
+    static void push(HSQUIRRELVM<Q> vm, const Object<Q>& value) {
         sq_pushobject(vm, value.GetObject());
     }
 };
@@ -543,14 +542,14 @@ struct Var<Object> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Object instances to and from the stack as references (Object is always a reference)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Object&> : Var<Object> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Object>(vm, idx) {}};
+template<Squirk Q>
+struct Var<Object<Q>&, Q> : Var<Object<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Object<Q>, Q>(vm, idx) {}};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Object instances to and from the stack as references (Object is always a reference)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const Object&> : Var<Object> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Object>(vm, idx) {}};
+template<Squirk Q>
+struct Var<const Object<Q>&, Q> : Var<Object<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Object<Q>, Q>(vm, idx) {}};
 
 }
 

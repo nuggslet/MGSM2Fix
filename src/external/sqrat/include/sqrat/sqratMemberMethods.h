@@ -40,13 +40,13 @@ namespace Sqrat {
 // Squirrel Global Functions
 //
 
-template <class C, class R>
+template <class C, class R, Squirk Q>
 class SqMember {
 public:
 
     // Arg Count 0
-    template <bool overloaded /*= false*/>
-    static SQInteger Func0(HSQUIRRELVM vm) {
+    template <bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -61,7 +61,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -84,8 +84,8 @@ public:
         return 1;
     }
 
-    template <bool overloaded /*= false*/>
-    static SQInteger Func0C(HSQUIRRELVM vm) {
+    template <bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func0C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -99,7 +99,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -123,8 +123,8 @@ public:
     }
 
     // Arg Count 1
-    template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1(HSQUIRRELVM vm) {
+    template <class A1, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -138,7 +138,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -150,7 +150,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -167,8 +167,8 @@ public:
         return 1;
     }
 
-    template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1C(HSQUIRRELVM vm) {
+    template <class A1, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func1C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -182,7 +182,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -194,7 +194,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -212,8 +212,8 @@ public:
     }
 
     // Arg Count 2
-    template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2(HSQUIRRELVM vm) {
+    template <class A1, class A2, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -227,7 +227,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -239,8 +239,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -258,8 +258,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2C(HSQUIRRELVM vm) {
+    template <class A1, class A2, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func2C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -273,7 +273,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -285,8 +285,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -305,8 +305,8 @@ public:
     }
 
     // Arg Count 3
-    template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -320,7 +320,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -332,9 +332,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -353,8 +353,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func3C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -368,7 +368,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -380,9 +380,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -402,8 +402,8 @@ public:
     }
 
     // Arg Count 4
-    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -417,7 +417,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -429,10 +429,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -452,8 +452,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func4C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -467,7 +467,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -479,10 +479,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -503,8 +503,8 @@ public:
     }
 
     // Arg Count 5
-    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -518,7 +518,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -530,11 +530,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -555,8 +555,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func5C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -570,7 +570,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -582,11 +582,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -608,8 +608,8 @@ public:
     }
 
     // Arg Count 6
-    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -623,7 +623,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -635,12 +635,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -662,8 +662,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func6C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -677,7 +677,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -689,12 +689,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -717,8 +717,8 @@ public:
     }
 
     // Arg Count 7
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -732,7 +732,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -744,13 +744,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -773,8 +773,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func7C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -788,7 +788,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -800,13 +800,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -830,8 +830,8 @@ public:
     }
 
     // Arg Count 8
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -845,7 +845,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -857,14 +857,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -888,8 +888,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func8C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -903,7 +903,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -915,14 +915,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -947,8 +947,8 @@ public:
     }
 
     // Arg Count 9
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -962,7 +962,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -974,15 +974,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1007,8 +1007,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func9C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -1022,7 +1022,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1034,15 +1034,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1069,8 +1069,8 @@ public:
 
 
     // Arg Count 10
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/>
-    static SQInteger Func10(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -1084,7 +1084,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1096,16 +1096,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1131,8 +1131,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded  /*= false*/ >
-    static SQInteger Func10C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded  /*= false*/, Squirk Q>
+    static SQInteger Func10C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -1146,7 +1146,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1158,16 +1158,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1195,8 +1195,8 @@ public:
 
 
     // Arg Count 11
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -1210,7 +1210,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1222,17 +1222,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1259,8 +1259,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func11C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -1274,7 +1274,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1286,17 +1286,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1325,8 +1325,8 @@ public:
 
 
     // Arg Count 12
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/  >
-    static SQInteger Func12(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -1340,7 +1340,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1352,18 +1352,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1391,8 +1391,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
-    static SQInteger Func12C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func12C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -1406,7 +1406,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1418,18 +1418,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1458,8 +1458,8 @@ public:
     }
 
     // Arg Count 13
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -1473,7 +1473,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1485,19 +1485,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1526,8 +1526,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func13C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -1541,7 +1541,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1553,19 +1553,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1595,8 +1595,8 @@ public:
     }
 
     // Arg Count 14
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -1610,7 +1610,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1622,20 +1622,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1665,8 +1665,8 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14C(HSQUIRRELVM vm) {
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/, Squirk Q>
+    static SQInteger Func14C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -1680,7 +1680,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1692,20 +1692,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1741,13 +1741,13 @@ public:
 // reference return specialization
 //
 
-template <class C, class R>
-class SqMember<C, R&> {
+template <class C, class R, Squirk Q>
+class SqMember<C, R&, Q> {
 public:
 
     // Arg Count 0
     template <bool overloaded /*= false*/>
-    static SQInteger Func0(HSQUIRRELVM vm) {
+    static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -1761,7 +1761,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1785,7 +1785,7 @@ public:
     }
 
     template <bool overloaded /*= false*/>
-    static SQInteger Func0C(HSQUIRRELVM vm) {
+    static SQInteger Func0C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -1799,7 +1799,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1824,7 +1824,7 @@ public:
 
     // Arg Count 1
     template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1(HSQUIRRELVM vm) {
+    static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -1838,7 +1838,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1850,7 +1850,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1868,7 +1868,7 @@ public:
     }
 
     template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1C(HSQUIRRELVM vm) {
+    static SQInteger Func1C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -1882,7 +1882,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1894,7 +1894,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1913,7 +1913,7 @@ public:
 
     // Arg Count 2
     template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2(HSQUIRRELVM vm) {
+    static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -1927,7 +1927,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1939,8 +1939,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -1959,7 +1959,7 @@ public:
     }
 
     template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2C(HSQUIRRELVM vm) {
+    static SQInteger Func2C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -1973,7 +1973,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -1985,8 +1985,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2006,7 +2006,7 @@ public:
 
     // Arg Count 3
     template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3(HSQUIRRELVM vm) {
+    static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -2020,7 +2020,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2032,9 +2032,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2054,7 +2054,7 @@ public:
     }
 
     template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3C(HSQUIRRELVM vm) {
+    static SQInteger Func3C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -2068,7 +2068,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2080,9 +2080,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2103,7 +2103,7 @@ public:
 
     // Arg Count 4
     template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4(HSQUIRRELVM vm) {
+    static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -2117,7 +2117,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2129,10 +2129,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2153,7 +2153,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4C(HSQUIRRELVM vm) {
+    static SQInteger Func4C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -2167,7 +2167,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2179,10 +2179,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2204,7 +2204,7 @@ public:
 
     // Arg Count 5
     template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5(HSQUIRRELVM vm) {
+    static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -2218,7 +2218,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2230,11 +2230,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2256,7 +2256,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5C(HSQUIRRELVM vm) {
+    static SQInteger Func5C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -2270,7 +2270,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2282,11 +2282,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2309,7 +2309,7 @@ public:
 
     // Arg Count 6
     template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6(HSQUIRRELVM vm) {
+    static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -2323,7 +2323,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2335,12 +2335,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2363,7 +2363,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6C(HSQUIRRELVM vm) {
+    static SQInteger Func6C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -2377,7 +2377,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2389,12 +2389,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2418,7 +2418,7 @@ public:
 
     // Arg Count 7
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7(HSQUIRRELVM vm) {
+    static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -2432,7 +2432,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2444,13 +2444,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2474,7 +2474,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7C(HSQUIRRELVM vm) {
+    static SQInteger Func7C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -2488,7 +2488,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2500,13 +2500,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2531,7 +2531,7 @@ public:
 
     // Arg Count 8
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8(HSQUIRRELVM vm) {
+    static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -2545,7 +2545,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2557,14 +2557,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2589,7 +2589,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8C(HSQUIRRELVM vm) {
+    static SQInteger Func8C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -2603,7 +2603,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2615,14 +2615,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2648,7 +2648,7 @@ public:
 
     // Arg Count 9
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9(HSQUIRRELVM vm) {
+    static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -2662,7 +2662,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2674,15 +2674,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2708,7 +2708,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9C(HSQUIRRELVM vm) {
+    static SQInteger Func9C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -2722,7 +2722,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2734,15 +2734,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2770,7 +2770,7 @@ public:
 
     // Arg Count 10
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/>
-    static SQInteger Func10(HSQUIRRELVM vm) {
+    static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -2784,7 +2784,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2796,16 +2796,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2832,7 +2832,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded  /*= false*/ >
-    static SQInteger Func10C(HSQUIRRELVM vm) {
+    static SQInteger Func10C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -2846,7 +2846,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2858,16 +2858,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2896,7 +2896,7 @@ public:
 
     // Arg Count 11
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11(HSQUIRRELVM vm) {
+    static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -2910,7 +2910,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2922,17 +2922,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -2960,7 +2960,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11C(HSQUIRRELVM vm) {
+    static SQInteger Func11C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -2974,7 +2974,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -2986,17 +2986,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3026,7 +3026,7 @@ public:
 
     // Arg Count 12
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/  >
-    static SQInteger Func12(HSQUIRRELVM vm) {
+    static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -3040,7 +3040,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3052,18 +3052,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3092,7 +3092,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
-    static SQInteger Func12C(HSQUIRRELVM vm) {
+    static SQInteger Func12C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -3106,7 +3106,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3118,18 +3118,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3159,7 +3159,7 @@ public:
 
     // Arg Count 13
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13(HSQUIRRELVM vm) {
+    static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -3173,7 +3173,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3185,19 +3185,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3227,7 +3227,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13C(HSQUIRRELVM vm) {
+    static SQInteger Func13C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -3241,7 +3241,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3253,19 +3253,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3296,7 +3296,7 @@ public:
 
     // Arg Count 14
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14(HSQUIRRELVM vm) {
+    static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -3310,7 +3310,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3322,20 +3322,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3366,7 +3366,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14C(HSQUIRRELVM vm) {
+    static SQInteger Func14C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -3380,7 +3380,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3392,20 +3392,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3442,13 +3442,13 @@ public:
 // void return specialization
 //
 
-template <class C>
-class SqMember<C, void> {
+template <class C, Squirk Q>
+class SqMember<C, void, Q> {
 public:
 
     // Arg Count 0
     template <bool overloaded /*= false*/>
-    static SQInteger Func0(HSQUIRRELVM vm) {
+    static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -3462,7 +3462,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3485,7 +3485,7 @@ public:
     }
 
     template <bool overloaded /*= false*/>
-    static SQInteger Func0C(HSQUIRRELVM vm) {
+    static SQInteger Func0C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 2) {
@@ -3499,7 +3499,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3523,7 +3523,7 @@ public:
 
     // Arg Count 1
     template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1(HSQUIRRELVM vm) {
+    static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -3537,7 +3537,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3549,7 +3549,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3566,7 +3566,7 @@ public:
     }
 
     template <class A1, bool overloaded /*= false*/>
-    static SQInteger Func1C(HSQUIRRELVM vm) {
+    static SQInteger Func1C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 3) {
@@ -3580,7 +3580,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3592,7 +3592,7 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
+        Var<A1, Q> a1(vm, 2);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3610,7 +3610,7 @@ public:
 
     // Arg Count 2
     template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2(HSQUIRRELVM vm) {
+    static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -3624,7 +3624,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3636,8 +3636,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3655,7 +3655,7 @@ public:
     }
 
     template <class A1, class A2, bool overloaded /*= false*/>
-    static SQInteger Func2C(HSQUIRRELVM vm) {
+    static SQInteger Func2C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 4) {
@@ -3669,7 +3669,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3681,8 +3681,8 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3701,7 +3701,7 @@ public:
 
     // Arg Count 3
     template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3(HSQUIRRELVM vm) {
+    static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -3715,7 +3715,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3727,9 +3727,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3748,7 +3748,7 @@ public:
     }
 
     template <class A1, class A2, class A3, bool overloaded /*= false*/>
-    static SQInteger Func3C(HSQUIRRELVM vm) {
+    static SQInteger Func3C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 5) {
@@ -3762,7 +3762,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3774,9 +3774,9 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3796,7 +3796,7 @@ public:
 
     // Arg Count 4
     template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4(HSQUIRRELVM vm) {
+    static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -3810,7 +3810,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3822,10 +3822,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3845,7 +3845,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
-    static SQInteger Func4C(HSQUIRRELVM vm) {
+    static SQInteger Func4C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 6) {
@@ -3859,7 +3859,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3871,10 +3871,10 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3895,7 +3895,7 @@ public:
 
     // Arg Count 5
     template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5(HSQUIRRELVM vm) {
+    static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -3909,7 +3909,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3921,11 +3921,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3946,7 +3946,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
-    static SQInteger Func5C(HSQUIRRELVM vm) {
+    static SQInteger Func5C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 7) {
@@ -3960,7 +3960,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -3972,11 +3972,11 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -3998,7 +3998,7 @@ public:
 
     // Arg Count 6
     template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6(HSQUIRRELVM vm) {
+    static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -4012,7 +4012,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4024,12 +4024,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4051,7 +4051,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
-    static SQInteger Func6C(HSQUIRRELVM vm) {
+    static SQInteger Func6C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 8) {
@@ -4065,7 +4065,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4077,12 +4077,12 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4105,7 +4105,7 @@ public:
 
     // Arg Count 7
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7(HSQUIRRELVM vm) {
+    static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -4119,7 +4119,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4131,13 +4131,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4160,7 +4160,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
-    static SQInteger Func7C(HSQUIRRELVM vm) {
+    static SQInteger Func7C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 9) {
@@ -4174,7 +4174,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4186,13 +4186,13 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4216,7 +4216,7 @@ public:
 
     // Arg Count 8
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8(HSQUIRRELVM vm) {
+    static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -4230,7 +4230,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4242,14 +4242,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4273,7 +4273,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
-    static SQInteger Func8C(HSQUIRRELVM vm) {
+    static SQInteger Func8C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 10) {
@@ -4287,7 +4287,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4299,14 +4299,14 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4331,7 +4331,7 @@ public:
 
     // Arg Count 9
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9(HSQUIRRELVM vm) {
+    static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -4345,7 +4345,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4357,15 +4357,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4390,7 +4390,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
-    static SQInteger Func9C(HSQUIRRELVM vm) {
+    static SQInteger Func9C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 11) {
@@ -4404,7 +4404,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4416,15 +4416,15 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4450,7 +4450,7 @@ public:
 
     // Arg Count 10
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/>
-    static SQInteger Func10(HSQUIRRELVM vm) {
+    static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -4464,7 +4464,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4476,16 +4476,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4511,7 +4511,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/>
-    static SQInteger Func10C(HSQUIRRELVM vm) {
+    static SQInteger Func10C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 12) {
@@ -4525,7 +4525,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4537,16 +4537,16 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4573,7 +4573,7 @@ public:
 
     // Arg Count 11
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11(HSQUIRRELVM vm) {
+    static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -4587,7 +4587,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4599,17 +4599,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4636,7 +4636,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
-    static SQInteger Func11C(HSQUIRRELVM vm) {
+    static SQInteger Func11C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 13) {
@@ -4650,7 +4650,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4662,17 +4662,17 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4700,7 +4700,7 @@ public:
 
     // Arg Count 12
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
-    static SQInteger Func12(HSQUIRRELVM vm) {
+    static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -4714,7 +4714,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4726,18 +4726,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4765,7 +4765,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
-    static SQInteger Func12C(HSQUIRRELVM vm) {
+    static SQInteger Func12C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 14) {
@@ -4779,7 +4779,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4791,18 +4791,18 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4831,7 +4831,7 @@ public:
 
     // Arg Count 13
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13(HSQUIRRELVM vm) {
+    static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -4845,7 +4845,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4857,19 +4857,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4898,7 +4898,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
-    static SQInteger Func13C(HSQUIRRELVM vm) {
+    static SQInteger Func13C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 15) {
@@ -4912,7 +4912,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4924,19 +4924,19 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -4966,7 +4966,7 @@ public:
 
     // Arg Count 14
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14(HSQUIRRELVM vm) {
+    static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -4980,7 +4980,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -4992,20 +4992,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -5035,7 +5035,7 @@ public:
     }
 
     template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
-    static SQInteger Func14C(HSQUIRRELVM vm) {
+    static SQInteger Func14C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         if (!SQRAT_CONST_CONDITION(overloaded) && sq_gettop(vm) != 16) {
@@ -5049,7 +5049,7 @@ public:
 
         C* ptr;
         SQTRY()
-        ptr = Var<C*>(vm, 1).value;
+        ptr = Var<C*, Q>(vm, 1).value;
         SQCATCH_NOEXCEPT(vm) {
             SQCLEAR(vm); // clear the previous error
             assert(0); // may fail because C is not a type bound in the VM
@@ -5061,20 +5061,20 @@ public:
         }
 
         SQTRY()
-        Var<A1> a1(vm, 2);
-        Var<A2> a2(vm, 3);
-        Var<A3> a3(vm, 4);
-        Var<A4> a4(vm, 5);
-        Var<A5> a5(vm, 6);
-        Var<A6> a6(vm, 7);
-        Var<A7> a7(vm, 8);
-        Var<A8> a8(vm, 9);
-        Var<A9> a9(vm, 10);
-        Var<A10> a10(vm, 11);
-        Var<A11> a11(vm, 12);
-        Var<A12> a12(vm, 13);
-        Var<A13> a13(vm, 14);
-        Var<A14> a14(vm, 15);
+        Var<A1, Q> a1(vm, 2);
+        Var<A2, Q> a2(vm, 3);
+        Var<A3, Q> a3(vm, 4);
+        Var<A4, Q> a4(vm, 5);
+        Var<A5, Q> a5(vm, 6);
+        Var<A6, Q> a6(vm, 7);
+        Var<A7, Q> a7(vm, 8);
+        Var<A8, Q> a8(vm, 9);
+        Var<A9, Q> a9(vm, 10);
+        Var<A10, Q> a10(vm, 11);
+        Var<A11, Q> a11(vm, 12);
+        Var<A12, Q> a12(vm, 13);
+        Var<A13, Q> a13(vm, 14);
+        Var<A14, Q> a14(vm, 15);
         SQCATCH_NOEXCEPT(vm) {
             return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
         }
@@ -5111,316 +5111,316 @@ public:
 //
 
 // Arg Count 0
-template <class C, class R>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)()) {
-    return &SqMember<C, R>::template Func0<false>;
+template <class C, class R, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)()) {
+    return &SqMember<C, R, Q>::template Func0<false>;
 }
 
-template <class C, class R>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)() const) {
-    return &SqMember<C, R>::template Func0C<false>;
+template <class C, class R, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)() const) {
+    return &SqMember<C, R, Q>::template Func0C<false>;
 }
 
-template <class C, class R>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)()) {
-    return &SqMember<C, R&>::template Func0<false>;
+template <class C, class R, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)()) {
+    return &SqMember<C, R&, Q>::template Func0<false>;
 }
 
-template <class C, class R>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)() const) {
-    return &SqMember<C, R&>::template Func0C<false>;
+template <class C, class R, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)() const) {
+    return &SqMember<C, R&, Q>::template Func0C<false>;
 }
 
 // Arg Count 1
-template <class C, class R, class A1>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1)) {
-    return &SqMember<C, R>::template Func1<A1, false>;
+template <class C, class R, class A1, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1)) {
+    return &SqMember<C, R, Q>::template Func1<A1, false>;
 }
 
-template <class C, class R, class A1>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1) const) {
-    return &SqMember<C, R>::template Func1C<A1, false>;
+template <class C, class R, class A1, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1) const) {
+    return &SqMember<C, R, Q>::template Func1C<A1, false>;
 }
 
-template <class C, class R, class A1>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1)) {
-    return &SqMember<C, R&>::template Func1<A1, false>;
+template <class C, class R, class A1, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1)) {
+    return &SqMember<C, R&, Q>::template Func1<A1, false>;
 }
 
-template <class C, class R, class A1>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1) const) {
-    return &SqMember<C, R&>::template Func1C<A1, false>;
+template <class C, class R, class A1, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1) const) {
+    return &SqMember<C, R&, Q>::template Func1C<A1, false>;
 }
 
 // Arg Count 2
-template <class C, class R, class A1, class A2>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2)) {
-    return &SqMember<C, R>::template Func2<A1, A2, false>;
+template <class C, class R, class A1, class A2, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2)) {
+    return &SqMember<C, R, Q>::template Func2<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2) const) {
-    return &SqMember<C, R>::template Func2C<A1, A2, false>;
+template <class C, class R, class A1, class A2, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2) const) {
+    return &SqMember<C, R, Q>::template Func2C<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2)) {
-    return &SqMember<C, R&>::template Func2<A1, A2, false>;
+template <class C, class R, class A1, class A2, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2)) {
+    return &SqMember<C, R&, Q>::template Func2<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2) const) {
-    return &SqMember<C, R&>::template Func2C<A1, A2, false>;
+template <class C, class R, class A1, class A2, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2) const) {
+    return &SqMember<C, R&, Q>::template Func2C<A1, A2, false>;
 }
 
 // Arg Count 3
-template <class C, class R, class A1, class A2, class A3>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3)) {
-    return &SqMember<C, R>::template Func3<A1, A2, A3, false>;
+template <class C, class R, class A1, class A2, class A3, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3)) {
+    return &SqMember<C, R, Q>::template Func3<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3) const) {
-    return &SqMember<C, R>::template Func3C<A1, A2, A3, false>;
+template <class C, class R, class A1, class A2, class A3, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3) const) {
+    return &SqMember<C, R, Q>::template Func3C<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3)) {
-    return &SqMember<C, R&>::template Func3<A1, A2, A3, false>;
+template <class C, class R, class A1, class A2, class A3, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3)) {
+    return &SqMember<C, R&, Q>::template Func3<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3) const) {
-    return &SqMember<C, R&>::template Func3C<A1, A2, A3, false>;
+template <class C, class R, class A1, class A2, class A3, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3) const) {
+    return &SqMember<C, R&, Q>::template Func3C<A1, A2, A3, false>;
 }
 
 // Arg Count 4
-template <class C, class R, class A1, class A2, class A3, class A4>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4)) {
-    return &SqMember<C, R>::template Func4<A1, A2, A3, A4, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4)) {
+    return &SqMember<C, R, Q>::template Func4<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4) const) {
-    return &SqMember<C, R>::template Func4C<A1, A2, A3, A4, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4) const) {
+    return &SqMember<C, R, Q>::template Func4C<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4)) {
-    return &SqMember<C, R&>::template Func4<A1, A2, A3, A4, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4)) {
+    return &SqMember<C, R&, Q>::template Func4<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4) const) {
-    return &SqMember<C, R&>::template Func4C<A1, A2, A3, A4, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4) const) {
+    return &SqMember<C, R&, Q>::template Func4C<A1, A2, A3, A4, false>;
 }
 
 // Arg Count 5
-template <class C, class R, class A1, class A2, class A3, class A4, class A5>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqMember<C, R>::template Func5<A1, A2, A3, A4, A5, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5)) {
+    return &SqMember<C, R, Q>::template Func5<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5) const) {
-    return &SqMember<C, R>::template Func5C<A1, A2, A3, A4, A5, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5) const) {
+    return &SqMember<C, R, Q>::template Func5C<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqMember<C, R&>::template Func5<A1, A2, A3, A4, A5, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5)) {
+    return &SqMember<C, R&, Q>::template Func5<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5>
-inline SQFUNCTION SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5) const) {
-    return &SqMember<C, R&>::template Func5C<A1, A2, A3, A4, A5, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5) const) {
+    return &SqMember<C, R&, Q>::template Func5C<A1, A2, A3, A4, A5, false>;
 }
 
 // Arg Count 6
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqMember<C, R>::template Func6<A1, A2, A3, A4, A5, A6, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
+    return &SqMember<C, R, Q>::template Func6<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
-    return &SqMember<C, R>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
+    return &SqMember<C, R, Q>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqMember<C, R&>::template Func6<A1, A2, A3, A4, A5, A6, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
+    return &SqMember<C, R&, Q>::template Func6<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
-    return &SqMember<C, R&>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
+    return &SqMember<C, R&, Q>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
 }
 
 // Arg Count 7
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqMember<C, R>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
+    return &SqMember<C, R, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
-    return &SqMember<C, R>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
+    return &SqMember<C, R, Q>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqMember<C, R&>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
+    return &SqMember<C, R&, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
-    return &SqMember<C, R&>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
+    return &SqMember<C, R&, Q>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
 // Arg Count 8
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqMember<C, R>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
+    return &SqMember<C, R, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
-    return &SqMember<C, R>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
+    return &SqMember<C, R, Q>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqMember<C, R&>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
+    return &SqMember<C, R&, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
-    return &SqMember<C, R&>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
+    return &SqMember<C, R&, Q>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
 // Arg Count 9
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqMember<C, R>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
+    return &SqMember<C, R, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
-    return &SqMember<C, R>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
+    return &SqMember<C, R, Q>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
-inline SQFUNCTION SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqMember<C, R&>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
+    return &SqMember<C, R&, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
-    return &SqMember<C, R&>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
+    return &SqMember<C, R&, Q>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
 // Arg Count 10
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqMember<C, R>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
+    return &SqMember<C, R, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
-    return &SqMember<C, R>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
+    return &SqMember<C, R, Q>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqMember<C, R&>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
+    return &SqMember<C, R&, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
-    return &SqMember<C, R&>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
+    return &SqMember<C, R&, Q>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
 // Arg Count 11
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqMember<C, R>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
+    return &SqMember<C, R, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
-    return &SqMember<C, R>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
+    return &SqMember<C, R, Q>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqMember<C, R&>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
+    return &SqMember<C, R&, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
-    return &SqMember<C, R&>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
+    return &SqMember<C, R&, Q>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
 // Arg Count 12
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqMember<C, R>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
+    return &SqMember<C, R, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
-    return &SqMember<C, R>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
+    return &SqMember<C, R, Q>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqMember<C, R&>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
+    return &SqMember<C, R&, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
-    return &SqMember<C, R&>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
+    return &SqMember<C, R&, Q>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
 // Arg Count 13
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqMember<C, R>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
+    return &SqMember<C, R, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
-    return &SqMember<C, R>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
+    return &SqMember<C, R, Q>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqMember<C, R&>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
+    return &SqMember<C, R&, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
-    return &SqMember<C, R&>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
+    return &SqMember<C, R&, Q>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
 // Arg Count 14
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqMember<C, R>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
+    return &SqMember<C, R, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
-inline SQFUNCTION SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
-    return &SqMember<C, R>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
+    return &SqMember<C, R, Q>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqMember<C, R&>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
+    return &SqMember<C, R&, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
-inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
-    return &SqMember<C, R&>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
+    return &SqMember<C, R&, Q>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
 
@@ -5428,11 +5428,11 @@ inline SQFUNCTION SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, 
 // Variable Get
 //
 
-template <class C, class V>
-inline SQInteger sqDefaultGet(HSQUIRRELVM vm) {
+template <class C, class V, Squirk Q>
+inline SQInteger sqDefaultGet(HSQUIRRELVM<Q> vm) {
     C* ptr;
     SQTRY()
-    ptr = Var<C*>(vm, 1).value;
+    ptr = Var<C*, Q>(vm, 1).value;
     SQCATCH_NOEXCEPT(vm) {
         SQCLEAR(vm); // clear the previous error
         return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
@@ -5451,8 +5451,8 @@ inline SQInteger sqDefaultGet(HSQUIRRELVM vm) {
     return 1;
 }
 
-template <class C, class V>
-inline SQInteger sqStaticGet(HSQUIRRELVM vm) {
+template <class C, class V, Squirk Q>
+inline SQInteger sqStaticGet(HSQUIRRELVM<Q> vm) {
     typedef V *M;
     M* memberPtr = NULL;
     sq_getuserdata(vm, -1, (SQUserPointer*)&memberPtr, NULL); // Get Member...
@@ -5463,7 +5463,8 @@ inline SQInteger sqStaticGet(HSQUIRRELVM vm) {
     return 1;
 }
 
-inline SQInteger sqVarGet(HSQUIRRELVM vm) {
+template <Squirk Q>
+inline SQInteger sqVarGet(HSQUIRRELVM<Q> vm) {
     // Find the get method in the get table
     sq_push(vm, 2);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -5500,11 +5501,11 @@ inline SQInteger sqVarGet(HSQUIRRELVM vm) {
 // Variable Set
 //
 
-template <class C, class V>
-inline SQInteger sqDefaultSet(HSQUIRRELVM vm) {
+template <class C, class V, Squirk Q>
+inline SQInteger sqDefaultSet(HSQUIRRELVM<Q> vm) {
     C* ptr;
     SQTRY()
-    ptr = Var<C*>(vm, 1).value;
+    ptr = Var<C*, Q>(vm, 1).value;
     SQCATCH_NOEXCEPT(vm) {
         SQCLEAR(vm); // clear the previous error
         return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
@@ -5520,9 +5521,9 @@ inline SQInteger sqDefaultSet(HSQUIRRELVM vm) {
 
     SQTRY()
     if (is_pointer<V>::value || is_reference<V>::value) {
-        ptr->*member = Var<V>(vm, 2).value;
+        ptr->*member = Var<V, Q>(vm, 2).value;
     } else {
-        ptr->*member = Var<const V&>(vm, 2).value;
+        ptr->*member = Var<const V&, Q>(vm, 2).value;
     }
     SQCATCH_NOEXCEPT(vm) {
         return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
@@ -5534,8 +5535,8 @@ inline SQInteger sqDefaultSet(HSQUIRRELVM vm) {
     return 0;
 }
 
-template <class C, class V>
-inline SQInteger sqStaticSet(HSQUIRRELVM vm) {
+template <class C, class V, Squirk Q>
+inline SQInteger sqStaticSet(HSQUIRRELVM<Q> vm) {
     typedef V *M;
     M* memberPtr = NULL;
     sq_getuserdata(vm, -1, (SQUserPointer*)&memberPtr, NULL); // Get Member...
@@ -5543,9 +5544,9 @@ inline SQInteger sqStaticSet(HSQUIRRELVM vm) {
 
     SQTRY()
     if (is_pointer<V>::value || is_reference<V>::value) {
-        *member = Var<V>(vm, 2).value;
+        *member = Var<V, Q>(vm, 2).value;
     } else {
-        *member = Var<const V&>(vm, 2).value;
+        *member = Var<const V&, Q>(vm, 2).value;
     }
     SQCATCH_NOEXCEPT(vm) {
         return sq_throwerror(vm, SQWHAT_NOEXCEPT(vm));
@@ -5557,7 +5558,8 @@ inline SQInteger sqStaticSet(HSQUIRRELVM vm) {
     return 0;
 }
 
-inline SQInteger sqVarSet(HSQUIRRELVM vm) {
+template <Squirk Q>
+inline SQInteger sqVarSet(HSQUIRRELVM<Q> vm) {
     // Find the set method in the set table
     sq_push(vm, 2);
 #if !defined (SCRAT_NO_ERROR_CHECKING)

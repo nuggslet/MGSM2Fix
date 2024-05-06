@@ -62,11 +62,11 @@ public:
     );
 };
 
-template <typename T, bool b>
+template <typename T, bool b, Squirk Q>
 struct popAsInt
 {
     T value;
-    popAsInt(HSQUIRRELVM vm, SQInteger idx)
+    popAsInt(HSQUIRRELVM<Q> vm, SQInteger idx)
     {
         SQObjectType value_type = sq_gettype(vm, idx);
         switch(value_type) {
@@ -93,21 +93,21 @@ struct popAsInt
     }
 };
 
-template <typename T>
-struct popAsInt<T, false>
+template <typename T, Squirk Q>
+struct popAsInt<T, false, Q>
 {
     T value;  // cannot be initialized because unknown constructor parameters
-    popAsInt(HSQUIRRELVM /*vm*/, SQInteger /*idx*/)
+    popAsInt(HSQUIRRELVM<Q> /*vm*/, SQInteger /*idx*/)
     {
         // keep the current error message already set previously, do not touch that here
     }
 };
 
-template <typename T>
+template <typename T, Squirk Q>
 struct popAsFloat
 {
     T value;
-    popAsFloat(HSQUIRRELVM vm, SQInteger idx)
+    popAsFloat(HSQUIRRELVM<Q> vm, SQInteger idx)
     {
         SQObjectType value_type = sq_gettype(vm, idx);
         switch(value_type) {
@@ -145,7 +145,7 @@ struct popAsFloat
 /// This specialization requires T to have a default constructor.
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
+template<class T, Squirk Q>
 struct Var {
 
     T value; ///< The actual value of get operations
@@ -160,26 +160,26 @@ struct Var {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         SQTRY()
-        T* ptr = ClassType<T>::GetInstance(vm, idx);
+        T* ptr = ClassType<T, Q>::GetInstance(vm, idx);
         if (ptr != NULL) {
             value = *ptr;
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         } else if (is_convertible<T, SQInteger>::YES) { /* value is likely of integral type like enums */
             SQCLEAR(vm); // clear the previous error
-            value = popAsInt<T, is_convertible<T, SQInteger>::YES>(vm, idx).value;
+            value = popAsInt<T, is_convertible<T, SQInteger>::YES, Q>(vm, idx).value;
 #endif
         } else {
             // initialize value to avoid warnings
-            value = popAsInt<T, is_convertible<T, SQInteger>::YES>(vm, idx).value;
+            value = popAsInt<T, is_convertible<T, SQInteger>::YES, Q>(vm, idx).value;
         }
         SQCATCH(vm) {
 #if defined (SCRAT_USE_EXCEPTIONS)
-            SQUNUSED(e); // avoid "unreferenced local variable" warning
+            SQUNUSED(this->e); // avoid "unreferenced local variable" warning
 #endif
             if (is_convertible<T, SQInteger>::YES) { /* value is likely of integral type like enums */
-                value = popAsInt<T, is_convertible<T, SQInteger>::YES>(vm, idx).value;
+                value = popAsInt<T, is_convertible<T, SQInteger>::YES, Q>(vm, idx).value;
             } else {
                 SQRETHROW(vm);
             }
@@ -193,26 +193,26 @@ struct Var {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const T& value) {
-        if (ClassType<T>::hasClassData(vm))
-            ClassType<T>::PushInstanceCopy(vm, value);
+    static void push(HSQUIRRELVM<Q> vm, const T& value) {
+        if (ClassType<T, Q>::hasClassData(vm))
+            ClassType<T, Q>::PushInstanceCopy(vm, value);
         else /* try integral type */
-            pushAsInt<T, is_convertible<T, SQInteger>::YES>().push(vm, value);
+            pushAsInt<T, is_convertible<T, SQInteger>::YES, Q>().push(vm, value);
     }
 
 private:
 
-    template <class T2, bool b>
+    template <class T2, bool b, Squirk Q>
     struct pushAsInt {
-        void push(HSQUIRRELVM vm, const T2& /*value*/) {
+        void push(HSQUIRRELVM<Q> vm, const T2& /*value*/) {
             assert(false); // fails because called before a Sqrat::Class for T exists and T is not convertible to SQInteger
             sq_pushnull(vm);
         }
     };
 
     template <class T2>
-    struct pushAsInt<T2, true> {
-        void push(HSQUIRRELVM vm, const T2& value) {
+    struct pushAsInt<T2, true, Q> {
+        void push(HSQUIRRELVM<Q> vm, const T2& value) {
             sq_pushinteger(vm, static_cast<SQInteger>(value));
         }
     };
@@ -224,8 +224,8 @@ private:
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<T&> {
+template<class T, Squirk Q>
+struct Var<T&, Q> {
 
     T& value; ///< The actual value of get operations
 
@@ -239,7 +239,7 @@ struct Var<T&> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(*ClassType<T>::GetInstance(vm, idx)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(*ClassType<T, Q>::GetInstance(vm, idx)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -249,26 +249,26 @@ struct Var<T&> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, T& value) {
-        if (ClassType<T>::hasClassData(vm))
-            ClassType<T>::PushInstance(vm, &value);
+    static void push(HSQUIRRELVM<Q> vm, T& value) {
+        if (ClassType<T, Q>::hasClassData(vm))
+            ClassType<T, Q>::PushInstance(vm, &value);
         else /* try integral type */
-            pushAsInt<T, is_convertible<T, SQInteger>::YES>().push(vm, value);
+            pushAsInt<T, is_convertible<T, SQInteger>::YES, Q>().push(vm, value);
     }
 
 private:
 
-    template <class T2, bool b>
+    template <class T2, bool b, Squirk Q>
     struct pushAsInt {
-        void push(HSQUIRRELVM vm, const T2& /*value*/) {
+        void push(HSQUIRRELVM<Q> vm, const T2& /*value*/) {
             assert(false); // fails because called before a Sqrat::Class for T exists and T is not convertible to SQInteger
             sq_pushnull(vm);
         }
     };
 
-    template <class T2>
-    struct pushAsInt<T2, true> {
-        void push(HSQUIRRELVM vm, const T2& value) {
+    template <class T2, Squirk Q>
+    struct pushAsInt<T2, true, Q> {
+        void push(HSQUIRRELVM<Q> vm, const T2& value) {
             sq_pushinteger(vm, static_cast<SQInteger>(value));
         }
     };
@@ -280,8 +280,8 @@ private:
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<T*> {
+template<class T, Squirk Q>
+struct Var<T*, Q> {
 
     T* value; ///< The actual value of get operations
 
@@ -295,7 +295,7 @@ struct Var<T*> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(ClassType<T>::GetInstance(vm, idx, true)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(ClassType<T, Q>::GetInstance(vm, idx, true)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -305,8 +305,8 @@ struct Var<T*> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, T* value) {
-        ClassType<T>::PushInstance(vm, value);
+    static void push(HSQUIRRELVM<Q> vm, T* value) {
+        ClassType<T, Q>::PushInstance(vm, value);
     }
 };
 
@@ -316,8 +316,8 @@ struct Var<T*> {
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<T* const> {
+template<class T, Squirk Q>
+struct Var<T* const, Q> {
 
     T* const value; ///< The actual value of get operations
 
@@ -331,7 +331,7 @@ struct Var<T* const> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(ClassType<T>::GetInstance(vm, idx, true)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(ClassType<T, Q>::GetInstance(vm, idx, true)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,8 +341,8 @@ struct Var<T* const> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, T* const value) {
-        ClassType<T>::PushInstance(vm, value);
+    static void push(HSQUIRRELVM<Q> vm, T* const value) {
+        ClassType<T, Q>::PushInstance(vm, value);
     }
 };
 
@@ -352,8 +352,8 @@ struct Var<T* const> {
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<const T&> {
+template<class T, Squirk Q>
+struct Var<const T&, Q> {
 
     const T& value; ///< The actual value of get operations
 
@@ -367,7 +367,7 @@ struct Var<const T&> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(*ClassType<T>::GetInstance(vm, idx)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(*ClassType<T, Q>::GetInstance(vm, idx)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -377,8 +377,8 @@ struct Var<const T&> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const T& value) {
-        ClassType<T>::PushInstanceCopy(vm, value);
+    static void push(HSQUIRRELVM<Q> vm, const T& value) {
+        ClassType<T, Q>::PushInstanceCopy(vm, value);
     }
 };
 
@@ -388,8 +388,8 @@ struct Var<const T&> {
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<const T*> {
+template<class T, Squirk Q>
+struct Var<const T*, Q> {
 
     const T* value; ///< The actual value of get operations
 
@@ -403,7 +403,7 @@ struct Var<const T*> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(ClassType<T>::GetInstance(vm, idx, true)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(ClassType<T, Q>::GetInstance(vm, idx, true)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,8 +413,8 @@ struct Var<const T*> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const T* value) {
-        ClassType<T>::PushInstance(vm, const_cast<T*>(value));
+    static void push(HSQUIRRELVM<Q> vm, const T* value) {
+        ClassType<T, Q>::PushInstance(vm, const_cast<T*>(value));
     }
 };
 
@@ -424,8 +424,8 @@ struct Var<const T*> {
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct Var<const T* const> {
+template<class T, Squirk Q>
+struct Var<const T* const, Q> {
 
     const T* const value; ///< The actual value of get operations
 
@@ -439,7 +439,7 @@ struct Var<const T* const> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) : value(ClassType<T>::GetInstance(vm, idx, true)) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) : value(ClassType<T, Q>::GetInstance(vm, idx, true)) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -449,8 +449,8 @@ struct Var<const T* const> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const T* const value) {
-        ClassType<T>::PushInstance(vm, const_cast<T*>(value));
+    static void push(HSQUIRRELVM<Q> vm, const T* const value) {
+        ClassType<T, Q>::PushInstance(vm, const_cast<T*>(value));
     }
 };
 
@@ -460,9 +460,9 @@ struct Var<const T* const> {
 /// \tparam T Type of instance (usually doesnt need to be defined explicitly)
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T> void PushVarR(HSQUIRRELVM vm, T& value);
-template<class T>
-struct Var<SharedPtr<T> > {
+template<class T, Squirk Q> void PushVarR(HSQUIRRELVM<Q> vm, T& value);
+template<class T, Squirk Q>
+struct Var<SharedPtr<T>, Q> {
 
     SharedPtr<T> value; ///< The actual value of get operations
 
@@ -476,9 +476,9 @@ struct Var<SharedPtr<T> > {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         if (sq_gettype(vm, idx) != OT_NULL) {
-            Var<T> instance(vm, idx);
+            Var<T, Q> instance(vm, idx);
             SQCATCH_NOEXCEPT(vm) {
                 return;
             }
@@ -493,31 +493,31 @@ struct Var<SharedPtr<T> > {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const SharedPtr<T>& value) {
+    static void push(HSQUIRRELVM<Q> vm, const SharedPtr<T>& value) {
         PushVarR(vm, *value);
     }
 };
 
 // Integer types
 #define SCRAT_INTEGER( type ) \
- template<> \
- struct Var<type> { \
+ template<Squirk Q> \
+ struct Var<type, Q> { \
      type value; \
-     Var(HSQUIRRELVM vm, SQInteger idx) { \
-         value = popAsInt<type, true>(vm, idx).value; \
+     Var(HSQUIRRELVM<Q> vm, SQInteger idx) { \
+         value = popAsInt<type, true, Q>(vm, idx).value; \
      } \
-     static void push(HSQUIRRELVM vm, const type& value) { \
+     static void push(HSQUIRRELVM<Q> vm, const type& value) { \
          sq_pushinteger(vm, static_cast<SQInteger>(value)); \
      } \
  };\
  \
- template<> \
- struct Var<const type&> { \
+ template<Squirk Q> \
+ struct Var<const type&, Q> { \
      type value; \
-     Var(HSQUIRRELVM vm, SQInteger idx) { \
-         value = popAsInt<type, true>(vm, idx).value; \
+     Var(HSQUIRRELVM<Q> vm, SQInteger idx) { \
+         value = popAsInt<type, true, Q>(vm, idx).value; \
      } \
-     static void push(HSQUIRRELVM vm, const type& value) { \
+     static void push(HSQUIRRELVM<Q> vm, const type& value) { \
          sq_pushinteger(vm, static_cast<SQInteger>(value)); \
      } \
  };
@@ -542,24 +542,24 @@ SCRAT_INTEGER(signed __int64)
 
 // Float types
 #define SCRAT_FLOAT( type ) \
- template<> \
- struct Var<type> { \
+ template<Squirk Q> \
+ struct Var<type, Q> { \
      type value; \
-     Var(HSQUIRRELVM vm, SQInteger idx) { \
-         value = popAsFloat<type>(vm, idx).value; \
+     Var(HSQUIRRELVM<Q> vm, SQInteger idx) { \
+         value = popAsFloat<type, Q>(vm, idx).value; \
      } \
-     static void push(HSQUIRRELVM vm, const type& value) { \
+     static void push(HSQUIRRELVM<Q> vm, const type& value) { \
          sq_pushfloat(vm, static_cast<SQFloat>(value)); \
      } \
  }; \
  \
- template<> \
- struct Var<const type&> { \
+ template<Squirk Q> \
+ struct Var<const type&, Q> { \
      type value; \
-     Var(HSQUIRRELVM vm, SQInteger idx) { \
-         value = popAsFloat<type>(vm, idx).value; \
+     Var(HSQUIRRELVM<Q> vm, SQInteger idx) { \
+         value = popAsFloat<type, Q>(vm, idx).value; \
      } \
-     static void push(HSQUIRRELVM vm, const type& value) { \
+     static void push(HSQUIRRELVM<Q> vm, const type& value) { \
          sq_pushfloat(vm, static_cast<SQFloat>(value)); \
      } \
  };
@@ -570,8 +570,8 @@ SCRAT_FLOAT(double)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push bools to and from the stack
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<bool> {
+template<Squirk Q>
+struct Var<bool, Q> {
 
     bool value; ///< The actual value of get operations
 
@@ -582,7 +582,7 @@ struct Var<bool> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         SQBool sqValue;
         sq_tobool(vm, idx, &sqValue);
         value = (sqValue != 0);
@@ -595,7 +595,7 @@ struct Var<bool> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const bool& value) {
+    static void push(HSQUIRRELVM<Q> vm, const bool& value) {
         sq_pushbool(vm, static_cast<SQBool>(value));
     }
 };
@@ -603,8 +603,8 @@ struct Var<bool> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push const bool references to and from the stack
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const bool&> {
+template<Squirk Q>
+struct Var<const bool&, Q> {
 
     bool value; ///< The actual value of get operations
 
@@ -615,7 +615,7 @@ struct Var<const bool&> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         SQBool sqValue;
         sq_tobool(vm, idx, &sqValue);
         value = (sqValue != 0);
@@ -628,7 +628,7 @@ struct Var<const bool&> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const bool& value) {
+    static void push(HSQUIRRELVM<Q> vm, const bool& value) {
         sq_pushbool(vm, static_cast<SQBool>(value));
     }
 };
@@ -636,12 +636,12 @@ struct Var<const bool&> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push SQChar arrays to and from the stack (usually is a char array)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<SQChar*> {
+template<Squirk Q>
+struct Var<SQChar*, Q> {
 private:
 
-    HSQOBJECT obj; /* hold a reference to the object holding value during the Var struct lifetime*/
-    HSQUIRRELVM v;
+    HSQOBJECT<Q> obj; /* hold a reference to the object holding value during the Var struct lifetime*/
+    HSQUIRRELVM<Q> v;
 
 public:
 
@@ -654,7 +654,7 @@ public:
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         sq_tostring(vm, idx);
         sq_getstackobj(vm, -1, &obj);
         sq_getstring(vm, -1, (const SQChar**)&value);
@@ -682,7 +682,7 @@ public:
     /// \param len   Length of the string (defaults to finding the length by searching for a terminating null-character)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const SQChar* value, SQInteger len = -1) {
+    static void push(HSQUIRRELVM<Q> vm, const SQChar* value, SQInteger len = -1) {
         sq_pushstring(vm, value, len);
     }
 };
@@ -690,12 +690,12 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push const SQChar arrays to and from the stack (usually is a const char array)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const SQChar*> {
+template<Squirk Q>
+struct Var<const SQChar*, Q> {
 private:
 
-    HSQOBJECT obj; /* hold a reference to the object holding value during the Var struct lifetime*/
-    HSQUIRRELVM v;
+    HSQOBJECT<Q> obj; /* hold a reference to the object holding value during the Var struct lifetime*/
+    HSQUIRRELVM<Q> v;
 
 public:
 
@@ -708,7 +708,7 @@ public:
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         sq_tostring(vm, idx);
         sq_getstackobj(vm, -1, &obj);
         sq_getstring(vm, -1, &value);
@@ -736,7 +736,7 @@ public:
     /// \param len   Length of the string (defaults to finding the length by searching for a terminating null-character)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const SQChar* value, SQInteger len = -1) {
+    static void push(HSQUIRRELVM<Q> vm, const SQChar* value, SQInteger len = -1) {
         sq_pushstring(vm, value, len);
     }
 };
@@ -744,8 +744,8 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push strings to and from the stack (string is usually std::string)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<string> {
+template<Squirk Q>
+struct Var<string, Q> {
 
     string value; ///< The actual value of get operations
 
@@ -756,7 +756,7 @@ struct Var<string> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         const SQChar* ret;
         sq_tostring(vm, idx);
         sq_getstring(vm, -1, &ret);
@@ -771,7 +771,7 @@ struct Var<string> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const string& value) {
+    static void push(HSQUIRRELVM<Q> vm, const string& value) {
         sq_pushstring(vm, value.c_str(), value.size());
     }
 };
@@ -779,8 +779,8 @@ struct Var<string> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push const string references to and from the stack as copies (strings are always copied)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const string&> {
+template<Squirk Q>
+struct Var<const string&, Q> {
 
     string value; ///< The actual value of get operations
 
@@ -791,7 +791,7 @@ struct Var<const string&> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         const SQChar* ret;
         sq_tostring(vm, idx);
         sq_getstring(vm, -1, &ret);
@@ -806,7 +806,7 @@ struct Var<const string&> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const string& value) {
+    static void push(HSQUIRRELVM<Q> vm, const string& value) {
         sq_pushstring(vm, value.c_str(), value.size());
     }
 };
@@ -815,8 +815,8 @@ struct Var<const string&> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push std::string to and from the stack when SQChar is not char (must define SQUNICODE)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<std::string> {
+template<Squirk Q>
+struct Var<std::string, Q> {
 
     std::string value; ///< The actual value of get operations
 
@@ -827,7 +827,7 @@ struct Var<std::string> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         const SQChar* ret;
         sq_tostring(vm, idx);
         sq_getstring(vm, -1, &ret);
@@ -842,7 +842,7 @@ struct Var<std::string> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const std::string& value) {
+    static void push(HSQUIRRELVM<Q> vm, const std::string& value) {
         std::wstring s = string_to_wstring(value);
         sq_pushstring(vm, s.c_str(), s.size());
     }
@@ -851,8 +851,8 @@ struct Var<std::string> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push const std::string references to and from the stack when SQChar is not char (must define SQUNICODE)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const std::string&> {
+template<Squirk Q>
+struct Var<const std::string&, Q> {
 
     std::string value; ///< The actual value of get operations
 
@@ -863,7 +863,7 @@ struct Var<const std::string&> {
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         const SQChar* ret;
         sq_tostring(vm, idx);
         sq_getstring(vm, -1, &ret);
@@ -878,7 +878,7 @@ struct Var<const std::string&> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const std::string& value) {
+    static void push(HSQUIRRELVM<Q> vm, const std::string& value) {
         std::wstring s = string_to_wstring(value);
         sq_pushstring(vm, s.c_str(), s.size());
     }
@@ -887,12 +887,12 @@ struct Var<const std::string&> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push SQChar arrays to and from the stack when SQChar is not char (must define SQUNICODE)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<char*> {
+template<Squirk Q>
+struct Var<char*, Q> {
 private:
 
-    HSQOBJECT obj;/* hold a reference to the object holding value during the Var struct lifetime*/
-    HSQUIRRELVM v;
+    HSQOBJECT<Q> obj;/* hold a reference to the object holding value during the Var struct lifetime*/
+    HSQUIRRELVM<Q> v;
 
 public:
 
@@ -905,7 +905,7 @@ public:
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         std::string holder;
         const SQChar *sv;
         sq_tostring(vm, idx);
@@ -938,7 +938,7 @@ public:
     /// \param len   Length of the string (defaults to finding the length by searching for a terminating null-character)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const char* value, SQInteger len = -1) {
+    static void push(HSQUIRRELVM<Q> vm, const char* value, SQInteger len = -1) {
         sq_pushstring(vm, string_to_wstring(std::string(value)).c_str(), len);
     }
 };
@@ -946,12 +946,12 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push const SQChar arrays to and from the stack when SQChar is not char (must define SQUNICODE)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const char*> {
+template<Squirk Q>
+struct Var<const char*, Q> {
 private:
 
-    HSQOBJECT obj; /* hold a reference to the object holding value during the Var struct lifetime*/
-    HSQUIRRELVM v;
+    HSQOBJECT<Q> obj; /* hold a reference to the object holding value during the Var struct lifetime*/
+    HSQUIRRELVM<Q> v;
 
 public:
 
@@ -964,7 +964,7 @@ public:
     /// \param idx Index trying to be read
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
         std::string holder;
         const SQChar *sv;
         sq_tostring(vm, idx);
@@ -997,7 +997,7 @@ public:
     /// \param len   Length of the string (defaults to finding the length by searching for a terminating null-character)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const char* value, SQInteger len = -1) {
+    static void push(HSQUIRRELVM<Q> vm, const char* value, SQInteger len = -1) {
         sq_pushstring(vm, string_to_wstring(std::string(value)).c_str(), len);
     }
 };
@@ -1051,9 +1051,9 @@ SCRAT_MAKE_NONREFERENCABLE(std::string)
 /// When making a custom type that is not referencable, you must use SCRAT_MAKE_NONREFERENCABLE( type )
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-inline void PushVar(HSQUIRRELVM vm, T* value) {
-    Var<T*>::push(vm, value);
+template<class T, Squirk Q>
+inline void PushVar(HSQUIRRELVM<Q> vm, T* value) {
+    Var<T*, Q>::push(vm, value);
 }
 
 
@@ -1071,23 +1071,23 @@ inline void PushVar(HSQUIRRELVM vm, T* value) {
 /// When making a custom type that is not referencable, you must use SCRAT_MAKE_NONREFERENCABLE( type )
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-inline void PushVar(HSQUIRRELVM vm, const T& value) {
-    Var<T>::push(vm, value);
+template<class T, Squirk Q>
+inline void PushVar(HSQUIRRELVM<Q> vm, const T& value) {
+    Var<T, Q>::push(vm, value);
 }
 
 
 /// @cond DEV
-template<class T, bool b>
+template<class T, bool b, Squirk Q>
 struct PushVarR_helper {
-    inline static void push(HSQUIRRELVM vm, T value) {
-        PushVar<T>(vm, value);
+    inline static void push(HSQUIRRELVM<Q> vm, T value) {
+        PushVar<T, Q>(vm, value);
     }
 };
-template<class T>
-struct PushVarR_helper<T, false> {
-    inline static void push(HSQUIRRELVM vm, const T& value) {
-        PushVar<const T&>(vm, value);
+template<class T, Squirk Q>
+struct PushVarR_helper<T, false, Q> {
+    inline static void push(HSQUIRRELVM<Q> vm, const T& value) {
+        PushVar<const T&, Q>(vm, value);
     }
 };
 /// @endcond
@@ -1107,12 +1107,12 @@ struct PushVarR_helper<T, false> {
 /// When making a custom type that is not referencable, you must use SCRAT_MAKE_NONREFERENCABLE( type )
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-inline void PushVarR(HSQUIRRELVM vm, T& value) {
+template<class T, Squirk Q>
+inline void PushVarR(HSQUIRRELVM<Q> vm, T& value) {
     if (!is_pointer<T>::value && is_referencable<typename remove_cv<T>::type>::value) {
-        Var<T&>::push(vm, value);
+        Var<T&, Q>::push(vm, value);
     } else {
-        PushVarR_helper<T, is_pointer<T>::value>::push(vm, value);
+        PushVarR_helper<T, is_pointer<T>::value, Q>::push(vm, value);
     }
 }
 

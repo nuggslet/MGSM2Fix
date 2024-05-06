@@ -7,29 +7,32 @@ see copyright notice in squirrel.h
 #include "sqfuncproto.h"
 #include "sqclosure.h"
 
-SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize)
+template <Squirk T>
+SQTable<T>::SQTable(SQSharedState<T> *ss,SQInteger nInitialSize)
 {
 	SQInteger pow2size=MINPOWER2;
 	while(nInitialSize>pow2size)pow2size=pow2size<<1;
 	AllocNodes(pow2size);
 	_usednodes = 0;
-	_delegate = NULL;
+	SQDelegable<T>::_delegate = NULL;
 	INIT_CHAIN();
-	ADD_TO_CHAIN(&_sharedstate->_gc_chain,this);
+	ADD_TO_CHAIN(&SQDelegable<T>::_sharedstate->_gc_chain,this);
 }
 
-void SQTable::Remove(const SQObjectPtr &key)
+template <Squirk T>
+void SQTable<T>::Remove(const SQObjectPtr<T> &key)
 {
 	
 	_HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
 	if (n) {
-		n->val = n->key = _null_;
+		n->val = n->key = _null_<T>;
 		_usednodes--;
 		Rehash(false);
 	}
 }
 
-void SQTable::AllocNodes(SQInteger nSize)
+template <Squirk T>
+void SQTable<T>::AllocNodes(SQInteger nSize)
 {
 	_HashNode *nodes=(_HashNode *)SQ_MALLOC(sizeof(_HashNode)*nSize);
 	for(SQInteger i=0;i<nSize;i++){
@@ -41,7 +44,8 @@ void SQTable::AllocNodes(SQInteger nSize)
 	_firstfree=&_nodes[_numofnodes-1];
 }
 
-void SQTable::Rehash(bool force)
+template <Squirk T>
+void SQTable<T>::Rehash(bool force)
 {
 	SQInteger oldsize=_numofnodes;
 	//prevent problems with the integer division
@@ -68,19 +72,21 @@ void SQTable::Rehash(bool force)
 	SQ_FREE(nold,oldsize*sizeof(_HashNode));
 }
 
-SQTable *SQTable::Clone()
+template <Squirk T>
+SQTable<T> *SQTable<T>::Clone()
 {
-	SQTable *nt=Create(_opt_ss(this),_numofnodes);
+	SQTable<T> *nt=Create(_opt_ss(this),_numofnodes);
 	SQInteger ridx=0;
-	SQObjectPtr key,val;
+	SQObjectPtr<T> key,val;
 	while((ridx=Next(true,ridx,key,val))!=-1){
 		nt->NewSlot(key,val);
 	}
-	nt->SetDelegate(_delegate);
+	nt->SetDelegate(SQDelegable<T>::_delegate);
 	return nt;
 }
 
-bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
+template <Squirk T>
+bool SQTable<T>::Get(const SQObjectPtr<T> &key,SQObjectPtr<T> &val)
 {
 	if(type(key) == OT_NULL)
 		return false;
@@ -91,7 +97,9 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
 	}
 	return false;
 }
-bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
+
+template <Squirk T>
+bool SQTable<T>::NewSlot(const SQObjectPtr<T> &key,const SQObjectPtr<T> &val)
 {
 	assert(type(key) != OT_NULL);
 	SQHash h = HashObj(key) & (_numofnodes - 1);
@@ -122,8 +130,8 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
 			n->key = mp->key;
 			n->val = mp->val;/* copy colliding node into free pos. (mp->next also goes) */
 			n->next = mp->next;
-			mp->key = _null_;
-			mp->val = _null_;
+			mp->key = _null_<T>;
+			mp->val = _null_<T>;
 			mp->next = NULL;  /* now `mp' is free */
 		}
 		else{
@@ -148,7 +156,8 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
 	return NewSlot(key, val);
 }
 
-SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval)
+template <Squirk T>
+SQInteger SQTable<T>::Next(bool getweakrefs,const SQObjectPtr<T> &refpos, SQObjectPtr<T> &outkey, SQObjectPtr<T> &outval)
 {
 	SQInteger idx = (SQInteger)TranslateIndex(refpos);
 	while (idx < _numofnodes) {
@@ -156,7 +165,7 @@ SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr 
 			//first found
 			_HashNode &n = _nodes[idx];
 			outkey = n.key;
-			outval = getweakrefs?(SQObject)n.val:_realval(n.val);
+			outval = getweakrefs?(SQObject<T>)n.val:_realval(n.val);
 			//return idx for the next iteration
 			return ++idx;
 		}
@@ -166,8 +175,8 @@ SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr 
 	return -1;
 }
 
-
-bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
+template <Squirk T>
+bool SQTable<T>::Set(const SQObjectPtr<T> &key, const SQObjectPtr<T> &val)
 {
 	_HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
 	if (n) {
@@ -177,18 +186,21 @@ bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
 	return false;
 }
 
-void SQTable::_ClearNodes()
+template <Squirk T>
+void SQTable<T>::_ClearNodes()
 {
-	for(SQInteger i = 0;i < _numofnodes; i++) { _nodes[i].key = _null_; _nodes[i].val = _null_; }
+	for(SQInteger i = 0;i < _numofnodes; i++) { _nodes[i].key = _null_<T>; _nodes[i].val = _null_<T>; }
 }
 
-void SQTable::Finalize()
+template <Squirk T>
+void SQTable<T>::Finalize()
 {
 	_ClearNodes();
-	SetDelegate(NULL);
+	SQDelegable<T>::SetDelegate(NULL);
 }
 
-void SQTable::Clear()
+template <Squirk T>
+void SQTable<T>::Clear()
 {
 	_ClearNodes();
 	_usednodes = 0;

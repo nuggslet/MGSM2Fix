@@ -4,10 +4,11 @@
 #include "sqvm.h"
 #include "sqarray.h"
 
+template <Squirk T>
 class M2Binary
 {
 public:
-	M2Binary(HSQUIRRELVM v, HSQOBJECT obj);
+	M2Binary(HSQUIRRELVM<T> v, HSQOBJECT<T> obj);
 
 	bool GetClosure(const SQChar *name);
 
@@ -15,6 +16,6 @@ public:
 	bool Size(SQInteger *size);
 
 protected:
-	HSQOBJECT m_obj;
-	HSQUIRRELVM m_vm;
+	HSQOBJECT<T> m_obj;
+	HSQUIRRELVM<T> m_vm;
 };

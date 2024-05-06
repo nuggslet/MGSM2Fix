@@ -2,6 +2,7 @@
 #ifndef _SQCOMPILER_H_
 #define _SQCOMPILER_H_
 
+template <Squirk T>
 struct SQVM;
 
 #define	TK_IDENTIFIER	258
@@ -73,5 +74,6 @@ struct SQVM;
 
 
 typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);
-bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
+template <Squirk T>
+bool Compile(SQVM<T> *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr<T> &out, bool raiseerror, bool lineinfo);
 #endif //_SQCOMPILER_H_

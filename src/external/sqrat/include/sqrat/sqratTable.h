@@ -40,7 +40,8 @@ namespace Sqrat {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// The base class for Table that implements almost all of its functionality
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TableBase : public Object {
+template <Squirk Q>
+class TableBase : public Object<Q> {
 public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +50,7 @@ public:
     /// \param v VM that the table will exist in
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TableBase(HSQUIRRELVM v = DefaultVM::Get()) : Object(v, true) {
+    TableBase(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : Object<Q>(v, true) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +59,7 @@ public:
     /// \param obj An Object that should already represent a Squirrel table
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TableBase(const Object& obj) : Object(obj) {
+    TableBase(const Object<Q>& obj) : Object<Q>(obj) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +69,7 @@ public:
     /// \param v Squirrel VM that contains the Squirrel object given
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TableBase(HSQOBJECT o, HSQUIRRELVM v = DefaultVM::Get()) : Object(o, v) {
+    TableBase(HSQOBJECT<Q> o, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : Object<Q>(o, v) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,12 +82,12 @@ public:
     /// Bind cannot be called "inline" like other functions because it introduces order-of-initialization bugs.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void Bind(const SQChar* name, Object& obj) {
-        sq_pushobject(vm, GetObject());
-        sq_pushstring(vm, name, -1);
-        sq_pushobject(vm, obj.GetObject());
-        sq_newslot(vm, -3, false);
-        sq_pop(vm,1); // pop table
+    void Bind(const SQChar* name, Object<Q>& obj) {
+        sq_pushobject(this->vm, this->GetObject());
+        sq_pushstring(this->vm, name, -1);
+        sq_pushobject(this->vm, obj.GetObject());
+        sq_newslot(this->vm, -3, false);
+        sq_pop(this->vm,1); // pop table
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,12 +99,12 @@ public:
     /// \return The Table itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TableBase& SquirrelFunc(const SQChar* name, SQFUNCTION func) {
-        sq_pushobject(vm, GetObject());
-        sq_pushstring(vm, name, -1);
-        sq_newclosure(vm, func, 0);
-        sq_newslot(vm, -3, false);
-        sq_pop(vm,1); // pop table
+    TableBase<Q>& SquirrelFunc(const SQChar* name, SQFUNCTION<Q> func) {
+        sq_pushobject(this->vm, this->GetObject());
+        sq_pushstring(this->vm, name, -1);
+        sq_newclosure(this->vm, func, 0);
+        sq_newslot(this->vm, -3, false);
+        sq_pop(this->vm,1); // pop table
         return *this;
     }
 
@@ -119,8 +120,8 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class V>
-    TableBase& SetValue(const SQChar* name, const V& val) {
-        BindValue<V>(name, val, false);
+    TableBase<Q>& SetValue(const SQChar* name, const V& val) {
+        this->BindValue(name, val, false);
         return *this;
     }
 
@@ -136,8 +137,8 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class V>
-    TableBase& SetValue(const SQInteger index, const V& val) {
-        BindValue<V>(index, val, false);
+    TableBase<Q>& SetValue(const SQInteger index, const V& val) {
+        this->BindValue(index, val, false);
         return *this;
     }
 
@@ -152,9 +153,9 @@ public:
     /// \return The Table itself so the call can be chained
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template<class V>
-    TableBase& SetInstance(const SQChar* name, V* val) {
-        BindInstance<V>(name, val, false);
+    template<class V, Squirk Q>
+    TableBase<Q>& SetInstance(const SQChar* name, V* val) {
+        this->BindInstance(name, val, false);
         return *this;
     }
 
@@ -170,8 +171,8 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class V>
-    TableBase& SetInstance(const SQInteger index, V* val) {
-        BindInstance<V>(index, val, false);
+    TableBase<Q>& SetInstance(const SQInteger index, V* val) {
+        this->BindInstance(index, val, false);
         return *this;
     }
 
@@ -187,7 +188,7 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
-    TableBase& Func(const SQChar* name, F method) {
+    TableBase<Q>& Func(const SQChar* name, F method) {
         BindFunc(name, &method, sizeof(method), SqGlobalFunc(method));
         return *this;
     }
@@ -207,7 +208,7 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
-    TableBase& Overload(const SQChar* name, F method) {
+    TableBase<Q>& Overload(const SQChar* name, F method) {
         BindOverload(name, &method, sizeof(method), SqGlobalOverloadedFunc(method), SqOverloadFunc(method), SqGetArgCount(method));
         return *this;
     }
@@ -222,13 +223,13 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     bool HasKey(const SQChar* name)
     {
-        sq_pushobject(vm, obj);
-        sq_pushstring(vm, name, -1);
-        if (SQ_FAILED(sq_get(vm, -2))) {
-            sq_pop(vm, 1);
+        sq_pushobject(this->vm, this->obj);
+        sq_pushstring(this->vm, name, -1);
+        if (SQ_FAILED(sq_get(this->vm, -2))) {
+            sq_pop(this->vm, 1);
             return false;
         }
-        sq_pop(vm, 2);
+        sq_pop(this->vm, 2);
         return true;
     }
 
@@ -248,31 +249,31 @@ public:
     template <typename T>
     SharedPtr<T> GetValue(const SQChar* name)
     {
-        sq_pushobject(vm, obj);
-        sq_pushstring(vm, name, -1);
+        sq_pushobject(this->vm, this->obj);
+        sq_pushstring(this->vm, name, -1);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if (SQ_FAILED(sq_get(vm, -2))) {
-            sq_pop(vm, 1);
-            SQTHROW(vm, _SC("illegal index"));
+        if (SQ_FAILED(sq_get(this->vm, -2))) {
+            sq_pop(this->vm, 1);
+            SQTHROW(this->vm, _SC("illegal index"));
             return SharedPtr<T>();
         }
 #else
-        sq_get(vm, -2);
+        sq_get(this->vm, -2);
 #endif
         SQTRY()
-        Var<SharedPtr<T> > entry(vm, -1);
-        SQCATCH_NOEXCEPT(vm) {
-            sq_pop(vm, 2);
+        Var<SharedPtr<T>, Q> entry(this->vm, -1);
+        SQCATCH_NOEXCEPT(this->vm) {
+            sq_pop(this->vm, 2);
             return SharedPtr<T>();
         }
-        sq_pop(vm, 2);
+        sq_pop(this->vm, 2);
         return entry.value;
-        SQCATCH(vm) {
+        SQCATCH(this->vm) {
 #if defined (SCRAT_USE_EXCEPTIONS)
-            SQUNUSED(e); // avoid "unreferenced local variable" warning
+            SQUNUSED(this->e); // avoid "unreferenced local variable" warning
 #endif
-            sq_pop(vm, 2);
-            SQRETHROW(vm);
+            sq_pop(this->vm, 2);
+            SQRETHROW(this->vm);
         }
         return SharedPtr<T>(); // avoid "not all control paths return a value" warning
     }
@@ -293,31 +294,31 @@ public:
     template <typename T>
     SharedPtr<T> GetValue(int index)
     {
-        sq_pushobject(vm, obj);
-        sq_pushinteger(vm, index);
+        sq_pushobject(this->vm, this->obj);
+        sq_pushinteger(this->vm, index);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if (SQ_FAILED(sq_get(vm, -2))) {
-            sq_pop(vm, 1);
-            SQTHROW(vm, _SC("illegal index"));
+        if (SQ_FAILED(sq_get(this->vm, -2))) {
+            sq_pop(this->vm, 1);
+            SQTHROW(this->vm, _SC("illegal index"));
             return SharedPtr<T>();
         }
 #else
-        sq_get(vm, -2);
+        sq_get(this->vm, -2);
 #endif
         SQTRY()
-        Var<SharedPtr<T> > entry(vm, -1);
-        SQCATCH_NOEXCEPT(vm) {
-            sq_pop(vm, 2);
+        Var<SharedPtr<T>, Q> entry(this->vm, -1);
+        SQCATCH_NOEXCEPT(this->vm) {
+            sq_pop(this->vm, 2);
             return SharedPtr<T>();
         }
-        sq_pop(vm, 2);
+        sq_pop(this->vm, 2);
         return entry.value;
-        SQCATCH(vm) {
+        SQCATCH(this->vm) {
 #if defined (SCRAT_USE_EXCEPTIONS)
-            SQUNUSED(e); // avoid "unreferenced local variable" warning
+            SQUNUSED(this->e); // avoid "unreferenced local variable" warning
 #endif
-            sq_pop(vm, 2);
-            SQRETHROW(vm);
+            sq_pop(this->vm, 2);
+            SQRETHROW(this->vm);
         }
         return SharedPtr<T>(); // avoid "not all control paths return a value" warning
     }
@@ -330,26 +331,26 @@ public:
     /// \return Function found in the Table (null if failed)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function GetFunction(const SQChar* name) {
-        HSQOBJECT funcObj;
-        sq_pushobject(vm, GetObject());
-        sq_pushstring(vm, name, -1);
+    Function<Q> GetFunction(const SQChar* name) {
+        HSQOBJECT<Q> funcObj;
+        sq_pushobject(this->vm, this->GetObject());
+        sq_pushstring(this->vm, name, -1);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sq_get(vm, -2))) {
-            sq_pop(vm, 1);
-            return Function();
+        if(SQ_FAILED(sq_get(this->vm, -2))) {
+            sq_pop(this->vm, 1);
+            return Function<Q>();
         }
-        SQObjectType value_type = sq_gettype(vm, -1);
+        SQObjectType value_type = sq_gettype(this->vm, -1);
         if (value_type != OT_CLOSURE && value_type != OT_NATIVECLOSURE) {
-            sq_pop(vm, 2);
-            return Function();
+            sq_pop(this->vm, 2);
+            return Function<Q>();
         }
 #else
-        sq_get(vm, -2);
+        sq_get(this->vm, -2);
 #endif
-        sq_getstackobj(vm, -1, &funcObj);
-        Function ret(vm, GetObject(), funcObj); // must addref before the pop!
-        sq_pop(vm, 2);
+        sq_getstackobj(this->vm, -1, &funcObj);
+        Function<Q> ret(this->vm, this->GetObject(), funcObj); // must addref before the pop!
+        sq_pop(this->vm, 2);
         return ret;
     }
 
@@ -361,26 +362,26 @@ public:
     /// \return Function found in the Table (null if failed)
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Function GetFunction(const SQInteger index) {
-        HSQOBJECT funcObj;
-        sq_pushobject(vm, GetObject());
-        sq_pushinteger(vm, index);
+    Function<Q> GetFunction(const SQInteger index) {
+        HSQOBJECT<Q> funcObj;
+        sq_pushobject(this->vm, this->GetObject());
+        sq_pushinteger(this->vm, index);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sq_get(vm, -2))) {
-            sq_pop(vm, 1);
-            return Function();
+        if(SQ_FAILED(sq_get(this->vm, -2))) {
+            sq_pop(this->vm, 1);
+            return Function<Q>();
         }
-        SQObjectType value_type = sq_gettype(vm, -1);
+        SQObjectType value_type = sq_gettype(this->vm, -1);
         if (value_type != OT_CLOSURE && value_type != OT_NATIVECLOSURE) {
-            sq_pop(vm, 2);
-            return Function();
+            sq_pop(this->vm, 2);
+            return Function<Q>();
         }
 #else
-        sq_get(vm, -2);
+        sq_get(this->vm, -2);
 #endif
-        sq_getstackobj(vm, -1, &funcObj);
-        Function ret(vm, GetObject(), funcObj); // must addref before the pop!
-        sq_pop(vm, 2);
+        sq_getstackobj(this->vm, -1, &funcObj);
+        Function<Q> ret(this->vm, this->GetObject(), funcObj); // must addref before the pop!
+        sq_pop(this->vm, 2);
         return ret;
     }
 };
@@ -388,7 +389,8 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Represents a table in Squirrel
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Table : public TableBase {
+template <Squirk Q>
+class Table : public TableBase<Q> {
 public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -407,11 +409,11 @@ public:
     /// \param v VM to create the Table in
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Table(HSQUIRRELVM v) : TableBase(v) {
-        sq_newtable(vm);
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm,1);
+    Table(HSQUIRRELVM<Q> v) : TableBase<Q>(v) {
+        sq_newtable(this->vm);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
+        sq_pop(this->vm,1);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,7 +422,7 @@ public:
     /// \param obj An Object that should already represent a Squirrel table
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Table(const Object& obj) : TableBase(obj) {
+    Table(const Object<Q>& obj) : TableBase<Q>(obj) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -430,7 +432,7 @@ public:
     /// \param v Squirrel VM that contains the Squirrel object given
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Table(HSQOBJECT o, HSQUIRRELVM v = DefaultVM::Get()) : TableBase(o, v) {
+    Table(HSQOBJECT<Q> o, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : TableBase<Q>(o, v) {
     }
 };
 
@@ -438,7 +440,8 @@ public:
 /// Table that is a reference to the Squirrel root table for a given VM
 /// The Squirrel root table is usually where all globals are stored by the Squirrel language.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RootTable : public TableBase {
+template <Squirk Q>
+class RootTable : public TableBase<Q> {
 public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -447,10 +450,10 @@ public:
     /// \param v VM to get the RootTable for
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    RootTable(HSQUIRRELVM v = DefaultVM::Get()) : TableBase(v) {
-        sq_pushroottable(vm);
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
+    RootTable(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : TableBase<Q>(v) {
+        sq_pushroottable(this->vm);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
         sq_pop(v,1); // pop root table
     }
 };
@@ -459,7 +462,8 @@ public:
 /// Table that is a reference to the Squirrel registry table for a given VM
 /// The Squirrel registry table is where non-Squirrel code can store Squirrel objects without worrying about Squirrel code messing with them.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RegistryTable : public TableBase {
+template <Squirk Q>
+class RegistryTable : public TableBase<Q> {
 public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -468,10 +472,10 @@ public:
     /// \param v VM to get the RegistryTable for
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    RegistryTable(HSQUIRRELVM v = DefaultVM::Get()) : TableBase(v) {
+    RegistryTable(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : TableBase<Q>(v) {
         sq_pushregistrytable(v);
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
         sq_pop(v,1); // pop the registry table
     }
 };
@@ -479,10 +483,10 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Table instances to and from the stack as references (tables are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Table> {
+template<Squirk Q>
+struct Var<Table<Q>, Q> {
 
-    Table value; ///< The actual value of get operations
+    Table<Q> value; ///< The actual value of get operations
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Attempts to get the value off the stack at idx as a Table
@@ -494,11 +498,11 @@ struct Var<Table> {
     /// This function MUST have its Error handled if it occurred.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Var(HSQUIRRELVM vm, SQInteger idx) {
-        HSQOBJECT obj;
+    Var(HSQUIRRELVM<Q> vm, SQInteger idx) {
+        HSQOBJECT<Q> obj;
         sq_resetobject(&obj);
         sq_getstackobj(vm,idx,&obj);
-        value = Table(obj, vm);
+        value = Table<Q>(obj, vm);
 #if !defined (SCRAT_NO_ERROR_CHECKING)
         SQObjectType value_type = sq_gettype(vm, idx);
         if (value_type != OT_TABLE) {
@@ -514,8 +518,8 @@ struct Var<Table> {
     /// \param value Value to push on to the VM's stack
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void push(HSQUIRRELVM vm, const Table& value) {
-        HSQOBJECT obj;
+    static void push(HSQUIRRELVM<Q> vm, const Table<Q>& value) {
+        HSQOBJECT<Q> obj;
         sq_resetobject(&obj);
         obj = value.GetObject();
         sq_pushobject(vm,obj);
@@ -526,15 +530,15 @@ struct Var<Table> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Table instances to and from the stack as references (tables are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<Table&> : Var<Table> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Table>(vm, idx) {}};
+template<Squirk Q>
+struct Var<Table<Q>&, Q> : Var<Table<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Table<Q>, Q>(vm, idx) {}};
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Used to get and push Table instances to and from the stack as references (tables are always references in Squirrel)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct Var<const Table&> : Var<Table> {Var(HSQUIRRELVM vm, SQInteger idx) : Var<Table>(vm, idx) {}};
+template<Squirk Q>
+struct Var<const Table<Q>&, Q> : Var<Table<Q>, Q> {Var(HSQUIRRELVM<Q> vm, SQInteger idx) : Var<Table<Q>, Q>(vm, idx) {}};
 
 }
 

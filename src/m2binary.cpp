@@ -1,12 +1,17 @@
 #include "m2binary.h"
 
-M2Binary::M2Binary(HSQUIRRELVM v, HSQOBJECT obj)
+template M2Binary<Squirk::Standard>;
+template M2Binary<Squirk::AlignObject>;
+
+template <Squirk T>
+M2Binary<T>::M2Binary(HSQUIRRELVM<T> v, HSQOBJECT<T> obj)
     : m_vm(v)
     , m_obj(obj)
 {
 }
 
-bool M2Binary::GetClosure(const SQChar *name)
+template <Squirk T>
+bool M2Binary<T>::GetClosure(const SQChar *name)
 {
     sq_pushobject(m_vm, m_obj);
     sq_pushstring(m_vm, name, -1);
@@ -21,7 +26,8 @@ bool M2Binary::GetClosure(const SQChar *name)
     return true;
 }
 
-bool M2Binary::At(SQInteger offset, SQInteger *value)
+template <Squirk T>
+bool M2Binary<T>::At(SQInteger offset, SQInteger *value)
 {
     if (!GetClosure("at")) return false;
 
@@ -35,7 +41,8 @@ bool M2Binary::At(SQInteger offset, SQInteger *value)
     return false;
 }
 
-bool M2Binary::Size(SQInteger *size)
+template <Squirk T>
+bool M2Binary<T>::Size(SQInteger *size)
 {
     if (!GetClosure("size")) return false;
 

@@ -134,13 +134,13 @@ namespace Sqrat {
     #define SQWHAT_NOEXCEPT(vm)  _SC("")
 #else
     #define SQCATCH(vm)          if (SQRAT_CONST_CONDITION(false))
-    #define SQCATCH_NOEXCEPT(vm) if (Error::Occurred(vm))
-    #define SQCLEAR(vm)          Error::Clear(vm)
+    #define SQCATCH_NOEXCEPT(vm) if (Error<Q>::Occurred(vm))
+    #define SQCLEAR(vm)          Error<Q>::Clear(vm)
     #define SQRETHROW(vm)
-    #define SQTHROW(vm, err)     Error::Throw(vm, err)
+    #define SQTHROW(vm, err)     Error<Q>::Throw(vm, err)
     #define SQTRY()
     #define SQWHAT(vm)           _SC("")
-    #define SQWHAT_NOEXCEPT(vm)  Error::Message(vm).c_str()
+    #define SQWHAT_NOEXCEPT(vm)  Error<Q>::Message(vm).c_str()
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,11 +190,12 @@ class WeakPtr;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Helper class that defines a VM that can be used as a fallback VM in case no other one is given to a piece of code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <Squirk Q>
 class DefaultVM {
 private:
 
-    static HSQUIRRELVM& staticVm() {
-        static HSQUIRRELVM vm;
+    static HSQUIRRELVM<Q>& staticVm() {
+        static HSQUIRRELVM<Q> vm;
         return vm;
     }
 
@@ -206,7 +207,7 @@ public:
     /// \return Default VM
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static HSQUIRRELVM Get() {
+    static HSQUIRRELVM<Q> Get() {
         return staticVm();
     }
 
@@ -216,7 +217,7 @@ public:
     /// \param vm New default VM
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void Set(HSQUIRRELVM vm) {
+    static void Set(HSQUIRRELVM<Q> vm) {
         staticVm() = vm;
     }
 };
@@ -246,6 +247,7 @@ public:
 /// In this mode, a Squirrel script may crash the C++ application if errors occur in it.
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <Squirk Q>
 class Error {
 public:
 
@@ -255,7 +257,7 @@ public:
     /// \param vm Target VM
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void Clear(HSQUIRRELVM vm) {
+    static void Clear(HSQUIRRELVM<Q> vm) {
         sq_pushregistrytable(vm);
         sq_pushstring(vm, "__error", -1);
         sq_rawdeleteslot(vm, -2, false);
@@ -270,7 +272,7 @@ public:
     /// \return String containing a nice error message
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static string Message(HSQUIRRELVM vm) {
+    static string Message(HSQUIRRELVM<Q> vm) {
         sq_pushregistrytable(vm);
         sq_pushstring(vm, "__error", -1);
         if (SQ_SUCCEEDED(sq_rawget(vm, -2))) {
@@ -297,7 +299,7 @@ public:
     /// \return True if an error has occurred, otherwise false
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static bool Occurred(HSQUIRRELVM vm) {
+    static bool Occurred(HSQUIRRELVM<Q> vm) {
         sq_pushregistrytable(vm);
         sq_pushstring(vm, "__error", -1);
         if (SQ_SUCCEEDED(sq_rawget(vm, -2))) {
@@ -315,7 +317,7 @@ public:
     /// \param err A nice error message
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static void Throw(HSQUIRRELVM vm, const string& err) {
+    static void Throw(HSQUIRRELVM<Q> vm, const string& err) {
         sq_pushregistrytable(vm);
         sq_pushstring(vm, "__error", -1);
         if (SQ_FAILED(sq_rawget(vm, -2))) {
@@ -432,7 +434,8 @@ private:
 /// \return String containing a nice type error message
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline string FormatTypeError(HSQUIRRELVM vm, SQInteger idx, const string& expectedType) {
+template <Squirk Q>
+inline string FormatTypeError(HSQUIRRELVM<Q> vm, SQInteger idx, const string& expectedType) {
     string err = _SC("wrong type (") + expectedType + _SC(" expected");
 #if (SQUIRREL_VERSION_NUMBER>= 200) && (SQUIRREL_VERSION_NUMBER < 300) // Squirrel 2.x
     err = err + _SC(")");
@@ -458,7 +461,8 @@ inline string FormatTypeError(HSQUIRRELVM vm, SQInteger idx, const string& expec
 /// \return String containing a nice error message
 ///
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline string LastErrorString(HSQUIRRELVM vm) {
+template <Squirk Q>
+inline string LastErrorString(HSQUIRRELVM<Q> vm) {
     const SQChar* sqErr;
     sq_getlasterror(vm);
     if (sq_gettype(vm, -1) == OT_NULL) {

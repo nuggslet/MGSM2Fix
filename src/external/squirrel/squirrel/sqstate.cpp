@@ -12,13 +12,8 @@
 #include "squserdata.h"
 #include "sqclass.h"
 
-SQObjectPtr _null_;
-SQObjectPtr _true_(true);
-SQObjectPtr _false_(false);
-SQObjectPtr _one_((SQInteger)1);
-SQObjectPtr _minusone_((SQInteger)-1);
-
-SQSharedState::SQSharedState()
+template <Squirk T>
+SQSharedState<T>::SQSharedState()
 {
 	_compilererrorhandler = NULL;
 	_printfunc = NULL;
@@ -27,11 +22,11 @@ SQSharedState::SQSharedState()
 }
 
 #define newsysstring(s) {	\
-	_systemstrings->push_back(SQString::Create(this,s));	\
+	_systemstrings->push_back(SQString<T>::Create(this,s));	\
 	}
 
 #define newmetamethod(s) {	\
-	_metamethods->push_back(SQString::Create(this,s));	\
+	_metamethods->push_back(SQString<T>::Create(this,s));	\
 	_table(_metamethodsmap)->NewSlot(_metamethods->back(),(SQInteger)(_metamethods->size()-1)); \
 	}
 
@@ -78,34 +73,36 @@ bool CompileTypemask(SQIntVec &res,const SQChar *typemask)
 	return true;
 }
 
-SQTable *CreateDefaultDelegate(SQSharedState *ss,SQRegFunction *funcz)
+template <Squirk T>
+SQTable<T> *CreateDefaultDelegate(SQSharedState<T> *ss,SQRegFunction<T> *funcz)
 {
 	SQInteger i=0;
-	SQTable *t=SQTable::Create(ss,0);
+	SQTable<T> *t=SQTable<T>::Create(ss,0);
 	while(funcz[i].name!=0){
-		SQNativeClosure *nc = SQNativeClosure::Create(ss,funcz[i].f);
+		SQNativeClosure<T> *nc = SQNativeClosure<T>::Create(ss,funcz[i].f);
 		nc->_nparamscheck = funcz[i].nparamscheck;
-		nc->_name = SQString::Create(ss,funcz[i].name);
+		nc->_name = SQString<T>::Create(ss,funcz[i].name);
 		if(funcz[i].typemask && !CompileTypemask(nc->_typecheck,funcz[i].typemask))
 			return NULL;
-		t->NewSlot(SQString::Create(ss,funcz[i].name),nc);
+		t->NewSlot(SQString<T>::Create(ss,funcz[i].name),nc);
 		i++;
 	}
 	return t;
 }
 
-void SQSharedState::Init()
+template <Squirk T>
+void SQSharedState<T>::Init()
 {	
 	_scratchpad=NULL;
 	_scratchpadsize=0;
 #ifndef NO_GARBAGE_COLLECTOR
 	_gc_chain=NULL;
 #endif
-	sq_new(_stringtable,StringTable);
-	sq_new(_metamethods,SQObjectPtrVec);
-	sq_new(_systemstrings,SQObjectPtrVec);
-	sq_new(_types,SQObjectPtrVec);
-	_metamethodsmap = SQTable::Create(this,MT_LAST-1);
+	sq_new(_stringtable,StringTable<T>);
+	sq_new(_metamethods,SQObjectPtrVec<T>);
+	sq_new(_systemstrings,SQObjectPtrVec<T>);
+	sq_new(_types,SQObjectPtrVec<T>);
+	_metamethodsmap = SQTable<T>::Create(this,MT_LAST-1);
 	//adding type strings to avoid memory trashing
 	//types names
 	newsysstring(_SC("null"));
@@ -143,9 +140,9 @@ void SQSharedState::Init()
 	newmetamethod(MM_NEWMEMBER);
 	newmetamethod(MM_INHERITED);
 
-	_constructoridx = SQString::Create(this,_SC("constructor"));
-	_registry = SQTable::Create(this,0);
-	_consts = SQTable::Create(this,0);
+	_constructoridx = SQString<T>::Create(this,_SC("constructor"));
+	_registry = SQTable<T>::Create(this,0);
+	_consts = SQTable<T>::Create(this,0);
 	_table_default_delegate = CreateDefaultDelegate(this,_table_default_delegate_funcz);
 	_array_default_delegate = CreateDefaultDelegate(this,_array_default_delegate_funcz);
 	_string_default_delegate = CreateDefaultDelegate(this,_string_default_delegate_funcz);
@@ -159,35 +156,36 @@ void SQSharedState::Init()
 
 }
 
-SQSharedState::~SQSharedState()
+template <Squirk T>
+SQSharedState<T>::~SQSharedState()
 {
-	_constructoridx = _null_;
+	_constructoridx = _null_<T>;
 	_table(_registry)->Finalize();
 	_table(_consts)->Finalize();
 	_table(_metamethodsmap)->Finalize();
-	_registry = _null_;
-	_consts = _null_;
-	_metamethodsmap = _null_;
+	_registry = _null_<T>;
+	_consts = _null_<T>;
+	_metamethodsmap = _null_<T>;
 	while(!_systemstrings->empty()) {
-		_systemstrings->back()=_null_;
+		_systemstrings->back()=_null_<T>;
 		_systemstrings->pop_back();
 	}
 	_thread(_root_vm)->Finalize();
-	_root_vm = _null_;
-	_table_default_delegate = _null_;
-	_array_default_delegate = _null_;
-	_string_default_delegate = _null_;
-	_number_default_delegate = _null_;
-	_closure_default_delegate = _null_;
-	_generator_default_delegate = _null_;
-	_thread_default_delegate = _null_;
-	_class_default_delegate = _null_;
-	_instance_default_delegate = _null_;
-	_weakref_default_delegate = _null_;
+	_root_vm = _null_<T>;
+	_table_default_delegate = _null_<T>;
+	_array_default_delegate = _null_<T>;
+	_string_default_delegate = _null_<T>;
+	_number_default_delegate = _null_<T>;
+	_closure_default_delegate = _null_<T>;
+	_generator_default_delegate = _null_<T>;
+	_thread_default_delegate = _null_<T>;
+	_class_default_delegate = _null_<T>;
+	_instance_default_delegate = _null_<T>;
+	_weakref_default_delegate = _null_<T>;
 	_refs_table.Finalize();
 #ifndef NO_GARBAGE_COLLECTOR
-	SQCollectable *t = _gc_chain;
-	SQCollectable *nx = NULL;
+	SQCollectable<T> *t = _gc_chain;
+	SQCollectable<T> *nx = NULL;
 	while(t) {
 		t->_uiRef++;
 		t->Finalize();
@@ -203,19 +201,19 @@ SQSharedState::~SQSharedState()
 	}
 #endif
 
-	sq_delete(_types,SQObjectPtrVec);
-	sq_delete(_systemstrings,SQObjectPtrVec);
-	sq_delete(_metamethods,SQObjectPtrVec);
-	sq_delete(_stringtable,StringTable);
+	sq_delete(_types,SQObjectPtrVec<T>);
+	sq_delete(_systemstrings,SQObjectPtrVec<T>);
+	sq_delete(_metamethods,SQObjectPtrVec<T>);
+	sq_delete(_stringtable,StringTable<T>);
 	if(_scratchpad)SQ_FREE(_scratchpad,_scratchpadsize);
 }
 
-
-SQInteger SQSharedState::GetMetaMethodIdxByName(const SQObjectPtr &name)
+template <Squirk T>
+SQInteger SQSharedState<T>::GetMetaMethodIdxByName(const SQObjectPtr<T> &name)
 {
 	if(type(name) != OT_STRING)
 		return -1;
-	SQObjectPtr ret;
+	SQObjectPtr<T> ret;
 	if(_table(_metamethodsmap)->Get(name,ret)) {
 		return _integer(ret);
 	}
@@ -224,7 +222,8 @@ SQInteger SQSharedState::GetMetaMethodIdxByName(const SQObjectPtr &name)
 
 #ifndef NO_GARBAGE_COLLECTOR
 
-void SQSharedState::MarkObject(SQObjectPtr &o,SQCollectable **chain)
+template <Squirk T>
+void SQSharedState<T>::MarkObject(SQObjectPtr<T> &o,SQCollectable<T> **chain)
 {
 	switch(type(o)){
 	case OT_TABLE:_table(o)->Mark(chain);break;
@@ -240,12 +239,12 @@ void SQSharedState::MarkObject(SQObjectPtr &o,SQCollectable **chain)
 	}
 }
 
-
-SQInteger SQSharedState::CollectGarbage(SQVM *vm)
+template <Squirk T>
+SQInteger SQSharedState<T>::CollectGarbage(SQVM<T> *vm)
 {
 	SQInteger n=0;
-	SQCollectable *tchain=NULL;
-	SQVM *vms = _thread(_root_vm);
+	SQCollectable<T> *tchain=NULL;
+	SQVM<T> *vms = _thread(_root_vm);
 	
 	vms->Mark(&tchain);
 	SQInteger x = _table(_thread(_root_vm)->_roottable)->CountUsed();
@@ -264,8 +263,8 @@ SQInteger SQSharedState::CollectGarbage(SQVM *vm)
 	MarkObject(_instance_default_delegate,&tchain);
 	MarkObject(_weakref_default_delegate,&tchain);
 	
-	SQCollectable *t = _gc_chain;
-	SQCollectable *nx = NULL;
+	SQCollectable<T> *t = _gc_chain;
+	SQCollectable<T> *nx = NULL;
 	while(t) {
 		t->_uiRef++;
 		t->Finalize();
@@ -289,7 +288,8 @@ SQInteger SQSharedState::CollectGarbage(SQVM *vm)
 #endif
 
 #ifndef NO_GARBAGE_COLLECTOR
-void SQCollectable::AddToChain(SQCollectable **chain,SQCollectable *c)
+template <Squirk T>
+void SQCollectable<T>::AddToChain(SQCollectable<T> **chain,SQCollectable<T> *c)
 {
     c->_prev = NULL;
 	c->_next = *chain;
@@ -297,7 +297,8 @@ void SQCollectable::AddToChain(SQCollectable **chain,SQCollectable *c)
 	*chain = c;
 }
 
-void SQCollectable::RemoveFromChain(SQCollectable **chain,SQCollectable *c)
+template <Squirk T>
+void SQCollectable<T>::RemoveFromChain(SQCollectable<T> **chain,SQCollectable<T> *c)
 {
 	if(c->_prev) c->_prev->_next = c->_next;
 	else *chain = c->_next;
@@ -308,7 +309,8 @@ void SQCollectable::RemoveFromChain(SQCollectable **chain,SQCollectable *c)
 }
 #endif
 
-SQChar* SQSharedState::GetScratchPad(SQInteger size)
+template <Squirk T>
+SQChar* SQSharedState<T>::GetScratchPad(SQInteger size)
 {
 	SQInteger newsize;
 	if(size>0) {
@@ -326,39 +328,44 @@ SQChar* SQSharedState::GetScratchPad(SQInteger size)
 	return _scratchpad;
 }
 
-RefTable::RefTable()
+template <Squirk T>
+RefTable<T>::RefTable()
 {
 	AllocNodes(4);
 }
 
-void RefTable::Finalize()
+template <Squirk T>
+void RefTable<T>::Finalize()
 {
 	RefNode *nodes = _nodes;
 	for(SQUnsignedInteger n = 0; n < _numofslots; n++) {
-		nodes->obj = _null_;
+		nodes->obj = _null_<T>;
 		nodes++;
 	}
 }
 
-RefTable::~RefTable()
+template <Squirk T>
+RefTable<T>::~RefTable()
 {
 	SQ_FREE(_buckets,(_numofslots * sizeof(RefNode *)) + (_numofslots * sizeof(RefNode)));
 }
 
 #ifndef NO_GARBAGE_COLLECTOR
-void RefTable::Mark(SQCollectable **chain)
+template <Squirk T>
+void RefTable<T>::Mark(SQCollectable<T> **chain)
 {
 	RefNode *nodes = (RefNode *)_nodes;
 	for(SQUnsignedInteger n = 0; n < _numofslots; n++) {
 		if(type(nodes->obj) != OT_NULL) {
-			SQSharedState::MarkObject(nodes->obj,chain);
+			SQSharedState<T>::MarkObject(nodes->obj,chain);
 		}
 		nodes++;
 	}
 }
 #endif
 
-void RefTable::AddRef(SQObject &obj)
+template <Squirk T>
+void RefTable<T>::AddRef(SQObject<T> &obj)
 {
 	SQHash mainpos;
 	RefNode *prev;
@@ -366,7 +373,8 @@ void RefTable::AddRef(SQObject &obj)
 	ref->refs++;
 }
 
-SQBool RefTable::Release(SQObject &obj)
+template <Squirk T>
+SQBool RefTable<T>::Release(SQObject<T> &obj)
 {
 	SQHash mainpos;
 	RefNode *prev;
@@ -383,7 +391,7 @@ SQBool RefTable::Release(SQObject &obj)
 			ref->next = _freelist;
 			_freelist = ref;
 			_slotused--;
-			ref->obj = _null_;
+			ref->obj = _null_<T>;
 			//<<FIXME>>test for shrink?
 			return SQTrue;
 		}
@@ -394,7 +402,8 @@ SQBool RefTable::Release(SQObject &obj)
 	return SQFalse;
 }
 
-void RefTable::Resize(SQUnsignedInteger size)
+template <Squirk T>
+void RefTable<T>::Resize(SQUnsignedInteger size)
 {
 	RefNode **oldbucks = _buckets;
 	RefNode *t = _nodes;
@@ -408,7 +417,7 @@ void RefTable::Resize(SQUnsignedInteger size)
 			assert(t->refs != 0);
 			RefNode *nn = Add(::HashObj(t->obj)&(_numofslots-1),t->obj);
 			nn->refs = t->refs; 
-			t->obj = _null_;
+			t->obj = _null_<T>;
 			nfound++;
 		}
 		t++;
@@ -417,7 +426,8 @@ void RefTable::Resize(SQUnsignedInteger size)
 	SQ_FREE(oldbucks,(oldnumofslots * sizeof(RefNode *)) + (oldnumofslots * sizeof(RefNode)));
 }
 
-RefTable::RefNode *RefTable::Add(SQHash mainpos,SQObject &obj)
+template <Squirk T>
+RefTable<T>::RefNode *RefTable<T>::Add(SQHash mainpos,SQObject<T> &obj)
 {
 	RefNode *t = _buckets[mainpos];
 	RefNode *newnode = _freelist;
@@ -430,10 +440,11 @@ RefTable::RefNode *RefTable::Add(SQHash mainpos,SQObject &obj)
 	return newnode;
 }
 
-RefTable::RefNode *RefTable::Get(SQObject &obj,SQHash &mainpos,RefNode **prev,bool add)
+template <Squirk T>
+RefTable<T>::RefNode *RefTable<T>::Get(SQObject<T> &obj,SQHash &mainpos,RefNode **prev,bool add)
 {
 	RefNode *ref;
-	mainpos = ::HashObj(obj)&(_numofslots-1);
+	mainpos = ::HashObj<T>(obj)&(_numofslots-1);
 	*prev = NULL;
 	for (ref = _buckets[mainpos]; ref; ) {
 		if(_rawval(ref->obj) == _rawval(obj) && type(ref->obj) == type(obj))
@@ -445,14 +456,15 @@ RefTable::RefNode *RefTable::Get(SQObject &obj,SQHash &mainpos,RefNode **prev,bo
 		if(_numofslots == _slotused) {
 			assert(_freelist == 0);
 			Resize(_numofslots*2);
-			mainpos = ::HashObj(obj)&(_numofslots-1);
+			mainpos = ::HashObj<T>(obj)&(_numofslots-1);
 		}
 		ref = Add(mainpos,obj);
 	}
 	return ref;
 }
 
-void RefTable::AllocNodes(SQUnsignedInteger size)
+template <Squirk T>
+void RefTable<T>::AllocNodes(SQUnsignedInteger size)
 {
 	RefNode **bucks;
 	RefNode *nodes;
@@ -463,13 +475,13 @@ void RefTable::AllocNodes(SQUnsignedInteger size)
 	for(n = 0; n < size - 1; n++) {
 		bucks[n] = NULL;
 		temp->refs = 0;
-		new (&temp->obj) SQObjectPtr;
+		new (&temp->obj) SQObjectPtr<T>;
 		temp->next = temp+1;
 		temp++;
 	}
 	bucks[n] = NULL;
 	temp->refs = 0;
-	new (&temp->obj) SQObjectPtr;
+	new (&temp->obj) SQObjectPtr<T>;
 	temp->next = NULL;
 	_freelist = nodes;
 	_nodes = nodes;
@@ -485,38 +497,42 @@ void RefTable::AllocNodes(SQUnsignedInteger size)
 * http://www.lua.org/source/4.0.1/src_lstring.c.html
 */
 
-StringTable::StringTable()
+template <Squirk T>
+StringTable<T>::StringTable()
 {
 	AllocNodes(4);
 	_slotused = 0;
 }
 
-StringTable::~StringTable()
+template <Squirk T>
+StringTable<T>::~StringTable()
 {
-	SQ_FREE(_strings,sizeof(SQString*)*_numofslots);
+	SQ_FREE(_strings,sizeof(SQString<T>*)*_numofslots);
 	_strings = NULL;
 }
 
-void StringTable::AllocNodes(SQInteger size)
+template <Squirk T>
+void StringTable<T>::AllocNodes(SQInteger size)
 {
 	_numofslots = size;
-	_strings = (SQString**)SQ_MALLOC(sizeof(SQString*)*_numofslots);
-	memset(_strings,0,sizeof(SQString*)*_numofslots);
+	_strings = (SQString<T>**)SQ_MALLOC(sizeof(SQString<T>*)*_numofslots);
+	memset(_strings,0,sizeof(SQString<T>*)*_numofslots);
 }
 
-SQString *StringTable::Add(const SQChar *news,SQInteger len)
+template <Squirk T>
+SQString<T> *StringTable<T>::Add(const SQChar *news,SQInteger len)
 {
 	if(len<0)
 		len = (SQInteger)scstrlen(news);
 	SQHash h = ::_hashstr(news,len)&(_numofslots-1);
-	SQString *s;
+	SQString<T> *s;
 	for (s = _strings[h]; s; s = s->_next){
 		if(s->_len == len && (!memcmp(news,s->_val,rsl(len))))
 			return s; //found
 	}
 
-	SQString *t=(SQString *)SQ_MALLOC(rsl(len)+sizeof(SQString));
-	new (t) SQString;
+	SQString<T> *t=(SQString<T> *)SQ_MALLOC(rsl(len)+sizeof(SQString<T>));
+	new (t) SQString<T>;
 	memcpy(t->_val,news,rsl(len));
 	t->_val[len] = _SC('\0');
 	t->_len = len;
@@ -529,28 +545,30 @@ SQString *StringTable::Add(const SQChar *news,SQInteger len)
 	return t;
 }
 
-void StringTable::Resize(SQInteger size)
+template <Squirk T>
+void StringTable<T>::Resize(SQInteger size)
 {
 	SQInteger oldsize=_numofslots;
-	SQString **oldtable=_strings;
+	SQString<T> **oldtable=_strings;
 	AllocNodes(size);
 	for (SQInteger i=0; i<oldsize; i++){
-		SQString *p = oldtable[i];
+		SQString<T> *p = oldtable[i];
 		while(p){
-			SQString *next = p->_next;
+			SQString<T> *next = p->_next;
 			SQHash h = p->_hash&(_numofslots-1);
 			p->_next = _strings[h];
 			_strings[h] = p;
 			p = next;
 		}
 	}
-	SQ_FREE(oldtable,oldsize*sizeof(SQString*));
+	SQ_FREE(oldtable,oldsize*sizeof(SQString<T>*));
 }
 
-void StringTable::Remove(SQString *bs)
+template <Squirk T>
+void StringTable<T>::Remove(SQString<T> *bs)
 {
-	SQString *s;
-	SQString *prev=NULL;
+	SQString<T> *s;
+	SQString<T> *prev=NULL;
 	SQHash h = bs->_hash&(_numofslots - 1);
 	
 	for (s = _strings[h]; s; ){
@@ -562,7 +580,7 @@ void StringTable::Remove(SQString *bs)
 			_slotused--;
 			SQInteger slen = s->_len;
 			s->~SQString();
-			SQ_FREE(s,sizeof(SQString) + rsl(slen));
+			SQ_FREE(s,sizeof(SQString<T>) + rsl(slen));
 			return;
 		}
 		prev = s;

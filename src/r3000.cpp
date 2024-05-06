@@ -7,7 +7,7 @@
 using namespace std;
 
 extern HMODULE baseModule;
-extern MgsGame eGameType;
+extern M2FixGame eGameType;
 
 uintptr_t R3000_DecodeAddress;
 
@@ -82,7 +82,7 @@ int R3000_CommandGTE(struct M2_EmuCoprocGTE *gte, int op)
 void R3000Hook()
 {
     switch (eGameType) {
-        case MgsGame::MGS1: break;
+        case M2FixGame::MGS1: break;
         default: return;
     }
 

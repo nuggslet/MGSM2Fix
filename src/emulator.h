@@ -158,11 +158,14 @@ typedef struct M2_EmuGPU {
 //static_assert(sizeof(M2_EmuGPU) == 0x2000EC);
 #endif
 
-enum class MgsGame
+enum class M2FixGame
 {
     Unknown,
     MGS1,
     MGSR,
+    Contra,
+    Dracula,
+    DraculaAdvance,
 };
 
 typedef enum {

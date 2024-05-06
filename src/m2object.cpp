@@ -1,17 +1,23 @@
 #include "m2object.h"
 
-M2Object::M2Object(const SQChar *name)
+template M2Object<Squirk::Standard>;
+template M2Object<Squirk::AlignObject>;
+
+template <Squirk T>
+M2Object<T>::M2Object(const SQChar *name)
     : m_name(name)
     , m_vm(NULL)
 {
 }
 
-void M2Object::SetVM(HSQUIRRELVM v)
+template <Squirk T>
+void M2Object<T>::SetVM(HSQUIRRELVM<T> v)
 {
     m_vm = v;
 }
 
-bool M2Object::Get()
+template <Squirk T>
+bool M2Object<T>::Get()
 {
     sq_pushroottable(m_vm);
     sq_pushstring(m_vm, m_name, -1);
@@ -29,7 +35,8 @@ bool M2Object::Get()
     return true;
 }
 
-bool M2Object::Get(const SQChar *name, SQObjectType type)
+template <Squirk T>
+bool M2Object<T>::Get(const SQChar *name, SQObjectType type)
 {
     if (!Get()) return false;
 
@@ -45,7 +52,8 @@ bool M2Object::Get(const SQChar *name, SQObjectType type)
     return true;
 }
 
-bool M2Object::GetClosure(const SQChar *name)
+template <Squirk T>
+bool M2Object<T>::GetClosure(const SQChar *name)
 {
     if (!Get()) return false;
 
@@ -61,7 +69,8 @@ bool M2Object::GetClosure(const SQChar *name)
     return true;
 }
 
-bool M2Object::Void(const SQChar *name)
+template <Squirk T>
+bool M2Object<T>::Void(const SQChar *name)
 {
     if (!GetClosure(name)) return false;
 
@@ -73,7 +82,8 @@ bool M2Object::Void(const SQChar *name)
     return false;
 }
 
-bool M2Object::SetBool(const SQChar *name, SQBool value)
+template <Squirk T>
+bool M2Object<T>::SetBool(const SQChar *name, SQBool value)
 {
     if (!GetClosure(name)) return false;
 
@@ -86,7 +96,8 @@ bool M2Object::SetBool(const SQChar *name, SQBool value)
     return false;
 }
 
-bool M2Object::SetInteger(const SQChar *name, SQInteger value)
+template <Squirk T>
+bool M2Object<T>::SetInteger(const SQChar *name, SQInteger value)
 {
     if (!GetClosure(name)) return false;
 
@@ -99,7 +110,8 @@ bool M2Object::SetInteger(const SQChar *name, SQInteger value)
     return false;
 }
 
-bool M2Object::SetFloat(const SQChar *name, SQFloat value)
+template <Squirk T>
+bool M2Object<T>::SetFloat(const SQChar *name, SQFloat value)
 {
     if (!GetClosure(name)) return false;
 
@@ -112,7 +124,8 @@ bool M2Object::SetFloat(const SQChar *name, SQFloat value)
     return false;
 }
 
-bool M2Object::SetInfoInteger(const SQChar *name, const SQChar *key, SQInteger value)
+template <Squirk T>
+bool M2Object<T>::SetInfoInteger(const SQChar *name, const SQChar *key, SQInteger value)
 {
     if (!GetClosure(name)) return false;
 
@@ -126,7 +139,8 @@ bool M2Object::SetInfoInteger(const SQChar *name, const SQChar *key, SQInteger v
     return false;
 }
 
-bool M2Object::GetBool(const SQChar *name, SQBool *value)
+template <Squirk T>
+bool M2Object<T>::GetBool(const SQChar *name, SQBool *value)
 {
     if (!GetClosure(name)) return false;
 
@@ -139,7 +153,8 @@ bool M2Object::GetBool(const SQChar *name, SQBool *value)
     return false;
 }
 
-bool M2Object::GetInteger(const SQChar *name, SQInteger *value)
+template <Squirk T>
+bool M2Object<T>::GetInteger(const SQChar *name, SQInteger *value)
 {
     if (!GetClosure(name)) return false;
 
@@ -152,7 +167,8 @@ bool M2Object::GetInteger(const SQChar *name, SQInteger *value)
     return false;
 }
 
-bool M2Object::GetFloat(const SQChar *name, SQFloat *value)
+template <Squirk T>
+bool M2Object<T>::GetFloat(const SQChar *name, SQFloat *value)
 {
     if (!GetClosure(name)) return false;
 
@@ -165,7 +181,8 @@ bool M2Object::GetFloat(const SQChar *name, SQFloat *value)
     return false;
 }
 
-bool M2Object::GetInfoInteger(const SQChar *name, const SQChar *key, SQInteger *value)
+template <Squirk T>
+bool M2Object<T>::GetInfoInteger(const SQChar *name, const SQChar *key, SQInteger *value)
 {
     if (!GetClosure(name)) return false;
 

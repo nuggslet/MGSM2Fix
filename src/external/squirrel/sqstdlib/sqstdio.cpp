@@ -108,7 +108,8 @@ private:
 	bool _owns;
 };
 
-static SQInteger _file__typeof(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _file__typeof(HSQUIRRELVM<T> v)
 {
 	sq_pushstring(v,_SC("file"),-1);
 	return 1;
@@ -121,7 +122,8 @@ static SQInteger _file_releasehook(SQUserPointer p, SQInteger size)
 	return 1;
 }
 
-static SQInteger _file_constructor(HSQUIRRELVM v)
+template <Squirk T>
+static SQInteger _file_constructor(HSQUIRRELVM<T> v)
 {
 	const SQChar *filename,*mode;
 	bool owns = true;
@@ -149,15 +151,16 @@ static SQInteger _file_constructor(HSQUIRRELVM v)
 
 //bindings
 #define _DECL_FILE_FUNC(name,nparams,typecheck) {_SC(#name),_file_##name,nparams,typecheck}
-static SQRegFunction _file_methods[] = {
+template <Squirk T>
+static SQRegFunction<T> _file_methods[] = {
 	_DECL_FILE_FUNC(constructor,3,_SC("x")),
 	_DECL_FILE_FUNC(_typeof,1,_SC("x")),
 	{0,0,0,0},
 };
 
 
-
-SQRESULT sqstd_createfile(HSQUIRRELVM v, SQFILE file,SQBool own)
+template <Squirk T>
+SQRESULT sqstd_createfile(HSQUIRRELVM<T> v, SQFILE file,SQBool own)
 {
 	SQInteger top = sq_gettop(v);
 	sq_pushregistrytable(v);
@@ -181,7 +184,8 @@ SQRESULT sqstd_createfile(HSQUIRRELVM v, SQFILE file,SQBool own)
 	return SQ_OK;
 }
 
-SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQFILE *file)
+template <Squirk T>
+SQRESULT sqstd_getfile(HSQUIRRELVM<T> v, SQInteger idx, SQFILE *file)
 {
 	SQFile *fileobj = NULL;
 	if(SQ_SUCCEEDED(sq_getinstanceup(v,idx,(SQUserPointer*)&fileobj,(SQUserPointer)SQSTD_FILE_TYPE_TAG))) {
@@ -271,7 +275,8 @@ SQInteger file_write(SQUserPointer file,SQUserPointer p,SQInteger size)
 	return sqstd_fwrite(p,1,size,(SQFILE)file);
 }
 
-SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool printerror)
+template <Squirk T>
+SQRESULT sqstd_loadfile(HSQUIRRELVM<T> v,const SQChar *filename,SQBool printerror)
 {
 	SQFILE file = sqstd_fopen(filename,_SC("rb"));
 	SQInteger ret;
@@ -322,7 +327,8 @@ SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool printerror)
 	return sq_throwerror(v,_SC("cannot open the file"));
 }
 
-SQRESULT sqstd_dofile(HSQUIRRELVM v,const SQChar *filename,SQBool retval,SQBool printerror)
+template <Squirk T>
+SQRESULT sqstd_dofile(HSQUIRRELVM<T> v,const SQChar *filename,SQBool retval,SQBool printerror)
 {
 	if(SQ_SUCCEEDED(sqstd_loadfile(v,filename,printerror))) {
 		sq_push(v,-2);
@@ -335,7 +341,8 @@ SQRESULT sqstd_dofile(HSQUIRRELVM v,const SQChar *filename,SQBool retval,SQBool 
 	return SQ_ERROR;
 }
 
-SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename)
+template <Squirk T>
+SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM<T> v,const SQChar *filename)
 {
 	SQFILE file = sqstd_fopen(filename,_SC("wb+"));
 	if(!file) return sq_throwerror(v,_SC("cannot open the file"));
@@ -347,7 +354,8 @@ SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename)
 	return SQ_ERROR; //forward the error
 }
 
-SQInteger _g_io_loadfile(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _g_io_loadfile(HSQUIRRELVM<T> v)
 {
 	const SQChar *filename;
 	SQBool printerror = SQFalse;
@@ -360,7 +368,8 @@ SQInteger _g_io_loadfile(HSQUIRRELVM v)
 	return SQ_ERROR; //propagates the error
 }
 
-SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _g_io_writeclosuretofile(HSQUIRRELVM<T> v)
 {
 	const SQChar *filename;
 	sq_getstring(v,2,&filename);
@@ -369,7 +378,8 @@ SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v)
 	return SQ_ERROR; //propagates the error
 }
 
-SQInteger _g_io_dofile(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _g_io_dofile(HSQUIRRELVM<T> v)
 {
 	const SQChar *filename;
 	SQBool printerror = SQFalse;
@@ -384,18 +394,20 @@ SQInteger _g_io_dofile(HSQUIRRELVM v)
 }
 
 #define _DECL_GLOBALIO_FUNC(name,nparams,typecheck) {_SC(#name),_g_io_##name,nparams,typecheck}
-static SQRegFunction iolib_funcs[]={
+template <Squirk T>
+static SQRegFunction<T> iolib_funcs[]={
 	_DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
 	_DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
 	_DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),
 	{0,0}
 };
 
-SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
+template <Squirk T>
+SQRESULT sqstd_register_iolib(HSQUIRRELVM<T> v)
 {
 	SQInteger top = sq_gettop(v);
 	//create delegate
-	declare_stream(v,_SC("file"),(SQUserPointer)SQSTD_FILE_TYPE_TAG,_SC("std_file"),_file_methods,iolib_funcs);
+	declare_stream(v,_SC("file"),(SQUserPointer)SQSTD_FILE_TYPE_TAG,_SC("std_file"),_file_methods<T>,iolib_funcs<T>);
 	sq_pushstring(v,_SC("stdout"),-1);
 	sqstd_createfile(v,stdout,SQFalse);
 	sq_createslot(v,-3);

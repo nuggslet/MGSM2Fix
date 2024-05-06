@@ -61,39 +61,44 @@ const SQChar *FloatToString(SQFloat n)
 	return temp;
 }
 
-SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
-SQInteger error_handler(HSQUIRRELVM v);
+template <Squirk T>
+SQInteger debug_hook(HSQUIRRELVM<T> v, HSQUIRRELVM<T> _v, HSQREMOTEDBG<T> rdbg);
+template <Squirk T>
+SQInteger error_handler(HSQUIRRELVM<T> v);
 
-SQInteger beginelement(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger beginelement(HSQUIRRELVM<T> v)
 {
 	SQUserPointer up;
 	const SQChar *name;
 	sq_getuserpointer(v,-1,&up);
-	SQDbgServer *self = (SQDbgServer*)up;
+	SQDbgServer<T> *self = (SQDbgServer<T>*)up;
 	sq_getuserpointer(v,-1,&up);
 	sq_getstring(v,2,&name);
 	self->BeginElement(name);
 	return 0;
 }
 
-SQInteger endelement(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger endelement(HSQUIRRELVM<T> v)
 {
 	SQUserPointer up;
 	const SQChar *name;
 	sq_getuserpointer(v,-1,&up);
-	SQDbgServer *self = (SQDbgServer*)up;
+	SQDbgServer<T> *self = (SQDbgServer<T>*)up;
 	sq_getuserpointer(v,-1,&up);
 	sq_getstring(v,2,&name);
 	self->EndElement(name);
 	return 0;
 }
 
-SQInteger attribute(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger attribute(HSQUIRRELVM<T> v)
 {
 	SQUserPointer up;
 	const SQChar *name,*value;
 	sq_getuserpointer(v,-1,&up);
-	SQDbgServer *self = (SQDbgServer*)up;
+	SQDbgServer<T> *self = (SQDbgServer<T>*)up;
 	sq_getuserpointer(v,-1,&up);
 	sq_getstring(v,2,&name);
 	sq_getstring(v,3,&value);
@@ -101,7 +106,8 @@ SQInteger attribute(HSQUIRRELVM v)
 	return 0;
 }
 
-SQDbgServer::SQDbgServer(HSQUIRRELVM v)
+template <Squirk T>
+SQDbgServer<T>::SQDbgServer(HSQUIRRELVM<T> v)
 {
 	_ready = false;
 	//_nestedcalls = 0;
@@ -114,9 +120,10 @@ SQDbgServer::SQDbgServer(HSQUIRRELVM v)
 	sq_resetobject(&_debugroot);
 }
 
-SQDbgServer::~SQDbgServer()
+template <Squirk T>
+SQDbgServer<T>::~SQDbgServer()
 {
-	VMStateMap::iterator itr = _vmstate.begin();
+	auto itr = _vmstate.begin();
 	while(itr != _vmstate.end()) {
 		VMState *vs = itr->second;
 		delete vs;
@@ -132,7 +139,8 @@ SQDbgServer::~SQDbgServer()
 		sqdbg_closesocket(_endpoint);
 }
 
-bool SQDbgServer::Init(HSQUIRRELVM v)
+template <Squirk T>
+bool SQDbgServer<T>::Init(HSQUIRRELVM<T> v)
 {
 	//creates  an environment table for the debugger
 	
@@ -170,7 +178,7 @@ bool SQDbgServer::Init(HSQUIRRELVM v)
 
 	sq_pushstring(v,SQDBG_DEBUG_HOOK,-1);
 	sq_pushuserpointer(v,this);
-	sq_newclosure(v,(SQFUNCTION)debug_hook,1);
+	sq_newclosure(v,(SQFUNCTION<T>)debug_hook<T>,1);
 	sq_newslot(v,-3, SQFalse);
 	
 	sq_pushstring(v,SQDBG_ERROR_HANDLER,-1);
@@ -186,20 +194,22 @@ bool SQDbgServer::Init(HSQUIRRELVM v)
 	return true;
 }
 
-bool SQDbgServer::ReadMsg()
+template <Squirk T>
+bool SQDbgServer<T>::ReadMsg()
 {
 	return false;
 }
 
-void SQDbgServer::BusyWait()
+template <Squirk T>
+void SQDbgServer<T>::BusyWait()
 {
 	while( !ReadMsg() )
 		Sleep(0);
 }
 
 
-
-void SQDbgServer::SendChunk(const SQChar *chunk)
+template <Squirk T>
+void SQDbgServer<T>::SendChunk(const SQChar *chunk)
 {
 	char *buf=NULL;
 	int buf_len=0;
@@ -215,21 +225,22 @@ void SQDbgServer::SendChunk(const SQChar *chunk)
 	send(_endpoint,(const char*)buf,(int)strlen((const char *)buf),0);
 }
 
-
-void SQDbgServer::Terminated()
+template <Squirk T>
+void SQDbgServer<T>::Terminated()
 {
 	BeginElement(_SC("terminated"));
 	EndElement(_SC("terminated"));
 	::Sleep(200);
 }
 
-VMState *SQDbgServer::GetVMState(HSQUIRRELVM v)
+template <Squirk T>
+VMState *SQDbgServer<T>::GetVMState(HSQUIRRELVM<T> v)
 {
 	VMState *ret = NULL;
-	VMStateMap::iterator itr = _vmstate.find(v);
+	auto itr = _vmstate.find(v);
 	if(itr == _vmstate.end()) {
 		ret = new VMState();
-		_vmstate.insert(VMStateMap::value_type(v,ret));
+		_vmstate.insert(VMStateMap<T>::value_type(v,ret));
 	}
 	else {
 		ret = itr->second;
@@ -237,7 +248,8 @@ VMState *SQDbgServer::GetVMState(HSQUIRRELVM v)
 	return ret;
 }
 
-void SQDbgServer::Hook(HSQUIRRELVM v,SQInteger type,SQInteger line,const SQChar *src,const SQChar *func)
+template <Squirk T>
+void SQDbgServer<T>::Hook(HSQUIRRELVM<T> v,SQInteger type,SQInteger line,const SQChar *src,const SQChar *func)
 {
 	_v = v;
 	VMState *vs = GetVMState(v);
@@ -312,7 +324,8 @@ void SQDbgServer::Hook(HSQUIRRELVM v,SQInteger type,SQInteger line,const SQChar 
 //ab Add Breakpoint
 //rb Remove Breakpoint
 //sp Suspend
-void SQDbgServer::ParseMsg(const char *msg)
+template <Squirk T>
+void SQDbgServer<T>::ParseMsg(const char *msg)
 {
 	
 	switch(*((unsigned short *)msg)){
@@ -413,7 +426,7 @@ void SQDbgServer::ParseMsg(const char *msg)
 				scprintf(_SC("error compiling the remote function"));
 			else
 			{
-				HSQOBJECT func;
+				HSQOBJECT<T> func;
 				sq_getstackobj(_v, -1, &func);
 				sq_addref(_v, &func);
 				sq_pop(_v, 1);
@@ -466,11 +479,11 @@ void SQDbgServer::ParseMsg(const char *msg)
 						case OT_CLOSURE:
 						{
 							Attribute(_SC("type"), "OT_CLOSURE");
-							HSQOBJECT obj;
+							HSQOBJECT<T> obj;
 							sq_getstackobj(_v, -1, &obj);
-							SQClosure *closure = _closure(obj);
+							SQClosure<T> *closure = _closure(obj);
 							if (closure) {
-								SQFunctionProto *proto = _funcproto(closure->_function);
+								SQFunctionProto<T> *proto = _funcproto(closure->_function);
 								if (proto && sq_isstring(proto->_name)) {
 									Attribute(_SC("name"), _stringval(proto->_name));
 								}
@@ -480,9 +493,9 @@ void SQDbgServer::ParseMsg(const char *msg)
 						case OT_NATIVECLOSURE:
 						{
 							Attribute(_SC("type"), "OT_NATIVECLOSURE");
-							HSQOBJECT obj;
+							HSQOBJECT<T> obj;
 							sq_getstackobj(_v, -1, &obj);
-							SQNativeClosure *closure = _nativeclosure(obj);
+							SQNativeClosure<T> *closure = _nativeclosure(obj);
 							if (sq_isstring(closure->_name)) {
 								Attribute(_SC("name"), _stringval(closure->_name));
 							}
@@ -524,7 +537,7 @@ void SQDbgServer::ParseMsg(const char *msg)
 									Attribute(_SC("type"), "OT_WEAKREF");
 									break;
 							}
-							HSQOBJECT obj;
+							HSQOBJECT<T> obj;
 							sq_getstackobj(_v, -1, &obj);
 							Attribute(_SC("value"), PtrToString((void*) obj._unVal.raw));
 						}
@@ -544,7 +557,8 @@ void SQDbgServer::ParseMsg(const char *msg)
 	}
 }
 
-bool SQDbgServer::ParseBreakpoint(const char *msg,BreakPoint &out)
+template <Squirk T>
+bool SQDbgServer<T>::ParseBreakpoint(const char *msg,BreakPoint &out)
 {
 	static char stemp[MAX_BP_PATH];
 	static SQChar desttemp[MAX_BP_PATH];
@@ -574,7 +588,8 @@ bool SQDbgServer::ParseBreakpoint(const char *msg,BreakPoint &out)
 	return true;
 }
 
-bool SQDbgServer::ParseWatch(const char *msg,Watch &out)
+template <Squirk T>
+bool SQDbgServer<T>::ParseWatch(const char *msg,Watch &out)
 {
 	char *ep=NULL;
 	out._id=strtoul(msg,&ep,16);
@@ -590,7 +605,8 @@ bool SQDbgServer::ParseWatch(const char *msg,Watch &out)
 	return true;
 }
 
-bool SQDbgServer::ParseRemoveWatch(const char *msg,SQInteger &id)
+template <Squirk T>
+bool SQDbgServer<T>::ParseRemoveWatch(const char *msg,SQInteger &id)
 {
 	char *ep=NULL;
 	id=strtoul(msg,&ep,16);
@@ -598,8 +614,8 @@ bool SQDbgServer::ParseRemoveWatch(const char *msg,SQInteger &id)
 	return true;
 }
 
-
-void SQDbgServer::BreakExecution()
+template <Squirk T>
+void SQDbgServer<T>::BreakExecution()
 {
 	_state=eDBG_Suspended;
 	while(_state==eDBG_Suspended){
@@ -610,7 +626,8 @@ void SQDbgServer::BreakExecution()
 }
 
 //COMMANDS
-void SQDbgServer::AddBreakpoint(BreakPoint &bp)
+template <Squirk T>
+void SQDbgServer<T>::AddBreakpoint(BreakPoint &bp)
 {
 	_breakpoints.insert(bp);
 	BeginDocument();
@@ -621,12 +638,14 @@ void SQDbgServer::AddBreakpoint(BreakPoint &bp)
 	EndDocument();
 }
 
-void SQDbgServer::AddWatch(Watch &w)
+template <Squirk T>
+void SQDbgServer<T>::AddWatch(Watch &w)
 {
 	_watches.insert(w);
 }
 
-void SQDbgServer::RemoveWatch(SQInteger id)
+template <Squirk T>
+void SQDbgServer<T>::RemoveWatch(SQInteger id)
 {
 	WatchSetItor itor=_watches.find(Watch(id,_SC("")));
 	if(itor==_watches.end()){
@@ -642,7 +661,8 @@ void SQDbgServer::RemoveWatch(SQInteger id)
 	}
 }
 
-void SQDbgServer::RemoveBreakpoint(BreakPoint &bp)
+template <Squirk T>
+void SQDbgServer<T>::RemoveBreakpoint(BreakPoint &bp)
 {
 	BreakPointSetItor itor=_breakpoints.find(bp);
 	if(itor==_breakpoints.end()){
@@ -663,7 +683,8 @@ void SQDbgServer::RemoveBreakpoint(BreakPoint &bp)
 	}
 }
 
-void SQDbgServer::Break(HSQUIRRELVM v,SQInteger line,const SQChar *src,const SQChar *type,const SQChar *error)
+template <Squirk T>
+void SQDbgServer<T>::Break(HSQUIRRELVM<T> v,SQInteger line,const SQChar *src,const SQChar *type,const SQChar *error)
 {
 	_line = line;
 	_src = src;
@@ -692,7 +713,8 @@ void SQDbgServer::Break(HSQUIRRELVM v,SQInteger line,const SQChar *src,const SQC
 	}
 }
 
-void SQDbgServer::SerializeState(HSQUIRRELVM v)
+template <Squirk T>
+void SQDbgServer<T>::SerializeState(HSQUIRRELVM<T> v)
 {
 	if (_exclusive) {
 		sq_pushnull(v);
@@ -720,8 +742,8 @@ void SQDbgServer::SerializeState(HSQUIRRELVM v)
 	if (_exclusive) SetErrorHandlers(v);
 }
 
-
-void SQDbgServer::SetErrorHandlers(HSQUIRRELVM v)
+template <Squirk T>
+void SQDbgServer<T>::SetErrorHandlers(HSQUIRRELVM<T> v)
 {
 	sq_pushregistrytable(v);
 	sq_pushstring(v,SQDBG_DEBUG_HOOK,-1);
@@ -733,13 +755,15 @@ void SQDbgServer::SetErrorHandlers(HSQUIRRELVM v)
 	sq_pop(v,1);
 }
 
-void SQDbgServer::BeginDocument()
+template <Squirk T>
+void SQDbgServer<T>::BeginDocument()
 { 
 	_xmlcurrentement = -1; 
 	SendChunk(_SC("<?xml version='1.0' encoding='utf-8'?>"));
 }
 
-void SQDbgServer::BeginElement(const SQChar *name)
+template <Squirk T>
+void SQDbgServer<T>::BeginElement(const SQChar *name)
 {
 	_xmlcurrentement++;
 	XMLElementState *self = &xmlstate[_xmlcurrentement];
@@ -757,7 +781,8 @@ void SQDbgServer::BeginElement(const SQChar *name)
 	SendChunk(&_scratchstring[0]);
 }
 
-void SQDbgServer::Attribute(const SQChar *name,const SQChar *value)
+template <Squirk T>
+void SQDbgServer<T>::Attribute(const SQChar *name,const SQChar *value)
 {
 	XMLElementState *self = &xmlstate[_xmlcurrentement];
 	assert(!self->haschildren); //cannot have attributes if already has children
@@ -767,7 +792,8 @@ void SQDbgServer::Attribute(const SQChar *name,const SQChar *value)
 	SendChunk(&_scratchstring[0]);
 }
 
-void SQDbgServer::EndElement(const SQChar *name)
+template <Squirk T>
+void SQDbgServer<T>::EndElement(const SQChar *name)
 {
 	XMLElementState *self = &xmlstate[_xmlcurrentement];
 	assert(scstrcmp(self->name,name) == 0);
@@ -783,13 +809,15 @@ void SQDbgServer::EndElement(const SQChar *name)
 	_xmlcurrentement--;
 }
 
-void SQDbgServer::EndDocument()
+template <Squirk T>
+void SQDbgServer<T>::EndDocument()
 {
 	SendChunk(_SC("\r\n"));
 }
 
 //this can be done much better/faster(do we need that?)
-const SQChar *SQDbgServer::escape_xml(const SQChar *s)
+template <Squirk T>
+const SQChar *SQDbgServer<T>::escape_xml(const SQChar *s)
 {
 	SQChar *temp=sq_getscratchpad(_v,((SQInteger)scstrlen(s)*6) + sizeof(SQChar));
 	SQChar *dest=temp;

@@ -24,6 +24,7 @@
 #include "external/length-disassembler/headerOnly/ldisasm.h"
 
 #undef Yield
+#undef GetObject
 #include "sqpcheader.h"
 #include "sqcompiler.h"
 #include "sqvm.h"

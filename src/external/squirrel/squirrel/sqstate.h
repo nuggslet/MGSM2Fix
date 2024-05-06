@@ -4,42 +4,46 @@
 
 #include "squtils.h"
 #include "sqobject.h"
+template <Squirk T>
 struct SQString;
+template <Squirk T>
 struct SQTable;
 //max number of character for a printed number
 #define NUMBER_MAX_CHAR 50
 
+template <Squirk T>
 struct StringTable
 {
 	StringTable();
 	~StringTable();
-	SQString *Add(const SQChar *,SQInteger len);
-	void Remove(SQString *);
+	SQString<T> *Add(const SQChar *,SQInteger len);
+	void Remove(SQString<T> *);
 private:
 	void Resize(SQInteger size);
 	void AllocNodes(SQInteger size);
-	SQString **_strings;
+	SQString<T> **_strings;
 	SQUnsignedInteger _numofslots;
 	SQUnsignedInteger _slotused;
 };
 
+template <Squirk T>
 struct RefTable {
 	struct RefNode {
-		SQObjectPtr obj;
+		SQObjectPtr<T> obj;
 		SQUnsignedInteger refs;
 		struct RefNode *next;
 	};
 	RefTable();
 	~RefTable();
-	void AddRef(SQObject &obj);
-	SQBool Release(SQObject &obj);
+	void AddRef(SQObject<T> &obj);
+	SQBool Release(SQObject<T> &obj);
 #ifndef NO_GARBAGE_COLLECTOR
-	void Mark(SQCollectable **chain);
+	void Mark(SQCollectable<T> **chain);
 #endif
 	void Finalize();
 private:
-	RefNode *Get(SQObject &obj,SQHash &mainpos,RefNode **prev,bool add);
-	RefNode *Add(SQHash mainpos,SQObject &obj);
+	RefNode *Get(SQObject<T> &obj,SQHash &mainpos,RefNode **prev,bool add);
+	RefNode *Add(SQHash mainpos,SQObject<T> &obj);
 	void Resize(SQUnsignedInteger size);
 	void AllocNodes(SQUnsignedInteger size);
 	SQUnsignedInteger _numofslots;
@@ -52,8 +56,10 @@ private:
 #define ADD_STRING(ss,str,len) ss->_stringtable->Add(str,len)
 #define REMOVE_STRING(ss,bstr) ss->_stringtable->Remove(bstr)
 
+template <Squirk T>
 struct SQObjectPtr;
 
+template <Squirk T>
 struct SQSharedState
 {
 	SQSharedState();
@@ -61,57 +67,59 @@ struct SQSharedState
 	void Init();
 public:
 	SQChar* GetScratchPad(SQInteger size);
-	SQInteger GetMetaMethodIdxByName(const SQObjectPtr &name);
+	SQInteger GetMetaMethodIdxByName(const SQObjectPtr<T> &name);
 #ifndef NO_GARBAGE_COLLECTOR
-	SQInteger CollectGarbage(SQVM *vm); 
-	static void MarkObject(SQObjectPtr &o,SQCollectable **chain);
+	SQInteger CollectGarbage(SQVM<T> *vm); 
+	static void MarkObject(SQObjectPtr<T> &o,SQCollectable<T> **chain);
 #endif
-	SQObjectPtrVec *_metamethods;
-	SQObjectPtr _metamethodsmap;
-	SQObjectPtrVec *_systemstrings;
-	SQObjectPtrVec *_types;
-	StringTable *_stringtable;
-	RefTable _refs_table;
-	SQObjectPtr _registry;
-	SQObjectPtr _consts;
-	SQObjectPtr _constructoridx;
+	SQObjectPtrVec<T> *_metamethods;
+	SQObjectPtr<T> _metamethodsmap;
+	SQObjectPtrVec<T> *_systemstrings;
+	SQObjectPtrVec<T> *_types;
+	StringTable<T> *_stringtable;
+	RefTable<T> _refs_table;
+	SQObjectPtr<T> _registry;
+	SQObjectPtr<T> _consts;
+	SQObjectPtr<T> _constructoridx;
 #ifndef NO_GARBAGE_COLLECTOR
-	SQCollectable *_gc_chain;
+	SQCollectable<T> *_gc_chain;
 #endif
-	SQObjectPtr _root_vm;
-	SQObjectPtr _table_default_delegate;
-	static SQRegFunction _table_default_delegate_funcz[];
-	SQObjectPtr _array_default_delegate;
-	static SQRegFunction _array_default_delegate_funcz[];
-	SQObjectPtr _string_default_delegate;
-	static SQRegFunction _string_default_delegate_funcz[];
-	SQObjectPtr _number_default_delegate;
-	static SQRegFunction _number_default_delegate_funcz[];
-	SQObjectPtr _generator_default_delegate;
-	static SQRegFunction _generator_default_delegate_funcz[];
-	SQObjectPtr _closure_default_delegate;
-	static SQRegFunction _closure_default_delegate_funcz[];
-	SQObjectPtr _thread_default_delegate;
-	static SQRegFunction _thread_default_delegate_funcz[];
-	SQObjectPtr _class_default_delegate;
-	static SQRegFunction _class_default_delegate_funcz[];
-	SQObjectPtr _instance_default_delegate;
-	static SQRegFunction _instance_default_delegate_funcz[];
-	SQObjectPtr _weakref_default_delegate;
-	static SQRegFunction _weakref_default_delegate_funcz[];
+	SQObjectPtr<T> _root_vm;
+	SQObjectPtr<T> _table_default_delegate;
+	static SQRegFunction<T> _table_default_delegate_funcz[];
+	SQObjectPtr<T> _array_default_delegate;
+	static SQRegFunction<T> _array_default_delegate_funcz[];
+	SQObjectPtr<T> _string_default_delegate;
+	static SQRegFunction<T> _string_default_delegate_funcz[];
+	SQObjectPtr<T> _number_default_delegate;
+	static SQRegFunction<T> _number_default_delegate_funcz[];
+	SQObjectPtr<T> _generator_default_delegate;
+	static SQRegFunction<T> _generator_default_delegate_funcz[];
+	SQObjectPtr<T> _closure_default_delegate;
+	static SQRegFunction<T> _closure_default_delegate_funcz[];
+	SQObjectPtr<T> _thread_default_delegate;
+	static SQRegFunction<T> _thread_default_delegate_funcz[];
+	SQObjectPtr<T> _class_default_delegate;
+	static SQRegFunction<T> _class_default_delegate_funcz[];
+	SQObjectPtr<T> _instance_default_delegate;
+	static SQRegFunction<T> _instance_default_delegate_funcz[];
+	SQObjectPtr<T> _weakref_default_delegate;
+	static SQRegFunction<T> _weakref_default_delegate_funcz[];
 	
-	SQCOMPILERERROR _compilererrorhandler;
-	SQPRINTFUNCTION _printfunc;
-	SQPRINTFUNCTION _errorfunc;
+	SQCOMPILERERROR<T> _compilererrorhandler;
+	SQPRINTFUNCTION<T> _printfunc;
+	SQPRINTFUNCTION<T> _errorfunc;
 	bool _debuginfo;
 	bool _notifyallexceptions;
 
-#ifdef _WIN64
+#if defined(_SQ_M2) && defined(_WIN64)
 	void *_m2_unknown_0;
 	void *_m2_unknown_1;
 #endif
 
+#if !defined(_SQ_M2)
 private:
+#endif
 	SQChar *_scratchpad;
 	SQInteger _scratchpadsize;
 };
@@ -136,11 +144,36 @@ private:
 #define rsl(l) (l)
 #endif
 
-extern SQObjectPtr _null_;
-extern SQObjectPtr _true_;
-extern SQObjectPtr _false_;
-extern SQObjectPtr _one_;
-extern SQObjectPtr _minusone_;
+template SQSharedState<Squirk::Standard>;
+template SQSharedState<Squirk::AlignObject>;
+
+template StringTable<Squirk::Standard>;
+template StringTable<Squirk::AlignObject>;
+
+template RefTable<Squirk::Standard>;
+template RefTable<Squirk::AlignObject>;
+
+template <Squirk T>
+SQObjectPtr<T> _null_;
+template <Squirk T>
+SQObjectPtr<T> _true_(true);
+template <Squirk T>
+SQObjectPtr<T> _false_(false);
+template <Squirk T>
+SQObjectPtr<T> _one_((SQInteger)1);
+template <Squirk T>
+SQObjectPtr<T> _minusone_((SQInteger)-1);
+
+template SQObjectPtr<Squirk::Standard> _null_<Squirk::Standard>;
+template SQObjectPtr<Squirk::AlignObject> _null_<Squirk::AlignObject>;
+template SQObjectPtr<Squirk::Standard> _true_<Squirk::Standard>;
+template SQObjectPtr<Squirk::AlignObject> _true_<Squirk::AlignObject>;
+template SQObjectPtr<Squirk::Standard> _false_<Squirk::Standard>;
+template SQObjectPtr<Squirk::AlignObject> _false_<Squirk::AlignObject>;
+template SQObjectPtr<Squirk::Standard> _one_<Squirk::Standard>;
+template SQObjectPtr<Squirk::AlignObject> _one_<Squirk::AlignObject>;
+template SQObjectPtr<Squirk::Standard> _minusone_<Squirk::Standard>;
+template SQObjectPtr<Squirk::AlignObject> _minusone_<Squirk::AlignObject>;
 
 bool CompileTypemask(SQIntVec &res,const SQChar *typemask);
 

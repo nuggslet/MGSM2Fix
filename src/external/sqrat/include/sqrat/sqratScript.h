@@ -39,7 +39,8 @@ namespace Sqrat {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Helper class for managing Squirrel scripts
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Script : public Object {
+template <Squirk Q>
+class Script : public Object<Q> {
 public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ public:
     /// \param v VM that the Script will be associated with
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Script(HSQUIRRELVM v = DefaultVM::Get()) : Object(v, true) {
+    Script(HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : Object<Q>(v, true) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,22 +63,22 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void CompileString(const string& script, const string& name = _SC("")) {
-        if(!sq_isnull(obj)) {
-            sq_release(vm, &obj);
-            sq_resetobject(&obj);
+        if(!sq_isnull(this->obj)) {
+            sq_release(this->vm, &this->obj);
+            sq_resetobject(&this->obj);
         }
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sq_compilebuffer(vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true))) {
-            SQTHROW(vm, LastErrorString(vm));
+        if(SQ_FAILED(sq_compilebuffer(this->vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true))) {
+            SQTHROW(this->vm, LastErrorString(this->vm));
             return;
         }
 #else
-        sq_compilebuffer(vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true);
+        sq_compilebuffer(this->vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true);
 #endif
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm, 1);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
+        sq_pop(this->vm, 1);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,22 +90,22 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     bool CompileString(const string& script, string& errMsg, const string& name = _SC("")) {
-        if(!sq_isnull(obj)) {
-            sq_release(vm, &obj);
-            sq_resetobject(&obj);
+        if(!sq_isnull(this->obj)) {
+            sq_release(this->vm, &this->obj);
+            sq_resetobject(&this->obj);
         }
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sq_compilebuffer(vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true))) {
-            errMsg = LastErrorString(vm);
+        if(SQ_FAILED(sq_compilebuffer(this->vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true))) {
+            errMsg = LastErrorString(this->vm);
             return false;
         }
 #else
-        sq_compilebuffer(vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true);
+        sq_compilebuffer(this->vm, script.c_str(), static_cast<SQInteger>(script.size() /** sizeof(SQChar)*/), name.c_str(), true);
 #endif
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm, 1);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
+        sq_pop(this->vm, 1);
         return true;
     }
 
@@ -118,22 +119,22 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void CompileFile(const string& path) {
-        if(!sq_isnull(obj)) {
-            sq_release(vm, &obj);
-            sq_resetobject(&obj);
+        if(!sq_isnull(this->obj)) {
+            sq_release(this->vm, &this->obj);
+            sq_resetobject(&this->obj);
         }
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sqstd_loadfile(vm, path.c_str(), true))) {
-            SQTHROW(vm, LastErrorString(vm));
+        if(SQ_FAILED(sqstd_loadfile(this->vm, path.c_str(), true))) {
+            SQTHROW(this->vm, LastErrorString(this->vm));
             return;
         }
 #else
-        sqstd_loadfile(vm, path.c_str(), true);
+        sqstd_loadfile(this->vm, path.c_str(), true);
 #endif
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm, 1);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
+        sq_pop(this->vm, 1);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,22 +145,22 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     bool CompileFile(const string& path, string& errMsg) {
-        if(!sq_isnull(obj)) {
-            sq_release(vm, &obj);
-            sq_resetobject(&obj);
+        if(!sq_isnull(this->obj)) {
+            sq_release(this->vm, &this->obj);
+            sq_resetobject(&this->obj);
         }
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(SQ_FAILED(sqstd_loadfile(vm, path.c_str(), true))) {
-            errMsg = LastErrorString(vm);
+        if(SQ_FAILED(sqstd_loadfile(this->vm, path.c_str(), true))) {
+            errMsg = LastErrorString(this->vm);
             return false;
         }
 #else
-        sqstd_loadfile(vm, path.c_str(), true);
+        sqstd_loadfile(this->vm, path.c_str(), true);
 #endif
-        sq_getstackobj(vm,-1,&obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm, 1);
+        sq_getstackobj(this->vm,-1,&this->obj);
+        sq_addref(this->vm, &this->obj);
+        sq_pop(this->vm, 1);
         return true;
     }
 
@@ -172,24 +173,24 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void Run() {
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(!sq_isnull(obj)) {
+        if(!sq_isnull(this->obj)) {
             SQRESULT result;
-            SQInteger top = sq_gettop(vm);
-            sq_pushobject(vm, obj);
-            sq_pushroottable(vm);
-            result = sq_call(vm, 1, false, true);
-            sq_settop(vm, top);
+            SQInteger top = sq_gettop(this->vm);
+            sq_pushobject(this->vm, this->obj);
+            sq_pushroottable(this->vm);
+            result = sq_call(this->vm, 1, false, true);
+            sq_settop(this->vm, top);
             if(SQ_FAILED(result)) {
-                SQTHROW(vm, LastErrorString(vm));
+                SQTHROW(this->vm, LastErrorString(this->vm));
                 return;
             }
         }
 #else
-        SQInteger top = sq_gettop(vm);
-        sq_pushobject(vm, obj);
-        sq_pushroottable(vm);
-        sq_call(vm, 1, false, true);
-        sq_settop(vm, top);
+        SQInteger top = sq_gettop(this->vm);
+        sq_pushobject(this->vm, this->obj);
+        sq_pushroottable(this->vm);
+        sq_call(this->vm, 1, false, true);
+        sq_settop(this->vm, this->top);
 #endif
     }
 
@@ -201,15 +202,15 @@ public:
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     bool Run(string& errMsg) {
-        if(!sq_isnull(obj)) {
+        if(!sq_isnull(this->obj)) {
             SQRESULT result;
-            SQInteger top = sq_gettop(vm);
-            sq_pushobject(vm, obj);
-            sq_pushroottable(vm);
-            result = sq_call(vm, 1, false, true);
-            sq_settop(vm, top);
+            SQInteger top = sq_gettop(this->vm);
+            sq_pushobject(this->vm, this->obj);
+            sq_pushroottable(this->vm);
+            result = sq_call(this->vm, 1, false, true);
+            sq_settop(this->vm, top);
             if(SQ_FAILED(result)) {
-                errMsg = LastErrorString(vm);
+                errMsg = LastErrorString(this->vm);
                 return false;
             }
             return true;
@@ -226,15 +227,15 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void WriteCompiledFile(const string& path) {
 #if !defined (SCRAT_NO_ERROR_CHECKING)
-        if(!sq_isnull(obj)) {
-            sq_pushobject(vm, obj);
-            sqstd_writeclosuretofile(vm, path.c_str());
+        if(!sq_isnull(this->obj)) {
+            sq_pushobject(this->vm, this->obj);
+            sqstd_writeclosuretofile(this->vm, path.c_str());
         }
 #else
-        sq_pushobject(vm, obj);
-        sqstd_writeclosuretofile(vm, path.c_str());
+        sq_pushobject(this->vm, this->obj);
+        sqstd_writeclosuretofile(this->vm, path.c_str());
 #endif
-        sq_pop(vm, 1); // needed?
+        sq_pop(this->vm, 1); // needed?
     }
 };
 

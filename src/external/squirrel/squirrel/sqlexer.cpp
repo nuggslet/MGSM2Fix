@@ -16,20 +16,23 @@
 #define INIT_TEMP_STRING() { _longstr.resize(0);}
 #define APPEND_CHAR(c) { _longstr.push_back(c);}
 #define TERMINATE_BUFFER() {_longstr.push_back(_SC('\0'));}
-#define ADD_KEYWORD(key,id) _keywords->NewSlot( SQString::Create(ss, _SC(#key)) ,SQInteger(id))
+#define ADD_KEYWORD(key,id) _keywords->NewSlot( SQString<T>::Create(ss, _SC(#key)) ,SQInteger(id))
 
-SQLexer::SQLexer(){}
-SQLexer::~SQLexer()
+template <Squirk T>
+SQLexer<T>::SQLexer(){}
+template <Squirk T>
+SQLexer<T>::~SQLexer()
 {
 	_keywords->Release();
 }
 
-void SQLexer::Init(SQSharedState *ss, SQLEXREADFUNC rg, SQUserPointer up,CompilerErrorFunc efunc,void *ed)
+template <Squirk T>
+void SQLexer<T>::Init(SQSharedState<T> *ss, SQLEXREADFUNC rg, SQUserPointer up,CompilerErrorFunc efunc,void *ed)
 {
 	_errfunc = efunc;
 	_errtarget = ed;
 	_sharedstate = ss;
-	_keywords = SQTable::Create(ss, 26);
+	_keywords = SQTable<T>::Create(ss, 26);
 	ADD_KEYWORD(while, TK_WHILE);
 	ADD_KEYWORD(do, TK_DO);
 	ADD_KEYWORD(if, TK_IF);
@@ -77,12 +80,14 @@ void SQLexer::Init(SQSharedState *ss, SQLEXREADFUNC rg, SQUserPointer up,Compile
 	Next();
 }
 
-void SQLexer::Error(const SQChar *err)
+template <Squirk T>
+void SQLexer<T>::Error(const SQChar *err)
 {
 	_errfunc(_errtarget,err);
 }
 
-void SQLexer::Next()
+template <Squirk T>
+void SQLexer<T>::Next()
 {
 	SQInteger t = _readf(_up);
 	if(t > MAX_CHAR) Error(_SC("Invalid character"));
@@ -93,9 +98,10 @@ void SQLexer::Next()
 	_currdata = SQUIRREL_EOB;
 }
 
-const SQChar *SQLexer::Tok2Str(SQInteger tok)
+template <Squirk T>
+const SQChar *SQLexer<T>::Tok2Str(SQInteger tok)
 {
-	SQObjectPtr itr, key, val;
+	SQObjectPtr<T> itr, key, val;
 	SQInteger nitr;
 	while((nitr = _keywords->Next(false,itr, key, val)) != -1) {
 		itr = (SQInteger)nitr;
@@ -105,7 +111,8 @@ const SQChar *SQLexer::Tok2Str(SQInteger tok)
 	return NULL;
 }
 
-void SQLexer::LexBlockComment()
+template <Squirk T>
+void SQLexer<T>::LexBlockComment()
 {
 	bool done = false;
 	while(!done) {
@@ -118,7 +125,8 @@ void SQLexer::LexBlockComment()
 	}
 }
 
-SQInteger SQLexer::Lex()
+template <Squirk T>
+SQInteger SQLexer<T>::Lex()
 {
 	_lasttokenline = _currentline;
 	while(CUR_CHAR != SQUIRREL_EOB) {
@@ -262,18 +270,19 @@ SQInteger SQLexer::Lex()
 	}
 	return 0;    
 }
-	
-SQInteger SQLexer::GetIDType(SQChar *s)
+
+template <Squirk T>
+SQInteger SQLexer<T>::GetIDType(SQChar *s)
 {
-	SQObjectPtr t;
-	if(_keywords->Get(SQString::Create(_sharedstate, s), t)) {
+	SQObjectPtr<T> t;
+	if(_keywords->Get(SQString<T>::Create(_sharedstate, s), t)) {
 		return SQInteger(_integer(t));
 	}
 	return TK_IDENTIFIER;
 }
 
-
-SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
+template <Squirk T>
+SQInteger SQLexer<T>::ReadString(SQInteger ndelim,bool verbatim)
 {
 	INIT_TEMP_STRING();
 	NEXT();
@@ -390,7 +399,8 @@ SQInteger isexponent(SQInteger c) { return c == 'e' || c=='E'; }
 
 
 #define MAX_HEX_DIGITS (sizeof(SQInteger)*2)
-SQInteger SQLexer::ReadNumber()
+template <Squirk T>
+SQInteger SQLexer<T>::ReadNumber()
 {
 #define TINT 1
 #define TFLOAT 2
@@ -459,7 +469,8 @@ SQInteger SQLexer::ReadNumber()
 	return 0;
 }
 
-SQInteger SQLexer::ReadID()
+template <Squirk T>
+SQInteger SQLexer<T>::ReadID()
 {
 	SQInteger res;
 	INIT_TEMP_STRING();

@@ -16,7 +16,8 @@
 	if(!self->IsValid())  \
 		return sq_throwerror(v,_SC("the stream is invalid"));
 
-SQInteger _stream_readblob(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_readblob(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	SQUserPointer data,blobp;
@@ -37,7 +38,8 @@ SQInteger _stream_readblob(HSQUIRRELVM v)
 #define SAFE_READN(ptr,len) { \
 	if(self->Read(ptr,len) != len) return sq_throwerror(v,_SC("io error")); \
 	}
-SQInteger _stream_readn(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_readn(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	SQInteger format;
@@ -97,7 +99,8 @@ SQInteger _stream_readn(HSQUIRRELVM v)
 	return 1;
 }
 
-SQInteger _stream_writeblob(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_writeblob(HSQUIRRELVM<T> v)
 {
 	SQUserPointer data;
 	SQInteger size;
@@ -111,7 +114,8 @@ SQInteger _stream_writeblob(HSQUIRRELVM v)
 	return 1;
 }
 
-SQInteger _stream_writen(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_writen(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	SQInteger format, ti;
@@ -180,7 +184,8 @@ SQInteger _stream_writen(HSQUIRRELVM v)
 	return 0;
 }
 
-SQInteger _stream_seek(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_seek(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	SQInteger offset, origin = SQ_SEEK_SET;
@@ -199,21 +204,24 @@ SQInteger _stream_seek(HSQUIRRELVM v)
 	return 1;
 }
 
-SQInteger _stream_tell(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_tell(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	sq_pushinteger(v, self->Tell());
 	return 1;
 }
 
-SQInteger _stream_len(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_len(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	sq_pushinteger(v, self->Len());
 	return 1;
 }
 
-SQInteger _stream_flush(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_flush(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	if(!self->Flush())
@@ -223,7 +231,8 @@ SQInteger _stream_flush(HSQUIRRELVM v)
 	return 1;
 }
 
-SQInteger _stream_eos(HSQUIRRELVM v)
+template <Squirk T>
+SQInteger _stream_eos(HSQUIRRELVM<T> v)
 {
 	SETUP_STREAM(v);
 	if(self->EOS())
@@ -233,7 +242,8 @@ SQInteger _stream_eos(HSQUIRRELVM v)
 	return 1;
 }
 
-static SQRegFunction _stream_methods[] = {
+template <Squirk T>
+static SQRegFunction<T> _stream_methods[] = {
 	_DECL_STREAM_FUNC(readblob,2,_SC("xn")),
 	_DECL_STREAM_FUNC(readn,2,_SC("xn")),
 	_DECL_STREAM_FUNC(writeblob,-2,_SC("xx")),
@@ -246,7 +256,8 @@ static SQRegFunction _stream_methods[] = {
 	{0,0}
 };
 
-void init_streamclass(HSQUIRRELVM v)
+template <Squirk T>
+void init_streamclass(HSQUIRRELVM<T> v)
 {
 	sq_pushregistrytable(v);
 	sq_pushstring(v,_SC("std_stream"),-1);
@@ -255,8 +266,8 @@ void init_streamclass(HSQUIRRELVM v)
 		sq_newclass(v,SQFalse);
 		sq_settypetag(v,-1,(SQUserPointer)SQSTD_STREAM_TYPE_TAG);
 		SQInteger i = 0;
-		while(_stream_methods[i].name != 0) {
-			SQRegFunction &f = _stream_methods[i];
+		while(_stream_methods<T>[i].name != 0) {
+			SQRegFunction<T> &f = _stream_methods<T>[i];
 			sq_pushstring(v,f.name,-1);
 			sq_newclosure(v,f.f,0);
 			sq_setparamscheck(v,f.nparamscheck,f.typemask);
@@ -277,7 +288,8 @@ void init_streamclass(HSQUIRRELVM v)
 	sq_pop(v,1);
 }
 
-SQRESULT declare_stream(HSQUIRRELVM v, const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,SQRegFunction *methods,SQRegFunction *globals)
+template <Squirk T>
+SQRESULT declare_stream(HSQUIRRELVM<T> v, const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,SQRegFunction<T> *methods,SQRegFunction<T> *globals)
 {
 	if(sq_gettype(v,-1) != OT_TABLE)
 		return sq_throwerror(v,_SC("table expected"));
@@ -292,7 +304,7 @@ SQRESULT declare_stream(HSQUIRRELVM v, const SQChar* name,SQUserPointer typetag,
 		sq_settypetag(v,-1,typetag);
 		SQInteger i = 0;
 		while(methods[i].name != 0) {
-			SQRegFunction &f = methods[i];
+			SQRegFunction<T> &f = methods[i];
 			sq_pushstring(v,f.name,-1);
 			sq_newclosure(v,f.f,0);
 			sq_setparamscheck(v,f.nparamscheck,f.typemask);
@@ -306,7 +318,7 @@ SQRESULT declare_stream(HSQUIRRELVM v, const SQChar* name,SQUserPointer typetag,
 		i = 0;
 		while(globals[i].name!=0)
 		{
-			SQRegFunction &f = globals[i];
+			SQRegFunction<T> &f = globals[i];
 			sq_pushstring(v,f.name,-1);
 			sq_newclosure(v,f.f,0);
 			sq_setparamscheck(v,f.nparamscheck,f.typemask);

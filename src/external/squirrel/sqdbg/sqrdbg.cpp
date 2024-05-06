@@ -17,10 +17,13 @@ extern LPVOID Resource(UINT id, LPCSTR type, LPDWORD size);
 #include <squirrel.h>
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
-SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg);
-SQInteger error_handler(HSQUIRRELVM v);
+template <Squirk T>
+SQInteger debug_hook(HSQUIRRELVM<T> v, HSQUIRRELVM<T> _v, HSQREMOTEDBG<T> rdbg);
+template <Squirk T>
+SQInteger error_handler(HSQUIRRELVM<T> v);
 
-HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate,SQBool exclusive)
+template <Squirk T>
+HSQREMOTEDBG<T> sq_rdbg_init(HSQUIRRELVM<T> v,unsigned short port,SQBool autoupdate,SQBool exclusive)
 {
 	struct sockaddr_in bindaddr;
 #ifdef _WIN32
@@ -29,7 +32,7 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate,SQ
 		return NULL;  
 	}	
 #endif 
-	SQDbgServer *rdbg = new SQDbgServer(v);
+	SQDbgServer<T> *rdbg = new SQDbgServer<T>(v);
 	rdbg->_exclusive = exclusive?true :false;
 	rdbg->_autoupdate = autoupdate?true:false;
 	rdbg->_accept = socket(AF_INET,SOCK_STREAM,0);
@@ -50,7 +53,11 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate,SQ
     return rdbg;
 }
 
-SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
+template HSQREMOTEDBG<Squirk::Standard> sq_rdbg_init<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, unsigned short port, SQBool autoupdate, SQBool exclusive);
+template HSQREMOTEDBG<Squirk::AlignObject> sq_rdbg_init<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, unsigned short port, SQBool autoupdate, SQBool exclusive);
+
+template <Squirk T>
+SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG<T> rdbg)
 {
 	const SQChar* serialize_state_nut = (SQChar*)Resource(IDR_NUT1, "NUT", NULL);
 	if(!serialize_state_nut) {
@@ -80,7 +87,11 @@ SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
 	return SQ_OK;
 }
 
-SQRESULT sq_rdbg_update(HSQREMOTEDBG rdbg)
+template SQRESULT sq_rdbg_waitforconnections<Squirk::Standard>(HSQREMOTEDBG<Squirk::Standard> rdbg);
+template SQRESULT sq_rdbg_waitforconnections<Squirk::AlignObject>(HSQREMOTEDBG<Squirk::AlignObject> rdbg);
+
+template <Squirk T>
+SQRESULT sq_rdbg_update(HSQREMOTEDBG<T> rdbg)
 {
 	TIMEVAL time;
 	time.tv_sec=0;
@@ -122,7 +133,11 @@ SQRESULT sq_rdbg_update(HSQREMOTEDBG rdbg)
 	return SQ_OK;
 }
 
-SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg)
+template SQRESULT sq_rdbg_update<Squirk::Standard>(HSQREMOTEDBG<Squirk::Standard> rdbg);
+template SQRESULT sq_rdbg_update<Squirk::AlignObject>(HSQREMOTEDBG<Squirk::AlignObject> rdbg);
+
+template <Squirk T>
+SQInteger debug_hook(HSQUIRRELVM<T> v, HSQUIRRELVM<T> _v, HSQREMOTEDBG<T> rdbg)
 {
 	if (v) _v = v;
 
@@ -135,7 +150,7 @@ SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg)
 	sq_getstring(_v,5,&func);
 	if (v) {
 		sq_getuserpointer(_v, -1, &up);
-		rdbg = (HSQREMOTEDBG)up;
+		rdbg = (HSQREMOTEDBG<T>)up;
 	}
 	rdbg->Hook(_v,event_type,line,src,func);
 	if(rdbg->_autoupdate) {
@@ -145,7 +160,11 @@ SQInteger debug_hook(HSQUIRRELVM v, HSQUIRRELVM _v, HSQREMOTEDBG rdbg)
 	return 0;
 }
 
-SQInteger error_handler(HSQUIRRELVM v)
+template SQInteger debug_hook<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, HSQUIRRELVM<Squirk::Standard> _v, HSQREMOTEDBG<Squirk::Standard> rdbg);
+template SQInteger debug_hook<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, HSQUIRRELVM<Squirk::AlignObject> _v, HSQREMOTEDBG<Squirk::AlignObject> rdbg);
+
+template <Squirk T>
+SQInteger error_handler(HSQUIRRELVM<T> v)
 {
 	SQUserPointer up;
 	const SQChar *sErr=NULL;
@@ -154,7 +173,7 @@ SQInteger error_handler(HSQUIRRELVM v)
 	SQInteger line=-1;
 	SQStackInfos si;
 	sq_getuserpointer(v,-1,&up);
-	HSQREMOTEDBG rdbg=(HSQREMOTEDBG)up;
+	HSQREMOTEDBG<T> rdbg=(HSQREMOTEDBG<T>)up;
 	if(SQ_SUCCEEDED(sq_stackinfos(v,1,&si)))
 	{
 		if(si.funcname)fn=si.funcname;
@@ -176,8 +195,11 @@ SQInteger error_handler(HSQUIRRELVM v)
 	return 0;
 }
 
+template SQInteger error_handler<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> rdbg);
+template SQInteger error_handler<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> rdbg);
 
-SQRESULT sq_rdbg_shutdown(HSQREMOTEDBG rdbg)
+template <Squirk T>
+SQRESULT sq_rdbg_shutdown(HSQREMOTEDBG<T> rdbg)
 {
 	delete rdbg;
 #ifdef _WIN32
@@ -185,3 +207,6 @@ SQRESULT sq_rdbg_shutdown(HSQREMOTEDBG rdbg)
 #endif
 	return SQ_OK;
 }
+
+template SQRESULT sq_rdbg_shutdown<Squirk::Standard>(HSQREMOTEDBG<Squirk::Standard> rdbg);
+template SQRESULT sq_rdbg_shutdown<Squirk::AlignObject>(HSQREMOTEDBG<Squirk::AlignObject> rdbg);
