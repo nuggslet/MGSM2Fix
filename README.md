@@ -2,18 +2,20 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z7S6BTK)</br>
 [![Github All Releases](https://img.shields.io/github/downloads/nuggslet/MGSM2Fix/total.svg)](https://github.com/nuggslet/MGSM2Fix/releases)
 
-This is a fix that adds custom resolutions, analog input, mod support and more to the original Metal Gear Solid within the Master Collection.<br />
+This is a fix that adds custom resolutions, mod support and more to Metal Gear Solid & Metal Gear / Snake's Revenge within the MGS Master Collection, as well as the Castlevania and Contra Anniversary Collections.<br />
 
 ## Games Supported
+- Castlevania Anniversary Collection
+- Contra Anniversary Collection
 - Metal Gear Solid <br />
 - Metal Gear / Snake's Revenge (Vol.1 Bonus Content) <br />
-See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in the collection.
+  - See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in the MGS Master Collection.
 
 ## Features
 - Custom internal render resolution & widescreen support (MGS1).
 - Borderless/windowed mode.
 - Control over built-in filters and Master Collection game patches.
-- Analog input (MGS1).
+- ~~Analog input (MGS1).~~ - Fixed by Konami officially via patch 1.5.0 on 13MAR2024
 - Launcher skip (MGS1, boots last launched game version).
 - Skip intro logos.
 - Modding support (MGS1, via Ketchup - see below).
@@ -29,9 +31,6 @@ See Lyall's [MGSHDFix](https://github.com/Lyall/MGSHDFix) for the other games in
 
 ## Configuration
 - See **MGSM2Fix.ini** to adjust settings for the fix.
-
-## Analog (MGS 1)
-Recommended Steam controller profile: steam://controllerconfig/2131630/3087945618 (copy to browser address bar).
 
 ## Modding (MGS 1; Ketchup)
 'Ketchup' is a mod loader for MGS1 in the Master Collection.
@@ -70,6 +69,9 @@ Additional mod formats may be supported in future.
 ## Known Issues
 Please report any issues you see.
 This list will contain bugs which may or may not be fixed.
+ - Loading Screen Location Names, Codec Numbers, and VOX bars do not display properly when internal resolution is increased from the default value.
+ - Snake is not visible when underwater when the internal resolution is increased from the default value.
+ - Wires during the Revolver Ocelot boss fight are not correctly layered when the internal resolution is increased from the default value.
 
 ## Screenshots
 
