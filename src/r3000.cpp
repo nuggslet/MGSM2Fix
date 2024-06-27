@@ -6,7 +6,7 @@
 
 using namespace std;
 
-extern HMODULE baseModule;
+extern HMODULE gBaseModule;
 extern M2FixGame eGameType;
 
 uintptr_t R3000_DecodeAddress;
@@ -86,7 +86,7 @@ void R3000Hook()
         default: return;
     }
 
-    uint8_t* R3000_DecodeResult = Memory::PatternScan(baseModule, "8B C1 C1 E8 1A 85 C0 75 15 85 C9 75 06 B8");
+    uint8_t* R3000_DecodeResult = Memory::PatternScan(gBaseModule, "8B C1 C1 E8 1A 85 C0 75 15 85 C9 75 06 B8");
     if (R3000_DecodeResult)
     {
         R3000_DecodeAddress = (uintptr_t)R3000_DecodeResult;
@@ -117,7 +117,7 @@ void R3000Hook()
         string funcaddr = funcstream.str();
         funcaddr.erase(funcaddr.begin());
 
-        uint8_t *table = Memory::PatternScan(baseModule, funcaddr.c_str());
+        uint8_t *table = Memory::PatternScan(gBaseModule, funcaddr.c_str());
         if (table) {
             table -= record.index * sizeof(M2FUNCTION);
             record.table = reinterpret_cast<M2FUNCTION *>(table);

@@ -166,6 +166,9 @@ enum class M2FixGame
     Contra,
     Dracula,
     DraculaAdvance,
+    Ray,
+    Darius,
+    DariusHD,
 };
 
 typedef enum {

@@ -18,8 +18,8 @@
 
 using namespace std;
 
-HMODULE baseModule = GetModuleHandle(NULL);
-HMODULE fixModule;
+HMODULE gBaseModule = GetModuleHandle(NULL);
+HMODULE gFixModule;
 
 string sFixVer = "2.2";
 inipp::Ini<char> ini;
@@ -84,13 +84,16 @@ struct M2FixInfo
 
 const std::map<M2FixGame, M2FixInfo> kGames = {
     {M2FixGame::MGS1,           {"Metal Gear Solid", "MGS1\\METAL GEAR SOLID.exe", 2131630}},
-    {M2FixGame::MGSR,           {"Metal Gear / Snake's Revenge (NES)", "MGS Master Collection Bonus Content\\MGS MC1 Bonus Content.exe", 2306740}},
+    {M2FixGame::MGSR,           {"Metal Gear / Snake's Revenge (Bonus Content)", "MGS Master Collection Bonus Content\\MGS MC1 Bonus Content.exe", 2306740}},
     {M2FixGame::Contra,         {"Contra Anniversary", "Contra Anniversary Collection\\game.exe", 1018020}},
     {M2FixGame::Dracula,        {"Castlevania Anniversary", "Castlevania Anniversary Collection\\game.exe", 1018010}},
     {M2FixGame::DraculaAdvance, {"Castlevania Advance", "Castlevania Advance Collection\\game.exe", 1552550}},
+    {M2FixGame::Ray,            {"Ray’z Arcade Chronology", "Ray’z Arcade Chronology\\game.exe", 2478020}},
+    {M2FixGame::Darius,         {"Darius Cozmic Arcade", "Darius Cozmic Collection Arcade\\game.exe", 1638330}},
+    {M2FixGame::DariusHD,       {"G-Darius HD", "G-Darius HD\\gdarahd.exe", 1640160}},
 };
 
-const M2FixInfo* game = nullptr;
+const M2FixInfo* kGame = nullptr;
 M2FixGame eGameType = M2FixGame::Unknown;
 
 std::map<std::string, std::string> kEnv;
@@ -250,7 +253,7 @@ bool DetectGame()
 {
     // Get game name and exe path
     char exePath[_MAX_PATH] = { 0 };
-    GetModuleFileName(baseModule, exePath, MAX_PATH);
+    GetModuleFileName(gBaseModule, exePath, MAX_PATH);
     sExePath = exePath;
     sExeName = sExePath.parent_path().filename().string() + '\\' + sExePath.filename().string();
 
@@ -272,8 +275,8 @@ bool DetectGame()
 
     LOG_F(INFO, "Module Name: %s", sExeName.c_str());
     LOG_F(INFO, "Module Path: %s", sExePath.string().c_str());
-    LOG_F(INFO, "Module Address: %p", baseModule);
-    LOG_F(INFO, "Module Timestamp: %u", Memory::ModuleTimestamp(baseModule));
+    LOG_F(INFO, "Module Address: %p", gBaseModule);
+    LOG_F(INFO, "Module Timestamp: %u", Memory::ModuleTimestamp(gBaseModule));
 
     eGameType = M2FixGame::Unknown;
     for (const auto& [type, info] : kGames)
@@ -282,7 +285,7 @@ bool DetectGame()
         {
             LOG_F(INFO, "Detected game: %s (app %d)", info.GameTitle.c_str(), info.SteamAppId);
             eGameType = type;
-            game = &info;
+            kGame = &info;
             return true;
         }
     }
@@ -293,16 +296,16 @@ bool DetectGame()
 
 LPVOID Resource(UINT id, LPCSTR type, LPDWORD size)
 {
-    HRSRC hRes = FindResource(fixModule, MAKEINTRESOURCE(id), type);
+    HRSRC hRes = FindResource(gFixModule, MAKEINTRESOURCE(id), type);
     if (!hRes) return NULL;
 
-    HGLOBAL h = LoadResource(fixModule, hRes);
+    HGLOBAL h = LoadResource(gFixModule, hRes);
     if (!h) return NULL;
 
     LPVOID p = LockResource(h);
     if (!p) return NULL;
 
-    DWORD dw = SizeofResource(fixModule, hRes);
+    DWORD dw = SizeofResource(gFixModule, hRes);
     if (size) *size = dw;
 
     return p;
@@ -1258,7 +1261,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
                      )
 {
-    fixModule = hModule;
+    gFixModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
