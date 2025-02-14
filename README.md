@@ -14,6 +14,7 @@ This is a fix that adds custom resolutions, mod support and more to Metal Gear S
 ## Features
 - Custom internal render resolution & widescreen support (MGS1).
 - Borderless/windowed mode.
+- Corrects the monitor going to sleep during long periods with no input (e.g. during cutscenes.)
 - Control over built-in filters and Master Collection game patches.
 - ~~Analog input (MGS1).~~ - Fixed by Konami officially via patch 1.5.0 on 13MAR2024
 - Launcher skip (MGS1, boots last launched game version).
