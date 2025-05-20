@@ -75,6 +75,7 @@ string sExternalHeight;
 std::filesystem::path sExePath;
 std::string sExeName;
 
+
 struct M2FixInfo
 {
     std::string GameTitle;
@@ -106,16 +107,104 @@ typedef struct {
 
 void Logging()
 {
-    loguru::add_file("MGSM2Fix.log", loguru::Truncate, loguru::Verbosity_MAX);
-    loguru::set_thread_name("Main");
+    // Get game name and exe path
+    char exePath[_MAX_PATH] = { 0 };
+    GetModuleFileName(gBaseModule, exePath, MAX_PATH);
+    sExePath = exePath;
+    sExeName = (sExePath / sExePath.filename()).string();
 
+    bool logDirExists = std::filesystem::is_directory(sExePath / "logs");
+    if (!logDirExists)
+    {
+        std::filesystem::create_directory(sExePath / "logs"); //create a "logs" subdirectory in the game folder to keep the main directory tidy.
+    }
+    loguru::add_file((sExePath / "logs" / "MGSM2Fix.log").string().c_str(), loguru::Truncate, loguru::Verbosity_MAX);
+    loguru::set_thread_name("Main");
+    if (!logDirExists)
+    {
+        LOG_F(INFO, "New log subdirectory created.");
+    }
     LOG_F(INFO, "MGSM2Fix v%s loaded", sFixVer.c_str());
+}
+
+///Prints CPU, GPU, and RAM info to the log to expedite common troubleshooting, since it's usually folks who are below minumum specs.
+void LogSysInfo()
+{
+#ifndef _WIN32
+    LOG_F(INFO, "System Details - Steam Deck/Linux");
+    return;
+#endif
+
+
+    std::array<int, 4> integerBuffer = {};
+    constexpr size_t sizeofIntegerBuffer = sizeof(int) * integerBuffer.size();
+    std::array<char, 64> charBuffer = {};
+    std::array<std::uint32_t, 3> functionIds = {
+        0x8000'0002, // Manufacturer  
+        0x8000'0003, // Model 
+        0x8000'0004  // Clock-speed
+    };
+
+    std::string cpu;
+    for (int id : functionIds)
+    {
+        __cpuid(integerBuffer.data(), id);
+        std::memcpy(charBuffer.data(), integerBuffer.data(), sizeofIntegerBuffer);
+        cpu += std::string(charBuffer.data());
+    }
+
+    LOG_F(INFO, "System Details - CPU: {}", cpu);
+
+    std::string deviceString;
+    for (int i = 0; ; i++)
+    {
+        DISPLAY_DEVICE dd = { sizeof(dd), 0 };
+        BOOL f = EnumDisplayDevices(NULL, i, &dd, EDD_GET_DEVICE_INTERFACE_NAME);
+        if (!f)
+        {
+            break; //that's all, folks.
+        }
+        char deviceStringBuffer[128];
+
+#ifdef UNICODE
+        WideCharToMultiByte(CP_UTF8, 0, dd.DeviceString, -1, deviceStringBuffer, sizeof(deviceStringBuffer), NULL, NULL);
+#else
+        // Convert ANSI to wide first
+        wchar_t wDeviceString[128];
+        MultiByteToWideChar(CP_ACP, 0, dd.DeviceString, -1, wDeviceString, 128);
+        WideCharToMultiByte(CP_UTF8, 0, wDeviceString, -1, deviceStringBuffer, sizeof(deviceStringBuffer), NULL, NULL);
+#endif
+
+        if (deviceString == deviceStringBuffer) //each monitor reports what gpu is driving it, lets just double check in case we're looking at a laptop with mixed usage.
+        {
+            continue;
+        }
+        deviceString = deviceStringBuffer;
+        LOG_F(INFO, "System Details - GPU: {}", deviceString);
+    }
+
+    MEMORYSTATUSEX status;
+    status.dwLength = sizeof(status);
+    GlobalMemoryStatusEx(&status);
+    double totalMemory = status.ullTotalPhys / 1024 / 1024;    ///Total physical RAM in MB.
+    LOG_F(INFO, "System Details - RAM: {} GB ({} MB)", ceil((totalMemory / 1024) * 100) / 100, totalMemory);
 }
 
 void ReadConfig()
 {
+    std::array<std::string, 4> paths = { "", "plugins", "scripts", "update" };
+    std::filesystem::path foundPath;
+    for (const auto& path : paths)
+    {
+        if (std::filesystem::exists(sExePath / path / "MGSM2Fix64.asi") || std::filesystem::exists(sExePath / path / "MGSM2Fix32.asi"))
+        {
+            foundPath = path;
+            break;
+        }
+    }
+
     // Initialise config
-    std::ifstream iniFile(".\\MGSM2Fix.ini");
+    std::ifstream iniFile((sExePath / foundPath / "MGSM2Fix.ini").string());
     if (!iniFile)
     {
         LOG_F(ERROR, "Failed to load config file.");
@@ -251,12 +340,6 @@ void ReadConfig()
 
 bool DetectGame()
 {
-    // Get game name and exe path
-    char exePath[_MAX_PATH] = { 0 };
-    GetModuleFileName(gBaseModule, exePath, MAX_PATH);
-    sExePath = exePath;
-    sExeName = sExePath.parent_path().filename().string() + '\\' + sExePath.filename().string();
-
     {
         auto envFree = [](char *p) { FreeEnvironmentStrings(p); };
         auto envBlock = std::unique_ptr<char, decltype(envFree)>{
@@ -272,11 +355,10 @@ bool DetectGame()
             kEnv[key] = value;
         }
     }
-
     LOG_F(INFO, "Module Name: %s", sExeName.c_str());
     LOG_F(INFO, "Module Path: %s", sExePath.string().c_str());
     LOG_F(INFO, "Module Address: %p", gBaseModule);
-    LOG_F(INFO, "Module Timestamp: %u", Memory::ModuleTimestamp(gBaseModule));
+    LOG_F(INFO, "Module Version: %u", Memory::GetModuleVersion(gBaseModule));
 
     eGameType = M2FixGame::Unknown;
     for (const auto& [type, info] : kGames)
@@ -1197,18 +1279,19 @@ SQRESULT _sq_setnativeclosurename_AlignObject(HSQUIRRELVM<Squirk::AlignObject> v
 {
     return sq_setnativeclosurename<Squirk::AlignObject>(v, idx, name);
 }
-
 #define CALL(func) { extern void func; func; }
 
 mutex mainThreadFinishedMutex;
 condition_variable mainThreadFinishedVar;
 bool mainThreadFinished = false;
+
 DWORD __stdcall Main(void*)
 {
     Logging();
-    ReadConfig();
     if (DetectGame())
     {
+        LogSysInfo();
+        ReadConfig();
         FilterPatches();
 
         CALL(ScanFunctions());
@@ -1218,7 +1301,8 @@ DWORD __stdcall Main(void*)
 
         if (bExternalEnabled) CALL(ConfigHook());
         if (bBorderlessMode) CALL(BorderlessPatch());
-        if (bAnalogMode) {
+        if (bAnalogMode)
+        {
             CALL(AnalogPatch());
             CALL(AnalogHook());
         }
@@ -1226,6 +1310,7 @@ DWORD __stdcall Main(void*)
         CALL(EmuHook());
         CALL(R3000Hook());
     }
+
 
     // Signal any threads which might be waiting for us before continuing
     {

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <stdio.h>
+#pragma comment(lib,"Version.lib")
 
 using namespace std;
 
@@ -129,11 +130,37 @@ namespace Memory
         return len ? (HMODULE)info.AllocationBase : NULL;
     }
 
-    static uint32_t ModuleTimestamp(void* module)
+    std::string GetModuleVersion(HMODULE module)
     {
-        auto dosHeader = (PIMAGE_DOS_HEADER)module;
-        auto ntHeaders = (PIMAGE_NT_HEADERS)((std::uint8_t*)module + dosHeader->e_lfanew);
-        return ntHeaders->FileHeader.TimeDateStamp;
+        if (!module)
+            return "0.0.0";
+
+        char modulePath[MAX_PATH] = { 0 };
+        if (!GetModuleFileNameA(module, modulePath, MAX_PATH))
+            return "0.0.0";
+
+        DWORD handle = 0;
+        DWORD size = GetFileVersionInfoSizeA(modulePath, &handle);
+        if (size == 0)
+            return "0.0.0";
+
+        std::vector<BYTE> versionInfo(size);
+        if (!GetFileVersionInfoA(modulePath, handle, size, versionInfo.data()))
+            return "0.0.0";
+
+        VS_FIXEDFILEINFO* fileInfo = nullptr;
+        UINT fileInfoLen = 0;
+        if (!VerQueryValueA(versionInfo.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &fileInfoLen) || !fileInfo)
+            return "0.0.0";
+
+        // Extract version numbers
+        DWORD verMS = fileInfo->dwFileVersionMS;
+        DWORD verLS = fileInfo->dwFileVersionLS;
+        int major = HIWORD(verMS);
+        int minor = LOWORD(verMS);
+        int patch = HIWORD(verLS);
+
+        return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
     }
 
     static auto pattern_to_byte = [](const char* pattern) {
