@@ -1,131 +1,35 @@
-#include "stdafx.h"
+#include "m2fix.h"
+#include "sqhook.h"
+#include "ketchup.h"
 
-using namespace std;
+#include "sqemutask.h"
+#include "sqglobals.h"
+#include "sqsystemdata.h"
 
-#include "emutask.h"
-template <Squirk T>
-extern EmuTask<T> gEmuTask;
-
-extern SQInteger M2_DevId;
-extern string M2_DevType;
-extern SQInteger M2_DiskId;
-extern SQInteger M2_Tray;
-
-typedef struct {
-	unsigned int id;
-	unsigned int ram_base;
-	unsigned int ram_range;
-} Ketchup_DiskInfo;
-
-typedef struct {
-	string name;
-	vector<Ketchup_DiskInfo> disks;
-} Ketchup_VersionInfo;
-
-typedef struct {
-	unsigned int id;
-	string name;
-	vector<Ketchup_VersionInfo> versions;
-} Ketchup_TitleInfo;
-
-constexpr unsigned int gImageBase = 0x10000;
-constexpr unsigned int gSectorSize = 0x800;
-constexpr unsigned int gSectorStride = 0x130;
-constexpr unsigned int gSectorRange = gSectorSize + gSectorStride;
-
-auto cRange = [](unsigned int size) constexpr -> unsigned int
-{
-	return (size / gSectorSize) * gSectorRange;
-};
-
-vector<Ketchup_TitleInfo> gTitles = {
-	{99, "INTEGRAL", {
-		{"INTEGRAL", {
-			{0, 0x131D2238, cRange(0x9C000)},
-			{1, 0x0EB38078, cRange(0x9C000)},
-		}},
-		{"VR-DISK", {
-			{0, 0x000865F8, cRange(0x99800)},
-		}},
-	}},
-	{101, "VR-DISK_US", {
-		{"USA", {
-			{0, 0x0000E5C8, cRange(0x9C800)},
-		}},
-	}},
-	{102, "VR-DISK_EU", {
-		{"EUROPE", {
-			{0, 0x0018CCA8, cRange(0x9D000)},
-		}},
-	}},
-	{980, "MGS1_JP", {
-		{"JAPAN", {
-			{0, 0x127F1478, cRange(0x9C800)},
-			{1, 0x0E0B4AA8, cRange(0x9C800)},
-		}},
-	}},
-	{981, "MGS1_US", {
-		{"USA", {
-			{0, 0x0000E5C8, cRange(0x9E800)},
-			{1, 0x0000E5C8, cRange(0x9E800)},
-		}},
-	}},
-	{982, "MGS1_UK", {
-		{"UK", {
-			{0, 0x119BF0C8, cRange(0x9D000)},
-			{1, 0x0D442538, cRange(0x9D000)},
-		}},
-	}},
-	{983, "MGS1_DE", {
-		{"GERMANY", {
-			{0, 0x119BE798, cRange(0x9D000)},
-			{1, 0x0D442538, cRange(0x9D000)},
-		}},
-	}},
-	{984, "MGS1_FR", {
-		{"FRANCE", {
-			{0, 0x119BF9F8, cRange(0x9D000)},
-			{1, 0x0D442538, cRange(0x9D000)},
-		}},
-	}},
-	{985, "MGS1_IT", {
-		{"ITALY", {
-			{0, 0x119BF0C8, cRange(0x9D000)},
-			{1, 0x0D442538, cRange(0x9D000)},
-		}},
-	}},
-	{986, "MGS1_ES", {
-		{"SPAIN", {
-			{0, 0x119BF9F8, cRange(0x9D000)},
-			{1, 0x0D441C08, cRange(0x9D000)},
-		}},
-	}},
-};
-
-template <Squirk T>
-bool Ketchup_ApplyBlock(HSQUIRRELVM<T> v,
+template <Squirk Q>
+bool Ketchup<Q>::ApplyBlock(HSQUIRRELVM<Q> v,
 	Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk,
 	int64_t offset, unsigned char *data, size_t size)
 {
-	SQArray<T> *block = SQArray<T>::Create(_ss(v), size);
+	Sqrat::Array<Q> block(v, size);
 	for (size_t i = 0; i < size; i++) {
-		block->Set(i, data[i]);
+		block.SetValue(i, data[i]);
 	}
-	gEmuTask<T>.EntryCdRomPatch(offset, block);
-	LOG_F(INFO, "Ketchup: CD-ROM write 0x%08" PRIx64 " with %d bytes.", offset, size);
+	SQEmuTask<Q>::EntryCdRomPatch((SQInteger) offset, block);
+	spdlog::info("[Ketchup] CD-ROM write 0x{:08x} with {} bytes.", offset, size);
 
 	// If tray is open this isn't a cold boot, so we can skip this.
-	while (!M2_Tray && size != 0) {
+	while (!SQHook<Q>::IsCdRomShellOpen() && size != 0) {
 		if (offset >= disk.ram_base && offset < (disk.ram_base + disk.ram_range)) {
-			unsigned int address = offset - disk.ram_base;
-			unsigned int sector = address / gSectorRange;
-			unsigned int pos = address % gSectorRange;
+			unsigned int address = (unsigned int) offset - disk.ram_base;
+			unsigned int sector = address / PSX_SectorRange;
+			unsigned int pos = address % PSX_SectorRange;
 
-			if (pos < gSectorSize) {
-				address = (sector * gSectorSize) + pos;
-				gEmuTask<T>.SetRamValue(CHAR_BIT, gImageBase + address, *data);
-				LOG_F(INFO, "Ketchup: Mapped RAM write 0x%08X [0x%08" PRIx64 "] with value 0x%02X.",
-					gImageBase + address, offset, *data);
+			if (pos < PSX_SectorSize) {
+				address = (sector * PSX_SectorSize) + pos;
+				SQEmuTask<Q>::SetRamValue(CHAR_BIT, PSX_ImageBase + address, *data);
+				spdlog::info("[Ketchup] Mapped RAM write 0x{:08x} [0x{:08x}] with value 0x{:02x}.",
+					PSX_ImageBase + address, offset, *data);
 			}
 		}
 
@@ -135,7 +39,8 @@ bool Ketchup_ApplyBlock(HSQUIRRELVM<T> v,
 	return true;
 }
 
-int Ketchup_MetaPPF_FileId(ifstream &data, int version)
+template <Squirk Q>
+int Ketchup<Q>::MetaPPF_FileId(std::ifstream &data, int version)
 {
 	unsigned int magic;
 	int length;
@@ -147,35 +52,35 @@ int Ketchup_MetaPPF_FileId(ifstream &data, int version)
 		index = 2;
 	}
 
-	data.seekg(-(index + 4), ios_base::end);
+	data.seekg(-(index + 4), std::ios_base::end);
 	data.read((char *) &magic, sizeof(magic));
 
 	if (magic != 'ZID.') {
 		return 0;
 	}
 
-	data.seekg(-index, ios_base::end);
+	data.seekg(-index, std::ios_base::end);
 	data.read((char *) &length, index);
 	return length;
 }
 
-template <Squirk T>
-bool Ketchup_ApplyPPF3(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, ifstream &data)
+template <Squirk Q>
+bool Ketchup<Q>::ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::ifstream &data)
 {
 	unsigned char ppfmem[512];
-	int length = Ketchup_MetaPPF_FileId(data, 3);
+	int length = MetaPPF_FileId(data, 3);
 
 	unsigned char image_type, block_check, undo;
-	data.seekg(56, ios_base::beg);
+	data.seekg(56, std::ios_base::beg);
 	data.read((char *) &image_type, sizeof(image_type));
 	data.read((char *) &block_check, sizeof(block_check));
 	data.read((char *) &undo, sizeof(undo));
 
-	data.seekg(0, ios_base::end);
-	streampos count = data.tellg();
-	data.seekg(0, ios_base::beg);
+	data.seekg(0, std::ios_base::end);
+	std::streampos count = data.tellg();
+	data.seekg(0, std::ios_base::beg);
 
-	streampos pos;
+	std::streampos pos;
 	if (block_check) {
 		pos = 1084;
 		count -= 1084;
@@ -189,14 +94,14 @@ bool Ketchup_ApplyPPF3(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_Versi
 
 	int64_t offset;
 	unsigned char anz;
-	data.seekg(pos, ios_base::beg);
+	data.seekg(pos, std::ios_base::beg);
 	do {
 		data.read((char *) &offset, sizeof(offset));
 		data.read((char *) &anz, sizeof(anz));
 		data.read((char *) ppfmem, anz);
-		if (undo) data.seekg(anz, ios_base::cur);
+		if (undo) data.seekg(anz, std::ios_base::cur);
 
-		if (!Ketchup_ApplyBlock(v, title, version, disk, offset, ppfmem, anz))
+		if (!ApplyBlock(v, title, version, disk, offset, ppfmem, anz))
 			return false;
 
 		count -= (anz + 9);
@@ -206,20 +111,21 @@ bool Ketchup_ApplyPPF3(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_Versi
 	return true;
 }
 
-template <Squirk T>
-bool Ketchup_Apply(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, ifstream &data)
+template <Squirk Q>
+bool Ketchup<Q>::Apply(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::ifstream &data)
 {
 	unsigned int magic;
-	data.seekg(0, ios_base::beg);
+	data.seekg(0, std::ios_base::beg);
 	data.read((char *) &magic, sizeof(magic));
 
 	switch (magic) {
-		case '3FPP': return Ketchup_ApplyPPF3(v, title, version, disk, data);
+		case '3FPP': return ApplyPPF3(v, title, version, disk, data);
 		default: return false;
 	}
 }
 
-std::filesystem::path Ketchup_RootPath(Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, string base = "mods")
+template <Squirk Q>
+std::filesystem::path Ketchup<Q>::RootPath(Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::string base)
 {
 	std::filesystem::path root(base);
 	root /= title.name;
@@ -234,55 +140,60 @@ std::filesystem::path Ketchup_RootPath(Ketchup_TitleInfo &title, Ketchup_Version
 	return root;
 }
 
-template <Squirk T>
-bool Ketchup_ProcessDisk(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk)
+template <Squirk Q>
+bool Ketchup<Q>::ProcessDisk(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk)
 {
-	std::filesystem::directory_entry root { Ketchup_RootPath(title, version, disk) };
-	LOG_F(INFO, "Ketchup: base path is %S.", root.path().c_str());
+	std::filesystem::directory_entry root { RootPath(title, version, disk) };
+	spdlog::info("[Ketchup] base path is {}.", root.path().string());
 
 	if (!root.exists() || !root.is_directory()) return true;
 	for (const auto &entry : std::filesystem::directory_iterator(root)) {
-		ifstream data(entry.path(), ios::in | ios::binary);
-		if (Ketchup_Apply(v, title, version, disk, data)) {
-			LOG_F(INFO, "Ketchup: loaded %S.", entry.path().c_str());
+		std::ifstream data(entry.path(), std::ios::in | std::ios::binary);
+		if (Apply(v, title, version, disk, data)) {
+			spdlog::info("[Ketchup] loaded {}.", entry.path().string());
 		}
 	}
 
 	return true;
 }
 
-template <Squirk T>
-bool Ketchup_ProcessVersion(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version)
+template <Squirk Q>
+bool Ketchup<Q>::ProcessVersion(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version)
 {
 	for (auto &disk : version.disks) {
-		if (disk.id != M2_DiskId) continue;
-		return Ketchup_ProcessDisk(v, title, version, disk);
+		if (disk.id != SQGlobals<Q>::GetDisk()) continue;
+		return ProcessDisk(v, title, version, disk);
 	}
 
 	return false;
 }
 
-template <Squirk T>
-bool Ketchup_ProcessTitle(HSQUIRRELVM<T> v, Ketchup_TitleInfo &title)
+template <Squirk Q>
+bool Ketchup<Q>::ProcessTitle(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title)
 {
 	for (auto &version : title.versions) {
-		if (version.name != M2_DevType) continue;
-		return Ketchup_ProcessVersion(v, title, version);
+		if (version.name != SQSystemData<Q>::SettingETC::GetVersion()) continue;
+		return ProcessVersion(v, title, version);
 	}
 
 	return false;
 }
 
-template <Squirk T>
-bool Ketchup_Process(HSQUIRRELVM<T> v)
+template <Squirk Q>
+bool Ketchup<Q>::Process(HSQUIRRELVM<Q> v)
 {
-	for (auto &title : gTitles) {
-		if (title.id != M2_DevId) continue;
-		return Ketchup_ProcessTitle(v, title);
+	auto *titles = M2Fix::GameInstance().SQKetchupHook();
+	if (!titles) return false;
+
+	for (auto &title : *titles) {
+		if (title.id != SQGlobals<Q>::GetTitle()) continue;
+		return ProcessTitle(v, title);
 	}
 
 	return false;
 }
 
-template bool Ketchup_Process(HSQUIRRELVM<Squirk::Standard> v);
-template bool Ketchup_Process(HSQUIRRELVM<Squirk::AlignObject> v);
+template bool Ketchup<Squirk::Standard>::Process(HSQUIRRELVM<Squirk::Standard> v);
+template bool Ketchup<Squirk::AlignObject>::Process(HSQUIRRELVM<Squirk::AlignObject> v);
+template bool Ketchup<Squirk::StandardShared>::Process(HSQUIRRELVM<Squirk::StandardShared> v);
+template bool Ketchup<Squirk::AlignObjectShared>::Process(HSQUIRRELVM<Squirk::AlignObjectShared> v);

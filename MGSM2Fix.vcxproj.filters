@@ -1,0 +1,763 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\stdafx.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqvm.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqstate.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdaux.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdblob.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdio.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdmath.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdrex.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdstream.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdstring.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdsystem.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqtable.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqobject.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqmem.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqlexer.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqfuncstate.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqcompiler.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqclass.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqbaselib.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqapi.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\squirrel\sqdebug.cpp">
+      <Filter>Squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqdbg\sqrdbg.cpp">
+      <Filter>SqDbg</Filter>
+    </ClCompile>
+    <ClCompile Include="src\squirrel\sqdbg\sqdbgserver.cpp">
+      <Filter>SqDbg</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\Zydis.c">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\safetyhook.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqrat\sqimport\sqratimport.cpp">
+      <Filter>Sqrat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqrat\sqratthread\sqratThread.cpp">
+      <Filter>Sqrat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FunctionTraits\CompilerVersions.cppm">
+      <Filter>FunctionTraits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FunctionTraits\TypeTraits.cppm">
+      <Filter>FunctionTraits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\psx.cpp">
+      <Filter>Machines</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mgs1.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="src\analog.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\borderless.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3d11.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\epi.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqhook.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sqtrace.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ketchup.cpp">
+      <Filter>M2Fix</Filter>
+    </ClCompile>
+    <ClCompile Include="src\m2utils.cpp">
+      <Filter>M2Fix</Filter>
+    </ClCompile>
+    <ClCompile Include="src\m2config.cpp">
+      <Filter>M2Fix</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\color_sinks.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\file_sinks.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\spdlog.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\stdout_sinks.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\async.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\bundled_fmtlib_format.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spdlog\src\cfg.cpp">
+      <Filter>spdlog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\backends\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratVM.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratAllocator.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratArray.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratClass.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratClassType.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratConst.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratFunction.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratGlobalMethods.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratMemberMethods.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratObject.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratOverloadMethods.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratScript.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratTable.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratTypes.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqrat\include\sqrat\sqratUtil.h">
+      <Filter>Sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdaux.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdblob.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdio.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdmath.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdstring.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\sqstdsystem.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\include\squirrel.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\sqdbg\sqdbgserver.h">
+      <Filter>SqDbg</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\sqdbg\sqrdbg.h">
+      <Filter>SqDbg</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\sqstdlib\sqstdstream.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\sqstdlib\sqstdblobimpl.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqclosure.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqcompiler.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqfuncproto.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqfuncstate.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqlexer.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqobject.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqopcodes.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqpcheader.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqstate.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqstring.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqtable.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\squserdata.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\squtils.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqvm.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqarray.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirrel\squirrel\sqclass.h">
+      <Filter>Squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\safetyhook\Zydis.h">
+      <Filter>SafetyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="src\safetyhook\safetyhook.hpp">
+      <Filter>SafetyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="src\squirk.h" />
+    <ClInclude Include="src\m2\epi.h">
+      <Filter>M2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2\psx.h">
+      <Filter>M2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\psx.h">
+      <Filter>Machines</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mgs1.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="src\analog.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\borderless.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\config.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3d11.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\epi.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqhook.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ketchup.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2fix.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2fixbase.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2game.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2hook.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2machine.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2utils.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m2config.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqbinary.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqemutask.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqglobals.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqhelper.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqinput.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqinputhub.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqinvoker.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqsystemdata.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqsystemprof.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sqtitleprof.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inipp\inipp\inipp.h">
+      <Filter>inipp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\env.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\helpers.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\helpers-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\argv.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\circular_q.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\console_globals.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\file_helper.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\file_helper-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\fmt_helper.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg_buffer.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg_buffer-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\mpmc_blocking_q.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\null_mutex.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\os.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\os-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\periodic_worker.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\periodic_worker-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\registry.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\registry-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\synchronous_factory.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\tcp_client.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\tcp_client-windows.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\thread_pool.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\thread_pool-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\udp_client.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\udp_client-windows.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\windows_include.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\backtracer.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\details\backtracer-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\core.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\format.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\format-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\locale.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\os.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\ostream.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\printf.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\ranges.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\std.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\xchar.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\args.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\chrono.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\color.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\compile.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\chrono.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\compile.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\fmt.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\ostr.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\ranges.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\std.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\xchar.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bin_to_hex.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\dist_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\dup_filter_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\hourly_file_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\kafka_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\mongo_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\msvc_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\null_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ostream_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\qt_sinks.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ringbuffer_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\rotating_file_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_color_sinks.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_color_sinks-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_sinks.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_sinks-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\syslog_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\systemd_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\tcp_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\udp_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\win_eventlog_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\wincolor_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\wincolor_sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\android_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ansicolor_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ansicolor_sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\base_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\base_sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\basic_file_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\basic_file_sink-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\callback_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\daily_file_sink.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\pattern_formatter.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\pattern_formatter-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\spdlog.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\spdlog-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\stopwatch.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\tweakme.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\version.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\async.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\async_logger.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\async_logger-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\common.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\common-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\formatter.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\fwd.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\logger.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\logger-inl.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spdlog\include\spdlog\mdc.h">
+      <Filter>spdlog</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MGSM2Fix.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MGSM2Fix.ini" />
+    <None Include="src\squirrel\sqdbg\serialize_state.nut">
+      <Filter>SqDbg</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Squirrel">
+      <UniqueIdentifier>{825f35e0-2fb8-4f0c-8e87-c9925891177f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SqDbg">
+      <UniqueIdentifier>{40a72289-4f27-4192-9309-654da527e22b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sqrat">
+      <UniqueIdentifier>{af2d8082-5f22-4cf6-870c-e516dbc2583d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FunctionTraits">
+      <UniqueIdentifier>{6268f308-7182-4502-8e95-7616ad39065c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SafetyHook">
+      <UniqueIdentifier>{381b3b7f-6991-46e2-b89f-a8f797ea5ce9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="M2">
+      <UniqueIdentifier>{90caa4c6-8810-47fc-af99-38ec2fa41bec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Machines">
+      <UniqueIdentifier>{6d13a86a-61fa-451b-ba47-cde60d13b922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games">
+      <UniqueIdentifier>{4a8f9bf4-a8ea-43dc-a6cb-546281996eec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{62c337cd-19e7-4601-a48c-e46dbc304d30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="M2Fix">
+      <UniqueIdentifier>{8827e12d-4d1a-400b-a12f-3f073c0f8444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bindings">
+      <UniqueIdentifier>{96d197db-3c17-439d-86a3-eeb27d3cc003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inipp">
+      <UniqueIdentifier>{90419e98-006f-470b-bb0c-d81e2b241d47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spdlog">
+      <UniqueIdentifier>{7e6cfe89-90b2-4d14-a75a-8d6423115f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{26395ea7-01bf-424f-ba0d-3d2fb566f94d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\d3d11PixelUpscaler.hlsl">
+      <Filter>Modules</Filter>
+    </FxCompile>
+    <FxCompile Include="src\d3d11VertexUpscaler.hlsl">
+      <Filter>Modules</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

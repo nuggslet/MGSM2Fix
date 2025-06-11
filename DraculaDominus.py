@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''ROM extraction utility for M2ENGAGE [Castlevania Dominus Collection].'''
+'''DraculaDominus.py: ROM extraction utility for M2ENGAGE [Castlevania Dominus Collection].'''
 
 import os
 import json

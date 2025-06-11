@@ -19,66 +19,264 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\debug.cpp" />
+    <ClCompile Include="src\analog.cpp" />
+    <ClCompile Include="src\borderless.cpp" />
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\imgui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="src\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\spdlog\src\async.cpp" />
+    <ClCompile Include="src\spdlog\src\bundled_fmtlib_format.cpp" />
+    <ClCompile Include="src\spdlog\src\cfg.cpp" />
+    <ClCompile Include="src\spdlog\src\color_sinks.cpp" />
+    <ClCompile Include="src\spdlog\src\file_sinks.cpp" />
+    <ClCompile Include="src\spdlog\src\spdlog.cpp" />
+    <ClCompile Include="src\spdlog\src\stdout_sinks.cpp" />
+    <ClCompile Include="src\sqtrace.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
-    <ClCompile Include="src\emulator.cpp" />
-    <ClCompile Include="src\emutask.cpp" />
-    <ClCompile Include="src\external\loguru\loguru.cpp" />
-    <ClCompile Include="src\external\psycross\src\gte\half_float.cpp" />
-    <ClCompile Include="src\external\psycross\src\gte\PsyX_GTE.cpp" />
-    <ClCompile Include="src\external\sqrat\sqimport\sqratimport.cpp" />
-    <ClCompile Include="src\external\sqrat\sqratthread\sqratThread.cpp" />
-    <ClCompile Include="src\external\squirrel\sqdbg\sqdbgserver.cpp" />
-    <ClCompile Include="src\external\squirrel\sqdbg\sqrdbg.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdaux.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdblob.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdio.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdmath.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdrex.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdstream.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdstring.cpp" />
-    <ClCompile Include="src\external\squirrel\sqstdlib\sqstdsystem.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqapi.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqbaselib.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqclass.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqcompiler.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqdebug.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqfuncstate.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqlexer.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqmem.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqobject.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqstate.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqtable.cpp" />
-    <ClCompile Include="src\external\squirrel\squirrel\sqvm.cpp" />
-    <ClCompile Include="src\input.cpp" />
-    <ClCompile Include="src\inputhub.cpp" />
-    <ClCompile Include="src\m2binary.cpp" />
-    <ClCompile Include="src\m2object.cpp" />
+    <ClCompile Include="src\FunctionTraits\CompilerVersions.cppm" />
+    <ClCompile Include="src\FunctionTraits\TypeTraits.cppm" />
+    <ClCompile Include="src\safetyhook\safetyhook.cpp" />
+    <ClCompile Include="src\safetyhook\Zydis.c" />
+    <ClCompile Include="src\sqrat\sqimport\sqratimport.cpp" />
+    <ClCompile Include="src\sqrat\sqratthread\sqratThread.cpp" />
+    <ClCompile Include="src\squirrel\sqdbg\sqdbgserver.cpp" />
+    <ClCompile Include="src\squirrel\sqdbg\sqrdbg.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdaux.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdblob.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdio.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdmath.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdrex.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdstream.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdstring.cpp" />
+    <ClCompile Include="src\squirrel\sqstdlib\sqstdsystem.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqapi.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqbaselib.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqclass.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqcompiler.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqdebug.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqfuncstate.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqlexer.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqmem.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqobject.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqstate.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqtable.cpp" />
+    <ClCompile Include="src\squirrel\squirrel\sqvm.cpp" />
+    <ClCompile Include="src\d3d11.cpp" />
     <ClCompile Include="src\ketchup.cpp" />
-    <ClCompile Include="src\patch.cpp" />
-    <ClCompile Include="src\m2psyx.cpp" />
-    <ClCompile Include="src\r3000.cpp" />
+    <ClCompile Include="src\m2config.cpp" />
+    <ClCompile Include="src\epi.cpp" />
+    <ClCompile Include="src\psx.cpp" />
+    <ClCompile Include="src\m2utils.cpp" />
+    <ClCompile Include="src\mgs1.cpp" />
+    <ClCompile Include="src\sqhook.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="src\emulator.h" />
-    <ClInclude Include="src\emutask.h" />
-    <ClInclude Include="src\external\loguru\loguru.hpp" />
-    <ClInclude Include="src\helper.hpp" />
-    <ClInclude Include="src\input.h" />
-    <ClInclude Include="src\inputhub.h" />
-    <ClInclude Include="src\m2binary.h" />
-    <ClInclude Include="src\m2object.h" />
-    <ClInclude Include="src\m2psyx.h" />
+    <ClInclude Include="src\analog.h" />
+    <ClInclude Include="src\borderless.h" />
+    <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\d3d11.h" />
+    <ClInclude Include="src\epi.h" />
+    <ClInclude Include="src\inipp\inipp\inipp.h" />
+    <ClInclude Include="src\ketchup.h" />
+    <ClInclude Include="src\m2\epi.h" />
+    <ClInclude Include="src\m2fixbase.h" />
+    <ClInclude Include="src\m2game.h" />
+    <ClInclude Include="src\m2machine.h" />
+    <ClInclude Include="src\m2\psx.h" />
+    <ClInclude Include="src\safetyhook\safetyhook.hpp" />
+    <ClInclude Include="src\safetyhook\Zydis.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\async.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\async_logger-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\async_logger.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\argv.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\env.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\helpers-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\cfg\helpers.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\common-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\common.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\backtracer.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\circular_q.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\console_globals.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\file_helper.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\null_mutex.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\os-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\os.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\registry-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\registry.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\tcp_client.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\thread_pool.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\udp_client-windows.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\udp_client.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\details\windows_include.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\args.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\std.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\bundled\xchar.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\chrono.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\compile.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\fmt.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\ostr.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\ranges.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\std.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fmt\xchar.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\formatter.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\fwd.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\logger-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\logger.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\mdc.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\pattern_formatter.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\callback_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\hourly_file_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\kafka_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\mongo_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\qt_sinks.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\udp_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\spdlog-inl.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\spdlog.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\stopwatch.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\tweakme.h" />
+    <ClInclude Include="src\spdlog\include\spdlog\version.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratAllocator.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratArray.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratClass.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratClassType.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratConst.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratFunction.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratGlobalMethods.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratMemberMethods.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratObject.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratOverloadMethods.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratScript.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratTable.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratTypes.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratUtil.h" />
+    <ClInclude Include="src\sqrat\include\sqrat\sqratVM.h" />
+    <ClInclude Include="src\squirrel\include\sqstdaux.h" />
+    <ClInclude Include="src\squirrel\include\sqstdblob.h" />
+    <ClInclude Include="src\squirrel\include\sqstdio.h" />
+    <ClInclude Include="src\squirrel\include\sqstdmath.h" />
+    <ClInclude Include="src\squirrel\include\sqstdstring.h" />
+    <ClInclude Include="src\squirrel\include\sqstdsystem.h" />
+    <ClInclude Include="src\squirrel\include\squirrel.h" />
+    <ClInclude Include="src\squirrel\sqdbg\sqdbgserver.h" />
+    <ClInclude Include="src\squirrel\sqdbg\sqrdbg.h" />
+    <ClInclude Include="src\squirrel\sqstdlib\sqstdblobimpl.h" />
+    <ClInclude Include="src\squirrel\sqstdlib\sqstdstream.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqarray.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqclass.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqclosure.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqcompiler.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqfuncproto.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqfuncstate.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqlexer.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqobject.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqopcodes.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqpcheader.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqstate.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqstring.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqtable.h" />
+    <ClInclude Include="src\squirrel\squirrel\squserdata.h" />
+    <ClInclude Include="src\squirrel\squirrel\squtils.h" />
+    <ClInclude Include="src\squirrel\squirrel\sqvm.h" />
+    <ClInclude Include="src\m2config.h" />
+    <ClInclude Include="src\m2fix.h" />
+    <ClInclude Include="src\m2hook.h" />
+    <ClInclude Include="src\m2utils.h" />
+    <ClInclude Include="src\mgs1.h" />
+    <ClInclude Include="src\psx.h" />
+    <ClInclude Include="src\sqbinary.h" />
+    <ClInclude Include="src\sqemutask.h" />
+    <ClInclude Include="src\sqglobals.h" />
+    <ClInclude Include="src\sqhook.h" />
+    <ClInclude Include="src\sqinput.h" />
+    <ClInclude Include="src\sqinputhub.h" />
+    <ClInclude Include="src\sqinvoker.h" />
+    <ClInclude Include="src\sqsystemdata.h" />
+    <ClInclude Include="src\sqsystemprof.h" />
+    <ClInclude Include="src\sqtitleprof.h" />
+    <ClInclude Include="src\sqhelper.h" />
+    <ClInclude Include="src\squirk.h" />
     <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MGSM2Fix.ini" />
-    <None Include="src\external\squirrel\sqdbg\serialize_state.nut" />
+    <None Include="src\squirrel\sqdbg\serialize_state.nut" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGSM2Fix.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\d3d11VertexUpscaler.hlsl">
+      <ShaderModel>4.0</ShaderModel>
+      <ShaderType>Vertex</ShaderType>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+    </FxCompile>
+    <FxCompile Include="src\d3d11PixelUpscaler.hlsl">
+      <ShaderModel>4.0</ShaderModel>
+      <ShaderType>Pixel</ShaderType>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -91,26 +289,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.2</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.2</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.2</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.2</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -133,37 +331,42 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(oneTBBProductDir)\include;$(IncludePath);.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\sqrat\include;src\external\sqrat\include\sqrat;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -171,39 +374,49 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\sqrat\include;src\external\sqrat\include\sqrat;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
+      <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\sqrat\include;src\external\sqrat\include\sqrat;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -211,22 +424,27 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\external\loguru;src\external\squirrel\include;src\external\squirrel\sqstdlib;src\external\squirrel\squirrel;src\external\squirrel\sqdbg;src\external\sqrat\include;src\external\sqrat\include\sqrat;src\external\psycross\include;src\external\psycross\include\psx;src\external\psycross\include\PsyX;src\external\psycross\include\PsyX\common;src\external\psycross\include\PsyX\util;src\external\psycross\src;src\external\psycross\src\audio;src\external\psycross\src\gpu;src\external\psycross\src\gte;src\external\psycross\src\pad;src\external\psycross\src\psx;src\external\psycross\src\render;src\external\psycross\src\util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
+      <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
