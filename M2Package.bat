@@ -26,6 +26,7 @@ rd /S /Q dist\
 md dist\
 
 xcopy /I /Y res\ dist\
+xcopy /I /Y asiloader\ dist\
 echo F | xcopy /Y MGSM2Fix.ini dist\MGSM2Fix.ini
 echo F | xcopy /Y Release\MGSM2Fix.asi dist\MGSM2Fix32.asi
 echo F | xcopy /Y x64\Release\MGSM2Fix.asi dist\MGSM2Fix64.asi
