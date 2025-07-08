@@ -26,9 +26,9 @@ rd /S /Q dist\
 md dist\
 
 xcopy /I /Y res\ dist\
-xcopy /-I /Y MGSM2Fix.ini dist\MGSM2Fix.ini
-xcopy /-I /Y Release\MGSM2Fix.asi dist\MGSM2Fix32.asi
-xcopy /-I /Y x64\Release\MGSM2Fix.asi dist\MGSM2Fix64.asi
+xcopy /I /Y MGSM2Fix.ini dist\MGSM2Fix.ini
+xcopy /I /Y Release\MGSM2Fix.asi dist\MGSM2Fix32.asi
+xcopy /I /Y x64\Release\MGSM2Fix.asi dist\MGSM2Fix64.asi
 
 del /S /Q MGSM2Fix.zip
 
