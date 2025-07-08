@@ -3,6 +3,7 @@
 '''M2Install.py: Installer utility for M2Fix.'''
 
 import os
+import sys
 import yaml
 import shutil
 import zipfile
@@ -45,5 +46,5 @@ def main():
             if os.path.isfile(file): os.remove(file)
 
 if __name__ == "__main__":
-    if 'GITHUB_WORKSPACE' in os.environ: return
+    if 'GITHUB_WORKSPACE' in os.environ: sys.exit()
     main()
