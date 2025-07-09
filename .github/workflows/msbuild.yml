@@ -21,9 +21,6 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Install Python dependencies
-      uses: py-actions/py-dependency-install@v4
-
     - name: Download ASI Loader x64
       uses: robinraju/release-downloader@v1.8
       with:
@@ -33,7 +30,7 @@ jobs:
     - run: mkdir .\asiloader
     - run: unzip Ultimate-ASI-Loader_x64.zip -d .\asiloader
     - run: mv .\asiloader\dinput8.dll .\asiloader\d3d11.dll
-    
+
     - name: Download ASI Loader x86
       uses: robinraju/release-downloader@v1.8
       with:
@@ -41,13 +38,12 @@ jobs:
         latest: true
         fileName: "Ultimate-ASI-Loader.zip"
     - run: unzip Ultimate-ASI-Loader.zip -d .\asiloader
-    
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+
+    - name: Build and Package
       run: .\M2Package.bat
 
-    - name: Upload
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: MGSM2Fix
-        path: MGSM2Fix.zip
+        name: MGSM2Fix-run-${{ github.run_number }}
+        path: dist/
