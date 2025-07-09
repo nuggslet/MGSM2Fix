@@ -4,6 +4,36 @@
 #include <devguid.h>
 #pragma comment(lib, "setupapi.lib")
 
+
+bool M2Utils::IsSteamOS()
+{
+    // Check for Proton/Steam Deck environment variables
+    return std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") ||
+        std::getenv("STEAM_COMPAT_DATA_PATH") ||
+        std::getenv("XDG_SESSION_TYPE"); 
+}
+
+std::string M2Utils::GetSteamOSVersion()
+{
+    std::ifstream os_release("/etc/os-release");
+    std::string line;
+    while (std::getline(os_release, line))
+    {
+        if (line.find("PRETTY_NAME=") == 0)
+        {
+            // Remove quotes if present
+            size_t first_quote = line.find('"');
+            size_t last_quote = line.rfind('"');
+            if (first_quote != std::string::npos && last_quote != std::string::npos && last_quote > first_quote)
+            {
+                return line.substr(first_quote + 1, last_quote - first_quote - 1);
+            }
+            return line.substr(13); // fallback
+        }
+    }
+    return "SteamOS (Unknown Version)";
+}
+
 void M2Utils::LogSystemInfo()
 {
     std::string cpu;
@@ -91,49 +121,59 @@ void M2Utils::LogSystemInfo()
 
     std::string os;
 
-    HKEY key;
-    LSTATUS versionResult = RegOpenKeyExA(
-        HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
-        0, KEY_READ | KEY_WOW64_64KEY, &key
-    );
-
-    if (versionResult == ERROR_SUCCESS) {
-        char buffer[256]; DWORD size = sizeof(buffer);
-        LSTATUS nameResult = RegQueryValueExA(
-            key, "ProductName",
-            nullptr, nullptr,
-            reinterpret_cast<LPBYTE>(buffer), &size
+    if (IsSteamOS())
+    {
+        os = GetSteamOSVersion();
+    }
+    else
+    {
+        HKEY key;
+        LSTATUS versionResult = RegOpenKeyExA(
+            HKEY_LOCAL_MACHINE,
+            "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+            0, KEY_READ | KEY_WOW64_64KEY, &key
         );
-        if (nameResult == ERROR_SUCCESS) {
-            os = buffer;
+
+        if (versionResult == ERROR_SUCCESS)
+        {
+            char buffer[256]; DWORD size = sizeof(buffer);
+            LSTATUS nameResult = RegQueryValueExA(
+                key, "ProductName",
+                nullptr, nullptr,
+                reinterpret_cast<LPBYTE>(buffer), &size
+            );
+            if (nameResult == ERROR_SUCCESS)
+            {
+                os = buffer;
+            }
+        }
+
+        RegCloseKey(key);
+
+        HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+        while (ntdll)
+        {
+            typedef LONG(WINAPI* RtlGetVersion_t)(PRTL_OSVERSIONINFOW);
+            RtlGetVersion_t RtlGetVersion =
+                reinterpret_cast<RtlGetVersion_t>(GetProcAddress(ntdll, "RtlGetVersion"));
+            if (!RtlGetVersion) break;
+
+            RTL_OSVERSIONINFOW info = {};
+            info.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOW);
+
+            if (RtlGetVersion(&info) != 0) break;
+            os += " (build " + std::to_string(info.dwBuildNumber) + ")";
+
+            if (info.dwBuildNumber < 22000) break;
+            std::size_t pos = os.find("Windows 10");
+
+            if (pos == std::string::npos) break;
+            os.replace(pos, 10, "Windows 11");
+            break;
         }
     }
 
-    RegCloseKey(key);
-
-    HMODULE ntdll = GetModuleHandleA("ntdll.dll");
-    while (ntdll) {
-        typedef LONG(WINAPI *RtlGetVersion_t)(PRTL_OSVERSIONINFOW);
-        RtlGetVersion_t RtlGetVersion =
-            reinterpret_cast<RtlGetVersion_t>(GetProcAddress(ntdll, "RtlGetVersion"));
-        if (!RtlGetVersion) break;
-
-        RTL_OSVERSIONINFOW info = {};
-        info.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOW);
-
-        if (RtlGetVersion(&info) != 0) break;
-        os += " (build " + std::to_string(info.dwBuildNumber) + ")";
-
-        if (info.dwBuildNumber < 22000) break;
-        std::size_t pos = os.find("Windows 10");
-
-        if (pos == std::string::npos) break;
-        os.replace(pos, 10, "Windows 11");
-        break;
-    }
-
-    if (!os.empty()) spdlog::info("[System] OS:  {}", os);
+    if (!os.empty()) spdlog::info("[System] OS: {}", os);
 
     spdlog::info("----------");
 }

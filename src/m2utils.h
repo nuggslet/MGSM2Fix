@@ -21,4 +21,6 @@ public:
 	static std::condition_variable mainThreadFinishedVar;
 	static bool mainThreadFinished;
 
+	static bool IsSteamOS();
+	static std::string GetSteamOSVersion();
 };
