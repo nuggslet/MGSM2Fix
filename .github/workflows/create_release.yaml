@@ -1,0 +1,61 @@
+name: create-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version number'
+        required: true
+        
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Install Python dependencies
+      uses: py-actions/py-dependency-install@v4
+      
+    - name: setup-msbuild
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x64
+    - run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x86
+    - run: mkdir .\dist
+    - run: cp x64\Release\MGSM2Fix.asi .\dist\MGSM2Fix64.asi
+    - run: cp Release\MGSM2Fix.asi .\dist\MGSM2Fix32.asi
+
+    - uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "ThirteenAG/Ultimate-ASI-Loader"
+        latest: true
+        fileName: "Ultimate-ASI-Loader_x64.zip"
+    - run: unzip Ultimate-ASI-Loader_x64.zip -d .\dist
+    - run: mv .\dist\dinput8.dll .\dist\d3d11.dll
+    
+    - uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "ThirteenAG/Ultimate-ASI-Loader"
+        latest: true
+        fileName: "Ultimate-ASI-Loader.zip"
+    - run: unzip Ultimate-ASI-Loader.zip -d .\dist
+    
+    
+    - run: cp .\README.md .\dist\MGSM2Fix_Readme.md
+    - run: cp .\MGSM2Fix.ini .\dist\MGSM2Fix.ini
+    - run: 7z a -tzip MGSM2Fix_${{ github.event.inputs.version }}.zip .\dist\* .\res\*
+    
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "MGSM2Fix_${{ github.event.inputs.version }}.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.event.inputs.version }}
+        name: "${{ github.event.inputs.version }}"
+        draft: true
+        generateReleaseNotes: true
+        artifactErrorsFailBuild: true
+

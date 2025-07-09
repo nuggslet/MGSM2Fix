@@ -3,7 +3,7 @@
 #include "safetyhook.hpp"
 #include "TypeTraits.h"
 using namespace StdExt;
-#include "Zydis.h"
+#include "Zydis/Zydis.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
