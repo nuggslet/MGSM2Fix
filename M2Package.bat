@@ -47,11 +47,50 @@ md dist\
 
 echo --------------------------------------------------------
 echo [INFO] Copying resource files…
-xcopy /I /Y /F res\ dist\
-xcopy /I /Y /F asiloader\ dist\
-xcopy /Y /F MGSM2Fix.ini dist\MGSM2Fix.ini
-xcopy /Y /F Release\MGSM2Fix.asi dist\MGSM2Fix32.asi
-xcopy /Y /F x64\Release\MGSM2Fix.asi dist\MGSM2Fix64.asi
+xcopy /I /Y /F res\* dist\
+if errorlevel 1 (
+    echo [ERROR] Failed to copy resources from res\ to dist\
+    exit /b 1
+)
+
+if defined GITHUB_WORKSPACE (
+    echo [INFO] GITHUB_WORKSPACE detected — copying ASI Loader files…
+    xcopy /I /Y /F asiloader\* dist\
+    if errorlevel 1 (
+        echo [ERROR] Failed to copy asiloader\ to dist\
+        exit /b 1
+    )
+) else (
+    echo [INFO] GITHUB_WORKSPACE not defined — skipping ASI Loader files.
+)
+
+echo Copying README.md -^> dist\MGSM2Fix_README.md>&2
+copy /Y README.md dist\MGSM2Fix_Readme.md
+if errorlevel 1 (
+    echo [ERROR] Failed to copy README.md to dist\
+    exit /b 1
+)
+
+echo Copying MGSM2Fix.ini -^> dist\MGSM2Fix.ini>&2
+copy /Y MGSM2Fix.ini dist\MGSM2Fix.ini
+if errorlevel 1 (
+    echo [ERROR] Failed to copy MGSM2Fix.ini to dist\
+    exit /b 1
+)
+
+echo Copying Release\MGSM2Fix.asi -^> dist\MGSM2Fix32.asi>&2
+copy /Y Release\MGSM2Fix.asi dist\MGSM2Fix32.asi
+if errorlevel 1 (
+    echo [ERROR] Failed to copy Release\MGSM2Fix.asi to dist\MGSM2Fix32.asi
+    exit /b 1
+)
+
+echo Copying x64\Release\MGSM2Fix.asi -^> dist\MGSM2Fix64.asi>&2
+copy /Y x64\Release\MGSM2Fix.asi dist\MGSM2Fix64.asi
+if errorlevel 1 (
+    echo [ERROR] Failed to copy x64\Release\MGSM2Fix.asi to dist\MGSM2Fix64.asi
+    exit /b 1
+)
 
 REM Remove old archive
 echo --------------------------------------------------------

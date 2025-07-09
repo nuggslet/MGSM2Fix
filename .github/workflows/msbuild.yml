@@ -19,7 +19,10 @@ jobs:
         submodules: recursive
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Install Python dependencies
+      uses: py-actions/py-dependency-install@v4
 
     - name: Download ASI Loader x64
       uses: robinraju/release-downloader@v1.8
@@ -39,7 +42,8 @@ jobs:
         fileName: "Ultimate-ASI-Loader.zip"
     - run: unzip Ultimate-ASI-Loader.zip -d .\asiloader
 
-    - name: Build and Package
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       run: .\M2Package.bat
 
     - name: Upload Artifact
