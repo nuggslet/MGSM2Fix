@@ -339,7 +339,7 @@
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -347,7 +347,7 @@
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -358,7 +358,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -414,7 +414,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

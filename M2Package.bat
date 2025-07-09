@@ -18,7 +18,9 @@ if exist "%vsdir%\Common7\Tools\VsMSBuildCmd.bat" (
 
 REM Clean builds
 echo --------------------------------------------------------
-echo [INFO] Cleaning previous Release builds…
+echo [INFO] Cleaning previous builds…
+MSBuild MGSM2Fix.sln /p:Configuration=Debug /p:Platform=x86 /t:Clean /verbosity:minimal
+MSBuild MGSM2Fix.sln /p:Configuration=Debug /p:Platform=x64 /t:Clean /verbosity:minimal
 MSBuild MGSM2Fix.sln /p:Configuration=Release /p:Platform=x86 /t:Clean /verbosity:minimal
 MSBuild MGSM2Fix.sln /p:Configuration=Release /p:Platform=x64 /t:Clean /verbosity:minimal
 
@@ -27,14 +29,29 @@ echo --------------------------------------------------------
 echo [INFO] Building Release/x86…
 MSBuild MGSM2Fix.sln /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
 if errorlevel 1 (
-	echo [ERROR] Build failed for x86.
+	echo [ERROR] Build failed for Release x86.
 	exit /b 1
 )
 
 echo [INFO] Building Release/x64…
 MSBuild MGSM2Fix.sln /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
 if errorlevel 1 (
-	echo [ERROR] Build failed for x64.
+	echo [ERROR] Build failed for Release x64.
+	exit /b 1
+)
+
+echo --------------------------------------------------------
+echo [INFO] Building Debug/x86…
+MSBuild MGSM2Fix.sln /p:Configuration=Debug /p:Platform=x86 /verbosity:minimal
+if errorlevel 1 (
+	echo [ERROR] Build failed for Debug x86.
+	exit /b 1
+)
+
+echo [INFO] Building Debug/x64…
+MSBuild MGSM2Fix.sln /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+if errorlevel 1 (
+	echo [ERROR] Build failed for Debug x64.
 	exit /b 1
 )
 
