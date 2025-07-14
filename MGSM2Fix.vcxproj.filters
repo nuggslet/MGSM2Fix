@@ -69,12 +69,6 @@
     <ClCompile Include="src\squirrel\sqdbg\sqdbgserver.cpp">
       <Filter>SqDbg</Filter>
     </ClCompile>
-    <ClCompile Include="src\safetyhook\Zydis.c">
-      <Filter>SafetyHook</Filter>
-    </ClCompile>
-    <ClCompile Include="src\safetyhook\safetyhook.cpp">
-      <Filter>SafetyHook</Filter>
-    </ClCompile>
     <ClCompile Include="src\sqrat\sqimport\sqratimport.cpp">
       <Filter>Sqrat</Filter>
     </ClCompile>
@@ -82,9 +76,6 @@
       <Filter>Sqrat</Filter>
     </ClCompile>
     <ClCompile Include="src\FunctionTraits\CompilerVersions.cppm">
-      <Filter>FunctionTraits</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FunctionTraits\TypeTraits.cppm">
       <Filter>FunctionTraits</Filter>
     </ClCompile>
     <ClCompile Include="src\psx.cpp">
@@ -161,6 +152,33 @@
     </ClCompile>
     <ClCompile Include="src\imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\allocator.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\easy.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\inline_hook.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\mid_hook.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\os.linux.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\os.windows.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\utility.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\safetyhook\src\vmt_hook.cpp">
+      <Filter>SafetyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FunctionTraits\TypeTraits.cppm">
+      <Filter>FunctionTraits</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,12 +309,6 @@
     </ClInclude>
     <ClInclude Include="src\squirrel\squirrel\sqclass.h">
       <Filter>Squirrel</Filter>
-    </ClInclude>
-    <ClInclude Include="src\safetyhook\Zydis.h">
-      <Filter>SafetyHook</Filter>
-    </ClInclude>
-    <ClInclude Include="src\safetyhook\safetyhook.hpp">
-      <Filter>SafetyHook</Filter>
     </ClInclude>
     <ClInclude Include="src\squirk.h" />
     <ClInclude Include="src\m2\epi.h">

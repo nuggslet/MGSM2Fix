@@ -1,0 +1,15 @@
+[submodule "src/imgui"]
+	path = src/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "src/spdlog"]
+	path = src/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "src/inipp"]
+	path = src/inipp
+	url = https://github.com/mcmtroffaes/inipp
+[submodule "src/zydis"]
+	path = src/zydis
+	url = https://github.com/zyantific/zydis
+[submodule "src/safetyhook"]
+	path = src/safetyhook
+	url = https://github.com/cursey/safetyhook

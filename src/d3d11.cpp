@@ -1459,7 +1459,7 @@ void D3D11::Upscale(ID3D11DeviceContext *pContext)
             nullptr,
             "main",
             "vs_4_0",
-            D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+            M2Config::bDebuggerEnabled ? (D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION) : 0,
             0,
             &upscalerVertexBlob,
             &upscalerVertexError
@@ -1490,7 +1490,7 @@ void D3D11::Upscale(ID3D11DeviceContext *pContext)
             nullptr,
             "main",
             "ps_4_0",
-            D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+            M2Config::bDebuggerEnabled ? (D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION) : 0,
             0,
             &upscalerPixelBlob,
             &upscalerPixelError

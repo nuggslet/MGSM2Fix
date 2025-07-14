@@ -28,6 +28,14 @@
     <ClCompile Include="src\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\safetyhook\src\allocator.cpp" />
+    <ClCompile Include="src\safetyhook\src\easy.cpp" />
+    <ClCompile Include="src\safetyhook\src\inline_hook.cpp" />
+    <ClCompile Include="src\safetyhook\src\mid_hook.cpp" />
+    <ClCompile Include="src\safetyhook\src\os.linux.cpp" />
+    <ClCompile Include="src\safetyhook\src\os.windows.cpp" />
+    <ClCompile Include="src\safetyhook\src\utility.cpp" />
+    <ClCompile Include="src\safetyhook\src\vmt_hook.cpp" />
     <ClCompile Include="src\spdlog\src\async.cpp" />
     <ClCompile Include="src\spdlog\src\bundled_fmtlib_format.cpp" />
     <ClCompile Include="src\spdlog\src\cfg.cpp" />
@@ -39,8 +47,6 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\FunctionTraits\CompilerVersions.cppm" />
     <ClCompile Include="src\FunctionTraits\TypeTraits.cppm" />
-    <ClCompile Include="src\safetyhook\safetyhook.cpp" />
-    <ClCompile Include="src\safetyhook\Zydis.c" />
     <ClCompile Include="src\sqrat\sqimport\sqratimport.cpp" />
     <ClCompile Include="src\sqrat\sqratthread\sqratThread.cpp" />
     <ClCompile Include="src\squirrel\sqdbg\sqdbgserver.cpp" />
@@ -89,8 +95,6 @@
     <ClInclude Include="src\m2game.h" />
     <ClInclude Include="src\m2machine.h" />
     <ClInclude Include="src\m2\psx.h" />
-    <ClInclude Include="src\safetyhook\safetyhook.hpp" />
-    <ClInclude Include="src\safetyhook\Zydis.h" />
     <ClInclude Include="src\spdlog\include\spdlog\async.h" />
     <ClInclude Include="src\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="src\spdlog\include\spdlog\async_logger.h" />
@@ -331,38 +335,41 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat</IncludePath>
+    <IncludePath>$(IncludePath);.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\zydis\include;src\zydis\dependencies\zycore\include;src\safetyhook\include;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)src\zydis\msvc\bin\ReleaseX86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Zydis.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
@@ -374,7 +381,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -384,6 +391,7 @@
       <Optimization>MinSpace</Optimization>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -391,6 +399,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)src\zydis\msvc\bin\ReleaseX86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Zydis.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
@@ -400,19 +410,22 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)src\zydis\msvc\bin\ReleaseX64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Zydis.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
@@ -424,7 +437,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -434,6 +447,7 @@
       <Optimization>MinSpace</Optimization>
       <DisableSpecificWarnings>4661;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -441,6 +455,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(SolutionDir)src\zydis\msvc\bin\ReleaseX64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Zydis.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
