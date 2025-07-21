@@ -63,7 +63,8 @@ void M2Utils::LogSystemInfo()
         nullptr, nullptr,
         DIGCF_PRESENT
     );
-    for (DWORD i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfo); ++i) {
+    for (DWORD i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfo); ++i)
+    {
         char deviceName[256] = {};
         bool deviceResult = SetupDiGetDeviceRegistryPropertyA(
             hDevInfo, &devInfo,
@@ -81,7 +82,7 @@ void M2Utils::LogSystemInfo()
             DIREG_DRV,
             KEY_READ
         );
-        if (!key || key == INVALID_HANDLE_VALUE) {
+        if (!key || key == INVALID_HANDLE_VALUE){
             gpu.erase(std::remove(gpu.begin(), gpu.end(), '\n'), gpu.end());
             if (!gpu.empty()) spdlog::info("[System] GPU: {}", gpu);
             continue;
@@ -97,7 +98,8 @@ void M2Utils::LogSystemInfo()
         );
 
         RegCloseKey(key);
-        if (versionResult != ERROR_SUCCESS) {
+        if (versionResult != ERROR_SUCCESS)
+        {
             gpu.erase(std::remove(gpu.begin(), gpu.end(), '\n'), gpu.end());
             if (!gpu.empty()) spdlog::info("[System] GPU: {}", gpu);
             continue;
@@ -134,6 +136,8 @@ void M2Utils::LogSystemInfo()
             0, KEY_READ | KEY_WOW64_64KEY, &key
         );
 
+        DWORD ubr = 0;
+
         if (versionResult == ERROR_SUCCESS)
         {
             char buffer[256]; DWORD size = sizeof(buffer);
@@ -146,9 +150,21 @@ void M2Utils::LogSystemInfo()
             {
                 os = buffer;
             }
-        }
 
-        RegCloseKey(key);
+            // Get UBR (Update Build Revision)
+            size = sizeof(DWORD);
+            LSTATUS ubrResult = RegQueryValueExA(
+                key, "UBR",
+                nullptr, nullptr,
+                reinterpret_cast<LPBYTE>(&ubr), &size
+            );
+            if (ubrResult != ERROR_SUCCESS)
+            {
+                ubr = 0; // fallback if not present
+            }
+
+            RegCloseKey(key);
+        }
 
         HMODULE ntdll = GetModuleHandleA("ntdll.dll");
         while (ntdll)
@@ -162,7 +178,12 @@ void M2Utils::LogSystemInfo()
             info.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOW);
 
             if (RtlGetVersion(&info) != 0) break;
-            os += " (build " + std::to_string(info.dwBuildNumber) + ")";
+            os += " (build " + std::to_string(info.dwBuildNumber);
+            if (ubr != 0)
+            {
+                os += "." + std::to_string(ubr);
+            }
+            os += ")";
 
             if (info.dwBuildNumber < 22000) break;
             std::size_t pos = os.find("Windows 10");
