@@ -29,6 +29,16 @@ void M2Config::Load()
     else
     {
         ini.parse(iniFile);
+        if (!ini.errors.empty())
+        {
+            spdlog::error("Error parsing ini file, encountered {} errors at these lines:", ini.errors.size());
+            std::cout << "Error parsing ini file, encountered " << ini.errors.size() << " errors at these lines:" << std::endl;
+            for (auto err : ini.errors)
+            {
+                spdlog::error(err);
+                std::cout << err << std::endl;
+            }
+        }
     }
 
     inipp::get_value(ini.sections["Squirrel Debugger"], "Enabled", bDebuggerEnabled);
