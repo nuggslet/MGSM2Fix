@@ -180,6 +180,9 @@
     <ClCompile Include="src\FunctionTraits\TypeTraits.cppm">
       <Filter>FunctionTraits</Filter>
     </ClCompile>
+    <ClCompile Include="src\versionchecker.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -709,6 +712,9 @@
     </ClInclude>
     <ClInclude Include="src\spdlog\include\spdlog\mdc.h">
       <Filter>spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\versionchecker.h">
+      <Filter>Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

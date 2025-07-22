@@ -1,11 +1,7 @@
-name: create-release
+name: Create Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version number'
-        required: true
         
 jobs:
   build:
@@ -20,6 +16,21 @@ jobs:
     - name: Install Python dependencies
       uses: py-actions/py-dependency-install@v4
       
+    - name: Extract version from version.h
+      id: extract_version
+      shell: bash
+      run: |
+        VERSION_FILE="resource.h"
+        echo "Reading version from $VERSION_FILE"
+
+        version_line=$(grep '#define VERSION_STRING' "$VERSION_FILE")
+        echo "Found line: $version_line"
+
+        version=$(echo "$version_line" | sed -E 's/#define VERSION_STRING +"([^"]+)"/\1/')
+        echo "Parsed version: $version"
+
+        echo "version=$version" >> $GITHUB_OUTPUT
+
     - name: setup-msbuild
       uses: microsoft/setup-msbuild@v1.1
       
@@ -51,10 +62,10 @@ jobs:
     
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "MGSM2Fix_${{ github.event.inputs.version }}.zip"
+        artifacts: "MGSM2Fix_${{ steps.extract_version.outputs.version }}.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.event.inputs.version }}
-        name: "${{ github.event.inputs.version }}"
+        tag: ${{ steps.extract_version.outputs.version }}
+        name: "${{ steps.extract_version.outputs.version }}"
         draft: true
         generateReleaseNotes: true
         artifactErrorsFailBuild: true
