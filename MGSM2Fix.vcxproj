@@ -80,6 +80,7 @@
     <ClCompile Include="src\mgs1.cpp" />
     <ClCompile Include="src\sqhook.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
+    <ClCompile Include="src\versionchecker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -260,6 +261,7 @@
     <ClInclude Include="src\sqhelper.h" />
     <ClInclude Include="src\squirk.h" />
     <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\versionchecker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MGSM2Fix.ini" />
