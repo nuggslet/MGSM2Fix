@@ -12,6 +12,7 @@
 #include "config.h"
 #include "borderless.h"
 #include "d3d11.h"
+#include "versionchecker.h"
 
 enum class M2FixGame
 {
@@ -115,6 +116,12 @@ public:
             Game.Load();
 
             spdlog::info("----------");
+        }
+
+        if (M2Config::bShouldCheckForUpdates)
+        {
+            LatestVersionChecker checker;
+            checker.checkForUpdates();
         }
     }
 
@@ -253,10 +260,10 @@ public:
     }
 
 private:
-    static constexpr std::string_view m_sFixName    = "MGSM2Fix";
-    static constexpr std::string_view m_sFixVer     = "3.0";
-    static constexpr std::string_view m_sLogFile    = "MGSM2Fix.log";
-    static constexpr std::string_view m_sConfigFile = "MGSM2Fix.ini";
+    static constexpr std::string_view m_sFixName    = FIX_NAME;
+    static constexpr std::string_view m_sFixVer     = VERSION_STRING;
+    static constexpr std::string_view m_sLogFile    = FIX_NAME ".log";
+    static constexpr std::string_view m_sConfigFile = FIX_NAME ".ini";
 
     std::multimap<M2FixGame, M2FixInfo> m_kGames = {
         { M2FixGame::MGS1,               { 2131630, "Metal Gear Solid",                                   "MGS1\\METAL GEAR SOLID.exe",                                      MGS1::GetInstance()   } },

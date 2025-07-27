@@ -97,6 +97,12 @@ void M2Config::Load()
 
     inipp::get_value(ini.sections["Game"], "StageSelect", bGameStageSelect);
 
+
+    inipp::get_value(ini.sections["Update Notifications"], "CheckForUpdates", bShouldCheckForUpdates);
+    inipp::get_value(ini.sections["Update Notifications"], "ConsoleNotifications", bConsoleUpdateNotifications);
+
+
+
     // Force windowed mode if borderless is enabled but windowed is not.
     if (bBorderlessMode) {
         bWindowedMode = true;
@@ -151,6 +157,8 @@ void M2Config::Load()
     spdlog::info("[Config] bPatchesRestoreGhosts: {}", bPatchesRestoreGhosts);
     spdlog::info("[Config] bPatchesRestoreMedicine: {}", bPatchesRestoreMedicine);
     spdlog::info("[Config] bGameStageSelect: {}", bGameStageSelect);
+    spdlog::info("[Config] bShouldCheckForUpdates: {}", bShouldCheckForUpdates);
+    spdlog::info("[Config] bConsoleUpdateNotifications: {}", bConsoleUpdateNotifications);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
     {

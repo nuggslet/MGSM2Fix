@@ -61,6 +61,8 @@ public:
     static inline bool bPatchesEnableMosaic;
     static inline bool bPatchesRestoreGhosts;
     static inline bool bPatchesRestoreMedicine;
+    static inline bool bShouldCheckForUpdates;
+    static inline bool bConsoleUpdateNotifications;
 
     static inline std::string sFullscreenMode;
     static inline std::string sExternalWidth;
