@@ -227,6 +227,7 @@ void Config::Load()
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
+        case M2FixGame::Gradius:
         {
             M2Hook::GetInstance().Hook(
                 "48 33 C4 48 89 44 24 50 48 8B FA 48 8B D9 48 89 "

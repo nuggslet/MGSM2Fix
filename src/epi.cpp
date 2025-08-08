@@ -50,6 +50,7 @@ void EPI::Load()
             [[fallthrough]];
         case M2FixGame::MGSR:
         case M2FixGame::Ray:
+        case M2FixGame::Gradius:
         {
             M2Hook::GetInstance(module).Hook(
                 "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "

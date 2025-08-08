@@ -47,6 +47,7 @@ void Borderless::Load()
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
+        case M2FixGame::Gradius:
         {
             M2Hook::GetInstance().Patch(
                 "BE 00 00 CB 02 41 BE 00 00 CB 00 44 ?? ?? ?? ?? "

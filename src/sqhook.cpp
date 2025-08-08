@@ -718,6 +718,7 @@ void SQHook<Q>::Load()
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
+        case M2FixGame::Gradius:
         {
             _sq_vm_realloc = reinterpret_cast<decltype(_sq_vm_realloc)>(
                 M2Hook::GetInstance().Scan(
@@ -801,6 +802,7 @@ void SQHook<Q>::Load()
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
+        case M2FixGame::Gradius:
         {
             M2Hook::GetInstance().Hook(
                 "48 C7 81 FC 00 00 00 FF FF FF FF 48 89 B1 E0 00",
