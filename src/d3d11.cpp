@@ -2214,3 +2214,10 @@ void D3D11::Load()
         CreateDevice, "[D3D11] D3D11CreateDevice"
     );
 }
+
+// Forces the games to run on the user's dedicated GPU in the event that they have
+// a secondary integrated GPU that isn't properly configured in their nvidia/amd display drivers.
+extern "C" {
+    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
