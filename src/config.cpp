@@ -212,7 +212,7 @@ void Config::Load()
             ret = M2Hook::GetInstance().Hook(
                 "50 C6 01 00 E8 ?? ?? ?? FF 8B CF E8 ?? ?? ?? ?? 85 "
                 "C0 78 1E 8B 57 04 8D 34 C0 8B 45 20 8D 0C 40",
-                -0x48, GetCfgValue, "[Config-32] MWinResCfg::GetValue"
+                -0x48, GetCfgValue, "[Config-32A] MWinResCfg::GetValue"
             );
             if (!ret) {
                 ret = M2Hook::GetInstance().Hook(
@@ -220,6 +220,16 @@ void Config::Load()
                     0, GetCfgValueEx, "[Config-32] MWinResCfg::GetValueEx"
                 );
             }
+
+            break;
+        }
+
+        case M2FixGame::NightStrikers:
+        {
+            M2Hook::GetInstance().Hook(
+                "8B 57 04 8D 34 C0 8B 45 20 8D 0C 40 8B 44 B2 18",
+                -0x47, GetCfgValue, "[Config-32B] MWinResCfg::GetValue"
+            );
 
             break;
         }

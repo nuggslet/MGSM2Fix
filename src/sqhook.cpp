@@ -705,6 +705,7 @@ void SQHook<Q>::Load()
         case M2FixGame::DraculaAdvance:
         case M2FixGame::Darius:
         case M2FixGame::Darius101:
+        case M2FixGame::NightStrikers:
         {
             _sq_vm_realloc = reinterpret_cast<decltype(_sq_vm_realloc)>(
                 M2Hook::GetInstance().Scan(
@@ -795,6 +796,26 @@ void SQHook<Q>::Load()
                     -0x17E, SQHook<Squirk::AlignObjectShared>::BindFunc, "[SQ-32<AlignObjectShared>] Sqrat::BindFunc"
                 );
             }
+
+            break;
+        }
+
+        case M2FixGame::NightStrikers:
+        {
+            M2Hook::GetInstance().Hook(
+                "C7 86 9C 00 00 00 FF FF FF FF 89 86 98 00 00 00",
+                -0xFD, SQHook<Squirk::StandardShared>::Create, "[SQ-32<StandardShared>] SQVM::SQVM"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "FF D0 8B 4D 18 83 C4 04 FF 8B 90 00 00 00 C6 01",
+                -0x2E7, SQHook<Squirk::StandardShared>::CallNative, "[SQ-32<StandardShared>] SQVM::CallNative"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "0F B6 45 18 83 C4 04 8B 4F 04 BA FD FF FF FF 50",
+                -0x14B, SQHook<Squirk::StandardShared>::BindFunc, "[SQ-32<StandardShared>] Sqrat::BindFunc"
+            );
 
             break;
         }

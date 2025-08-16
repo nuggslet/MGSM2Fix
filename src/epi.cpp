@@ -36,6 +36,7 @@ void EPI::Load()
         case M2FixGame::DraculaAdvance:
         case M2FixGame::Darius:
         case M2FixGame::Darius101:
+        case M2FixGame::NightStrikers:
         {
             M2Hook::GetInstance(module).Hook(
                 "8B 4C 24 04 8D 54 24 08 E8 ?? ?? FF FF 85 C0 74",

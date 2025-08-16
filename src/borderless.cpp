@@ -44,6 +44,19 @@ void Borderless::Load()
             break;
         }
 
+        case M2FixGame::NightStrikers:
+        {
+            M2Hook::GetInstance().Patch(
+                "BE 00 00 CB 02 B9 00 00 CB 00 74 0A BE 00 00 CF "
+                "02 B9 00 00 CF 00", 0,
+                "BE 00 00 00 90 B9 00 00 CB 00 74 0A BE 00 00 00 "
+                "90 B9 00 00 CF 00",
+                "[Borderless-32D] MWin::CreateWindow"
+            );
+
+            break;
+        }
+
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:

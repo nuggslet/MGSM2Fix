@@ -27,6 +27,7 @@ enum class M2FixGame
     Darius,
     Darius101,
     Gradius,
+    NightStrikers,
 };
 
 struct M2FixInfo
@@ -278,6 +279,7 @@ private:
         { M2FixGame::Darius,             { 1638330, "Darius Cozmic Arcade",                               "Darius Cozmic Collection Arcade\\game.exe",                       M2Game::GetInstance() } },
         { M2FixGame::Darius101,          { 1640160, "G-Darius HD",                                        "G-Darius HD\\gdarahd.exe",                                        M2Game::GetInstance() } },
         { M2FixGame::Gradius,            { 2897590, "Gradius Origins",                                    "GRADIUS origin collection\\Gradius Origin Collection.exe",        M2Game::GetInstance() } },
+        { M2FixGame::NightStrikers,      { 3099790, "Operation Night Strikers",                           "Operation Night Strikers\\OperationNightStrikers.exe",            M2Game::GetInstance() } },
     };
 
     static inline M2FixInfo *m_kGame;
