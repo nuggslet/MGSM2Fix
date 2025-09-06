@@ -376,6 +376,9 @@
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)build_zydis.cmd" $(Platform)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -407,6 +410,9 @@
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)build_zydis.cmd" $(Platform)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -432,6 +438,9 @@
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)build_zydis.cmd" $(Platform)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -463,6 +472,9 @@
     <PostBuildEvent>
       <Command>python "$(ProjectDir)M2Install.py" "$(TargetPath)" $(LibrariesArchitecture)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)build_zydis.cmd" $(Platform)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
