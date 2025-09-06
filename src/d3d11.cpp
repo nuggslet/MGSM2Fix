@@ -5,9 +5,11 @@
 
 #include <d3dcompiler.h>
 
+#if defined(M2FIX_USE_IMGUI)
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
+#endif
 
 #include "resource.h"
 
@@ -1808,6 +1810,7 @@ void WINAPI D3D11::Deferred::DrawIndexed(
     );
 }
 
+#if defined(M2FIX_USE_IMGUI)
 BOOL WINAPI D3D11::ShowWindow(
     HWND hWnd,
     int  nCmdShow
@@ -1820,7 +1823,9 @@ BOOL WINAPI D3D11::ShowWindow(
         nCmdShow
     );
 }
+#endif
 
+#if defined(M2FIX_USE_IMGUI)
 void D3D11::Overlay(ID3D11DeviceContext *pContext)
 {
     if (!pContext && M2Config::bConsole) {
@@ -1923,6 +1928,7 @@ void D3D11::Overlay(ID3D11DeviceContext *pContext)
     upscalerDisabled = !upscalerEnabled;
     overlayDisabled = false;
 }
+#endif
 
 void WINAPI D3D11::DrawIndexed(
     void (WINAPI *pFunction)(
@@ -1952,7 +1958,9 @@ void WINAPI D3D11::DrawIndexed(
         );
     }
 
+#if defined(M2FIX_USE_IMGUI)
     Overlay(pContext);
+#endif
 }
 
 HRESULT WINAPI D3D11::Immediate::FinishCommandList(
@@ -2194,7 +2202,10 @@ HRESULT WINAPI D3D11::CreateDevice(
 void D3D11::Load()
 {
     Upscale(nullptr);
+
+#if defined(M2FIX_USE_IMGUI)
     Overlay(nullptr);
+#endif
 
     HMODULE d3d11 = LoadLibraryA("d3d11.dll");
     if (!d3d11) {

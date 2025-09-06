@@ -356,7 +356,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;M2FIX_USE_IMGUI</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -387,7 +387,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
@@ -412,7 +412,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MGSM2Fix_EXPORTS;_WINDOWS;_USRDLL;_DEBUG_DUMP;_CRT_SECURE_NO_WARNINGS;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions);ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;M2FIX_USE_IMGUI</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -443,7 +443,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;src\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src\inipp\inipp;src\spdlog\include;src\spdlog\include\spdlog;src\safetyhook;src\FunctionTraits;src\squirrel\include;src\squirrel\sqstdlib;src\squirrel\squirrel;src\squirrel\sqdbg;src\sqrat\include;src\sqrat\include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MinSpace</Optimization>
