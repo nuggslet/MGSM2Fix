@@ -24,6 +24,21 @@ jobs:
     - name: Install Python dependencies
       uses: py-actions/py-dependency-install@v4
 
+    - name: Get Zydis submodule hash
+      id: zydishash
+      run: |
+        cd src/zydis
+        $hash = git rev-parse HEAD
+        "hash=$hash" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+    - name: Cache Zydis
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/zydis/msvc/bin/ReleaseX64
+          src/zydis/msvc/bin/ReleaseX86
+        key: zydis-${{ runner.os }}-${{ steps.zydishash.outputs.hash }}
+
     - name: Download ASI Loader x64
       uses: robinraju/release-downloader@v1.8
       with:
