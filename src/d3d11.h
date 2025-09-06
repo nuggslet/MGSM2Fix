@@ -21,13 +21,16 @@ public:
 
 private:
 	static void Upscale(ID3D11DeviceContext *pContext);
+#if defined(M2FIX_USE_IMGUI)
 	static void Overlay(ID3D11DeviceContext *pContext);
+#endif
 
+#if defined(M2FIX_USE_IMGUI)
 	static BOOL WINAPI ShowWindow(
 		HWND hWnd,
 		int  nCmdShow
 	);
-
+#endif
 	class Immediate {
 	public:
 		static void WINAPI UpdateSubresource(
