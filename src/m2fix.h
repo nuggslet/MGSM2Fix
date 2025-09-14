@@ -33,8 +33,8 @@ enum class M2FixGame
 struct M2FixInfo
 {
     int id;
+    std::string_view M2classname;
     std::string_view title;
-    std::string_view identifier;
     M2Game & game;
 };
 
@@ -240,19 +240,23 @@ public:
         );
         spdlog::info("----------");
 
+        std::string_view classname = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("43 4C 41 53 53 4E 41 4D 45 20 3D 20", 0xC)); // CLASSNAME
         for (auto & [type, info] : M2Fix::GetInstance().m_kGames)
         {
-            if (info.identifier == hook.ModuleIdentifier() ||
-                info.identifier == hook.ModuleName())
+            if (info.M2classname == classname)
             {
-                if (info.id == -1) {
-                    spdlog::info("Detected game: {} (Epic Games).", info.title);
-                } else {
-                    spdlog::info("Detected game: {} (Steam app {}).", info.title, info.id);
-                }
-                spdlog::info("----------");
                 m_eGame = type;
                 m_kGame = &info;
+                m_kGame->title = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("43 41 50 54 49 4F 4E 20 3D 20", 0xA)); // CAPTION
+                if (const std::string_view backup_base_path = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("42 41 43 4B 55 50 5F 42 41 53 45 5F 50 41 54 48 20 3D 20", 0x13)); backup_base_path.find("?Epic_AccountID?") != std::string::npos)
+                {
+                    m_kGame->id = -1;
+                    spdlog::info("Detected game: {} (Epic Games).", info.title);
+                }
+                else
+                {
+                    spdlog::info("Detected game: {} (Steam App {}).", info.title, info.id);
+                }
                 return true;
             }
         }
@@ -271,18 +275,17 @@ private:
     static constexpr std::string_view m_sConfigFile = FIX_NAME ".ini";
 
     std::multimap<M2FixGame, M2FixInfo> m_kGames = {
-        { M2FixGame::MGS1,               { 2131630, "Metal Gear Solid",                                   "MGS1\\METAL GEAR SOLID.exe",                                      MGS1::GetInstance()   } },
-        { M2FixGame::MGSR,               { 2306740, "Metal Gear / Snake's Revenge (Vol.1 Bonus Content)", "MGS Master Collection Bonus Content\\MGS MC1 Bonus Content.exe",  M2Game::GetInstance() } },
-        { M2FixGame::Contra,             { 1018020, "Contra Anniversary",                                 "Contra Anniversary Collection\\game.exe",                         M2Game::GetInstance() } },
-        { M2FixGame::Dracula,            { 1018010, "Castlevania Anniversary",                            "Castlevania Anniversary Collection\\game.exe",                    M2Game::GetInstance() } },
-        { M2FixGame::Dracula, /* EPIC */ { -1,      "Castlevania Anniversary",                            "CastlevaniaAnniversaryCollection.exe",                            M2Game::GetInstance() } },
-        { M2FixGame::DraculaAdvance,     { 1552550, "Castlevania Advance",                                "Castlevania Advance Collection\\game.exe",                        M2Game::GetInstance() } },
-        { M2FixGame::DraculaDominus,     { 2369900, "Castlevania Dominus",                                "Castlevania Dominus Collection\\game.exe",                        M2Game::GetInstance() } },
-        { M2FixGame::Ray,                { 2478020, "Ray'z Arcade Chronology",                            "Ray\x92z Arcade Chronology\\game.exe",                            M2Game::GetInstance() } },
-        { M2FixGame::Darius,             { 1638330, "Darius Cozmic Arcade",                               "Darius Cozmic Collection Arcade\\game.exe",                       M2Game::GetInstance() } },
-        { M2FixGame::Darius101,          { 1640160, "G-Darius HD",                                        "G-Darius HD\\gdarahd.exe",                                        M2Game::GetInstance() } },
-        { M2FixGame::Gradius,            { 2897590, "Gradius Origins",                                    "GRADIUS origin collection\\Gradius Origin Collection.exe",        M2Game::GetInstance() } },
-        { M2FixGame::NightStrikers,      { 3099790, "Operation Night Strikers",                           "Operation Night Strikers\\OperationNightStrikers.exe",            M2Game::GetInstance() } },
+        { M2FixGame::MGS1,               { 2131630, "MGS1",                           "", MGS1::GetInstance()   } },
+        { M2FixGame::MGSR,               { 2306740, "MGSBC",                          "", M2Game::GetInstance() } },
+        { M2FixGame::Contra,             { 1018020, "CONTRALLECTION",                 "", M2Game::GetInstance() } },
+        { M2FixGame::Dracula,            { 1018010, "CASTLEVANIACOLLECTION",          "", M2Game::GetInstance() } },
+        { M2FixGame::DraculaAdvance,     { 1552550, "CASTLEVANIAADVANCECOLLECTION",   "", M2Game::GetInstance() } },
+        { M2FixGame::DraculaDominus,     { 2369900, "CASTLEVANIADOMINUSCOLLECTION",   "", M2Game::GetInstance() } },
+        { M2FixGame::Ray,                { 2478020, "RAC",                            "", M2Game::GetInstance() } },
+        { M2FixGame::Darius,             { 1638330, "DariusCozmicCollection",         "", M2Game::GetInstance() } },
+        { M2FixGame::Darius101,          { 1640160, "GDarius",                        "", M2Game::GetInstance() } },
+        { M2FixGame::Gradius,            { 2897590, "GRADIUSORIGINCOLLECTION",        "", M2Game::GetInstance() } },
+        { M2FixGame::NightStrikers,      { 3099790, "OPERATIONNIGHTSTRIKERS",         "", M2Game::GetInstance() } },
     };
 
     static inline M2FixInfo *m_kGame;
