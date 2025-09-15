@@ -101,6 +101,8 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Update Notifications"], "CheckForUpdates", bShouldCheckForUpdates);
     inipp::get_value(ini.sections["Update Notifications"], "ConsoleNotifications", bConsoleUpdateNotifications);
 
+    inipp::get_value(ini.sections["Fixes"], "DisableWindowsFullscreenOptimization", bDisableWindowsFullscreenOptimization);
+
 
 
     // Force windowed mode if borderless is enabled but windowed is not.
@@ -159,6 +161,7 @@ void M2Config::Load()
     spdlog::info("[Config] bGameStageSelect: {}", bGameStageSelect);
     spdlog::info("[Config] bShouldCheckForUpdates: {}", bShouldCheckForUpdates);
     spdlog::info("[Config] bConsoleUpdateNotifications: {}", bConsoleUpdateNotifications);
+    spdlog::info("[Config] bDisableWindowsFullscreenOptimization: {}", bDisableWindowsFullscreenOptimization);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
     {

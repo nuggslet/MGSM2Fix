@@ -7,6 +7,7 @@
 #include "psx.h"
 #include "analog.h"
 #include "d3d11.h"
+#include "m2utils.h"
 
 #include "sqhook.h"
 
@@ -32,6 +33,11 @@ public:
     virtual void Load() override
     {
         D3D11::LoadInstance();
+
+        if (M2Config::bDisableWindowsFullscreenOptimization && !M2Utils::IsSteamOS())
+        {
+            DisableWindowsFullscreenOptimization();
+        }
 
         if (M2Config::bAnalogMode) {
             Analog::LoadInstance();
@@ -113,6 +119,8 @@ private:
     uintptr_t MGS1_LoaderPTR = 0;
 
     int MGS1_Blank = 0;
+
+    static void DisableWindowsFullscreenOptimization();
 
     const std::vector<std::string> MGS1_FileFilter_Underpants = {
         "0046a5", "0046a6",
