@@ -63,6 +63,7 @@ public:
     static inline bool bPatchesRestoreMedicine;
     static inline bool bShouldCheckForUpdates;
     static inline bool bConsoleUpdateNotifications;
+    static inline bool bDisableWindowsFullscreenOptimization;
 
     static inline std::string sFullscreenMode;
     static inline std::string sExternalWidth;
