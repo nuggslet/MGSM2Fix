@@ -341,6 +341,58 @@ public:
         return variables[name];
     }
 
+    static std::string_view ReadUntilTabOrCRLF(uintptr_t address)
+    {
+        const char* ptr = reinterpret_cast<const char*>(address);
+        const char* start = ptr;
+
+        while (true)
+        {
+            unsigned char b = *ptr;
+            if (b == 0x09) break;                      // tab
+            if (b == 0x0D && *(ptr + 1) == 0x0A) break; // CRLF
+            ++ptr;
+        }
+
+        return std::string_view(start, ptr - start);
+    }
+
+
+    static void DumpBytes(uintptr_t address, size_t length)
+    {
+        if (address == 0 || length == 0)
+        {
+            spdlog::error("Invalid address or length.");
+            return;
+        }
+
+        unsigned char* base = reinterpret_cast<unsigned char*>(address);
+
+        spdlog::info("Dumping {} bytes from process memory at address 0x{:X}:",
+                     length, address);
+
+        std::string line;
+        for (size_t i = 0; i < length; ++i)
+        {
+            if (i % 16 == 0)
+            {
+                if (!line.empty())
+                {
+                    spdlog::info("{}", line);
+                    line.clear();
+                }
+                line = fmt::format("0x{:08X}  ",
+                                   static_cast<unsigned int>(address + i));
+            }
+            line += fmt::format("{:02X} ", base[i]);
+        }
+        if (!line.empty())
+        {
+            spdlog::info("{}", line);
+        }
+    }
+
+
 private:
     template<size_t N, typename ... Types>
     struct UnpackValue
@@ -462,7 +514,6 @@ private:
         return PatternScanBuffer(module, sizeOfImage, signature);
     }
 
-private:
     HMODULE m_module;
     std::map<void *, safetyhook::InlineHook> m_hooks;
     std::map<void *, safetyhook::MidHook>    m_midHooks;
