@@ -9,10 +9,19 @@
 
 bool M2Utils::IsSteamOS()
 {
+    static bool bCheckedSteamDeck = false;
+    static bool bIsSteamDeck = false;
+    if (bCheckedSteamDeck)
+    {
+        return bIsSteamDeck;
+    }
+    bCheckedSteamDeck = true;
     // Check for Proton/Steam Deck environment variables
-    return std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") ||
-        std::getenv("STEAM_COMPAT_DATA_PATH") ||
-        std::getenv("XDG_SESSION_TYPE"); 
+    if (std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") || std::getenv("STEAM_COMPAT_DATA_PATH") || std::getenv("XDG_SESSION_TYPE"))
+    {
+        bIsSteamDeck = true;
+    }
+    return bIsSteamDeck;
 }
 
 std::string M2Utils::GetSteamOSVersion()
