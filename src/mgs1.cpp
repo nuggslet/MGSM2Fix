@@ -2,6 +2,8 @@
 #include "psx.h"
 #include "sqhook.h"
 
+#include "M2Utils.h"
+
 int MGS1::MGS1_main(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
     PSX::main(cpu);
@@ -172,97 +174,134 @@ bool MGS1::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
 
 void MGS1::DisableWindowsFullscreenOptimization()
 {
-    spdlog::info("[Registry Compat Fix] Checking registry for {} compatibility flags.", M2Hook::GetInstance().ModuleName());
+    if (M2Utils::IsSteamOS())
+    {
+        return;
+    }
+
+    const std::filesystem::path path = M2Hook::GetInstance().ModuleLocation();
+    assert(path.has_extension() && path.extension() == ".exe" && "ModuleLocation() didn't return a .exe!"); //Just an extra sanity check since we're messing with the registry.
+    std::string sExePath = path.string();
+
+    const bool shouldApply = M2Config::bDisableWindowsFullscreenOptimization;
+    const auto markerFile = "MGSHDFix_fullscreen_optimization.bin"; // Marker file to track if we're the one who applied the fix, or if the user did it manually.
+    const bool markerExists = std::filesystem::exists(markerFile); 
+    const bool shouldRemove = !shouldApply && markerExists; // Only remove if we're the ones who initially applied the compatibility setting.
+    if (!shouldApply && !shouldRemove)
+    {
+        spdlog::info("[Registry Compat Fix] Fullscreen optimization registry fix not required for {}", sExePath);
+        return;
+    }
+    spdlog::info("[Registry Compat Fix] {} fullscreen optimization registry fix for {}", shouldApply ? "Applying" : "Reverting", sExePath);
     HKEY hKey;
     const char* subKey = R"(Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers)";
     LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ | KEY_WRITE, &hKey);
-
     if (result != ERROR_SUCCESS)
     {
         spdlog::error("[Registry Compat Fix] Failed to open registry key: {}", subKey);
         return;
     }
 
-    std::string exePath = M2Hook::GetInstance().ModulePath();
+    // Query existing value
+    DWORD type = 0, dataSize = 0;
+    result = RegQueryValueExA(hKey, sExePath.c_str(), nullptr, &type, nullptr, &dataSize);
 
-    DWORD type = 0;
-    DWORD dataSize = 0;
-
-    result = RegQueryValueExA(hKey, exePath.c_str(), nullptr, &type, nullptr, &dataSize);
-    if (result != ERROR_SUCCESS)
+    std::string value;
+    if (result == ERROR_SUCCESS && dataSize > 0)
     {
-        // Key not found, create with default
-        const char* defaultValue = "~ DISABLEDXMAXIMIZEDWINDOWEDMODE";
-        DWORD valueSize = static_cast<DWORD>(strlen(defaultValue) + 1);
-
-        result = RegSetValueExA(hKey, exePath.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(defaultValue), valueSize);
-        if (result == ERROR_SUCCESS)
+        std::vector<char> data(dataSize);
+        if (RegQueryValueExA(hKey, sExePath.c_str(), nullptr, &type, reinterpret_cast<LPBYTE>(data.data()), &dataSize) == ERROR_SUCCESS)
         {
-            spdlog::info("[Registry Compat Fix] Created registry entry for {} with value: {}", exePath, defaultValue);
+            value.assign(data.begin(), data.end());
+            while (!value.empty() && value.back() == '\0')
+                value.pop_back();
         }
-        else
-        {
-            spdlog::error("[Registry Compat Fix] Failed to create registry value for {}", exePath);
-        }
-
-        RegCloseKey(hKey);
-        return;
-    }
-
-    // Value exists
-    std::vector<char> data(dataSize);
-    result = RegQueryValueExA(hKey, exePath.c_str(), nullptr, &type, reinterpret_cast<LPBYTE>(data.data()), &dataSize);
-
-    if (result != ERROR_SUCCESS)
-    {
-        spdlog::error("[Registry Compat Fix] Failed to read registry value for {}", exePath);
-        RegCloseKey(hKey);
-        return;
-    }
-
-    std::string value(data.begin(), data.end());
-    // Trim trailing nulls
-    while (!value.empty() && value.back() == '\0')
-    {
-        value.pop_back();
     }
 
     bool modified = false;
 
-    if (!value.empty() && value[0] != '~')
+    if (shouldApply)
     {
-        value = "~ " + value;
-        modified = true;
-    }
-
-    if (value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE") == std::string::npos)
-    {
-        if (!value.empty() && value.back() != ' ')
+        if (!value.empty() && value[0] != '~')
         {
-            value.push_back(' ');
+            value = "~ " + value;
+            modified = true;
         }
-        value += "DISABLEDXMAXIMIZEDWINDOWEDMODE";
-        modified = true;
+        if (value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE") == std::string::npos)
+        {
+            if (!value.empty() && value.back() != ' ')
+                value.push_back(' ');
+            value += "DISABLEDXMAXIMIZEDWINDOWEDMODE";
+            modified = true;
+        }
+    }
+    else if (shouldRemove)
+    {
+        size_t pos = value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE");
+        if (pos != std::string::npos)
+        {
+            value.erase(pos, strlen("DISABLEDXMAXIMIZEDWINDOWEDMODE"));
+            while (!value.empty() && value.back() == ' ')
+                value.pop_back();
+            if (value == "~")
+                value.clear();
+            modified = true;
+        }
     }
 
     if (modified)
     {
-        DWORD valueSize = static_cast<DWORD>(value.size() + 1);
-        result = RegSetValueExA(hKey, exePath.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(value.c_str()), valueSize);
-
-        if (result == ERROR_SUCCESS)
+        if (value.empty())
         {
-            spdlog::info("[Registry Compat Fix] Updated registry entry for {}: {}", exePath, value);
+            if (RegDeleteValueA(hKey, sExePath.c_str()) == ERROR_SUCCESS)
+                spdlog::info("[Registry Compat Fix] Deleted registry entry for {}", sExePath);
+            else
+                spdlog::error("[Registry Compat Fix] Failed to delete registry entry for {}", sExePath);
         }
         else
         {
-            spdlog::error("[Registry Compat Fix] Failed to update registry value for {}", exePath);
+            DWORD valueSize = static_cast<DWORD>(value.size() + 1);
+            if (RegSetValueExA(hKey, sExePath.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(value.c_str()), valueSize) == ERROR_SUCCESS)
+                spdlog::info("[Registry Compat Fix] Wrote registry entry for {}: {}", sExePath, value);
+            else
+                spdlog::error("[Registry Compat Fix] Failed to write registry entry for {}", sExePath);
         }
     }
     else
     {
-        spdlog::info("[Registry Compat Fix] Registry entry for {} already contains: {}", exePath, value);
+        spdlog::info("[Registry Compat Fix] No registry changes required for {}", sExePath);
     }
 
     RegCloseKey(hKey);
+
+    if (shouldApply)
+    {
+        if (!markerExists)
+        {
+            try
+            {
+                std::ofstream out(markerFile, std::ios::trunc);
+                if (out)
+                {
+                    out << "  ...A surveillance camera?!\n";
+                    out << "MGSM2Fix wrote this file to track fullscreen optimization registry state.\n";
+                    out.close();
+                    spdlog::info("[Registry Compat Fix] Created marker file: {}", markerFile);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                spdlog::error("[Registry Compat Fix] Failed to create marker file: {} - {}", markerFile, e.what());
+            }
+        }
+    }
+    else if (shouldRemove)
+    {
+        std::error_code ec;
+        std::filesystem::remove(markerFile, ec);
+        if (!ec)
+            spdlog::info("[Registry Compat Fix] Removed marker file: {}", markerFile);
+        else
+            spdlog::warn("[Registry Compat Fix] Failed to remove marker file: {}", markerFile);
+    }
 }

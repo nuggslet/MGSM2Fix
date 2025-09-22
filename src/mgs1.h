@@ -7,7 +7,6 @@
 #include "psx.h"
 #include "analog.h"
 #include "d3d11.h"
-#include "m2utils.h"
 
 #include "sqhook.h"
 
@@ -34,10 +33,7 @@ public:
     {
         D3D11::LoadInstance();
 
-        if (M2Config::bDisableWindowsFullscreenOptimization && !M2Utils::IsSteamOS())
-        {
-            DisableWindowsFullscreenOptimization();
-        }
+        DisableWindowsFullscreenOptimization();
 
         if (M2Config::bAnalogMode) {
             Analog::LoadInstance();
