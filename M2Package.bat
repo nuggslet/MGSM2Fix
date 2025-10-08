@@ -63,28 +63,28 @@ if exist dist\ (
 md dist\
 
 echo --------------------------------------------------------
-echo [INFO] Copying resource files…
-xcopy /I /Y /F res\* dist\
-if errorlevel 1 (
-    echo [ERROR] Failed to copy resources from res\ to dist\
-    exit /b 1
-)
-
 if defined GITHUB_WORKSPACE (
     echo [INFO] GITHUB_WORKSPACE detected — copying ASI Loader files…
-    xcopy /I /Y /F asiloader\* dist\
+    xcopy /I /Y /F loader\* dist\
     if errorlevel 1 (
-        echo [ERROR] Failed to copy asiloader\ to dist\
+        echo [ERROR] Failed to copy loader\ to dist\
         exit /b 1
     )
 ) else (
     echo [INFO] GITHUB_WORKSPACE not defined — skipping ASI Loader files.
 )
 
-echo Copying README.md -^> dist\MGSM2Fix_README.md>&2
-copy /Y README.md dist\MGSM2Fix_Readme.md
+echo Copying README.md -^> dist\README.md>&2
+copy /Y README.md dist\README.md
 if errorlevel 1 (
     echo [ERROR] Failed to copy README.md to dist\
+    exit /b 1
+)
+
+echo Copying LICENSES.txt -^> dist\LICENSES.txt>&2
+copy /Y LICENSES.txt dist\LICENSES.txt
+if errorlevel 1 (
+    echo [ERROR] Failed to copy LICENSES.txt to dist\
     exit /b 1
 )
 

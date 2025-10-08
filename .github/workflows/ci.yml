@@ -1,0 +1,165 @@
+name: MGSM2Fix
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  make:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get Zydis submodule hash
+      id: zydishash
+      run: |
+        cd .\src\zydis
+        $hash = git rev-parse HEAD
+        "hash=$hash" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+    - name: Cache Zydis
+      uses: actions/cache@v4
+      with:
+        path: |
+          .\src\zydis\msvc\bin\ReleaseX64
+          .\src\zydis\msvc\bin\ReleaseX86
+        key: zydis-${{ runner.os }}-${{ steps.zydishash.outputs.hash }}
+
+    - name: Install Python dependencies
+      uses: py-actions/py-dependency-install@v4
+
+    - run: mkdir .\dist
+
+    - name: Extract version from resource.h
+      id: version
+      shell: bash
+      run: |
+        VERSION_FILE="resource.h"
+        echo "Reading version from $VERSION_FILE"
+
+        VERSION_MAJOR=$(grep '#define VERSION_MAJOR' "$VERSION_FILE" | awk '{print $3}')
+        VERSION_MINOR=$(grep '#define VERSION_MINOR' "$VERSION_FILE" | awk '{print $3}')
+        VERSION_PATCH=$(grep '#define VERSION_PATCH' "$VERSION_FILE" | awk '{print $3}')
+
+        version="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+        echo "Parsed version: $version"
+
+        echo "version=$version" >> $GITHUB_OUTPUT
+
+    - name: Download ASI Loader (x64)
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "ThirteenAG/Ultimate-ASI-Loader"
+        latest: true
+        fileName: "Ultimate-ASI-Loader_x64.zip"
+    - run: unzip Ultimate-ASI-Loader_x64.zip -d .\loader
+    - run: mv .\loader\dinput8.dll .\dist\d3d11.dll
+
+    - name: Download ASI Loader (x86)
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "ThirteenAG/Ultimate-ASI-Loader"
+        latest: true
+        fileName: "Ultimate-ASI-Loader.zip"
+    - run: unzip Ultimate-ASI-Loader.zip -d .\loader
+    - run: mv .\loader\dinput8.dll .\dist\dinput8.dll
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Build Debug (x64)
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x64
+
+    - name: Build Debug (x86)
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x86
+
+    - name: Build Release (x64)
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x64
+
+    - name: Build Release (x86)
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x86
+
+    - name: Package
+      run: |
+        cp .\x64\Release\MGSM2Fix.asi .\dist\MGSM2Fix64.asi
+        cp .\Release\MGSM2Fix.asi .\dist\MGSM2Fix32.asi
+
+        cp .\README.md .\dist\README.md
+        cp .\MGSM2Fix.ini .\dist\MGSM2Fix.ini
+        cp .\LICENSES.txt .\dist\LICENSES.txt
+        7z a -tzip MGSM2Fix_${{ steps.version.outputs.version }}.zip .\dist\*
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MGSM2Fix-run-${{ steps.version.outputs.version }}
+        path: .\dist\
+
+  preview:
+    needs: make
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: MGSM2Fix-run-${{ needs.make.outputs.version }}
+        path: .\dist\
+
+    - name: Package
+      run: 7z a -tzip MGSM2Fix_${{ needs.make.outputs.version }}_preview.zip .\dist\*
+
+    - name: Create Prelease
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "MGSM2Fix_${{ needs.make.outputs.version }}_preview.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: preview
+        name: Preview
+        prerelease: true
+        generateReleaseNotes: true
+        artifactErrorsFailBuild: true
+        allowUpdates: true
+        updateOnlyUnreleased: true
+
+  release:
+    needs: make
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: MGSM2Fix-run-${{ needs.make.outputs.version }}
+        path: .\dist\
+
+    - name: Package
+      run: 7z a -tzip MGSM2Fix_${{ needs.make.outputs.version }}.zip .\dist\*
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "MGSM2Fix_${{ needs.make.outputs.version }}.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ needs.make.outputs.version }}
+        name: ${{ needs.make.outputs.version }}
+        draft: true
+        generateReleaseNotes: true
+        artifactErrorsFailBuild: true
+        allowUpdates: true
+        updateOnlyUnreleased: true
