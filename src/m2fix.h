@@ -132,7 +132,9 @@ public:
         auto path = M2Hook::GetInstance().ModuleLocation().parent_path();
 
         try {
-            auto logger = spdlog::basic_logger_mt(FixName(), (path / LogFile()).string(), true);
+            spdlog::init_thread_pool(8192, 1);
+            auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>((path / LogFile()).string(), true);
+            auto logger = std::make_shared<spdlog::async_logger>(FixName(), sink, spdlog::thread_pool(), spdlog::async_overflow_policy::block);
             spdlog::set_default_logger(logger);
         }
         catch (const spdlog::spdlog_ex & ex) {

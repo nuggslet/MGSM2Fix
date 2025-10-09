@@ -25,18 +25,13 @@ void Main(HINSTANCE hinstDLL)
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-    switch (fdwReason)
+    if (fdwReason == DLL_PROCESS_ATTACH)
     {
-        case DLL_PROCESS_ATTACH:
-        {
-            Main(hinstDLL);
-            break;
-        }
-
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            break;
+        Main(hinstDLL);
+    }
+    else if (fdwReason == DLL_PROCESS_DETACH)
+    {
+        spdlog::shutdown();
     }
 
     return TRUE;

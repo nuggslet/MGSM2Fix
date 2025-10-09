@@ -55,6 +55,7 @@ using namespace StdExt;
 
 #include "inipp.h"
 #include "spdlog.h"
+#include "async.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/sinks/wincolor_sink.h"
