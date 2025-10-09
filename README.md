@@ -29,7 +29,7 @@ See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other game
 - Debug features (including stage select menu in MGS 1).
 
 ## Installation
-- Grab the latest release of MGSM2Fix from [here](https://github.com/nuggslet/MGSM2Fix/releases).
+- Grab the latest release of MGSM2Fix from [here](https://github.com/nuggslet/MGSM2Fix/releases) - or the preview release if you're feeling adventurous.
 - Extract the contents of the release into the game folder.<br />(e.g. "**steamapps\common\MGS1**" or "**steamapps\common\MGS Master Collection Bonus Content**" for Steam games).
 
 ### Steam Deck/Linux additional instructions
