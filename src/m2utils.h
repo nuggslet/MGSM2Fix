@@ -10,6 +10,8 @@ public:
 
 	static void LogSystemInfo();
 
+	static void CompatibilityWarnings();
+
 	static void memsetHook();
 	static void *memsetWait(void *str, int c, size_t n);
 	static void memsetRelease();

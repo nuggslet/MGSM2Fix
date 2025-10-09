@@ -183,6 +183,7 @@
     <ClCompile Include="src\versionchecker.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="src\warning_background_shuffle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -716,6 +717,7 @@
     <ClInclude Include="src\versionchecker.h">
       <Filter>Modules</Filter>
     </ClInclude>
+    <ClInclude Include="src\warning_background_shuffle.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGSM2Fix.rc" />
