@@ -91,6 +91,7 @@ public:
         M2Fix::CheckModules();
         M2Fix::Logging();
         M2Utils::LogSystemInfo();
+        M2Utils::CompatibilityWarnings();
 
         M2Config::LoadInstance();
         if (M2Config::bConsole) M2Fix::Console();

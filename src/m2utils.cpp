@@ -2,6 +2,8 @@
 
 #include <setupapi.h>
 #include <devguid.h>
+
+#include "warning_background_shuffle.hpp"
 #pragma comment(lib, "setupapi.lib")
 
 
@@ -239,4 +241,9 @@ void M2Utils::memsetHook()
 #else
     M2Hook::GetInstance().Hook("4C 8B D9 0F B6 D2 49 B9 01 01 01 01 01 01 01 01", 0, memsetWait);
 #endif
+}
+
+void M2Utils::CompatibilityWarnings()
+{
+    BackgroundShuffleWarning::Check();
 }
