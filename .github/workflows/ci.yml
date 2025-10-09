@@ -113,6 +113,17 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Update preview tag
+      shell: bash
+      run: |
+        git config user.email "actions@github.com"
+        git config user.name "github-actions[bot]"
+        git tag -f preview "$GITHUB_SHA"
+        git push -f origin refs/tags/preview
+
     - name: Download Artifact
       uses: actions/download-artifact@v5
       with:
@@ -132,6 +143,7 @@ jobs:
         prerelease: true
         generateReleaseNotes: true
         artifactErrorsFailBuild: true
+        removeArtifacts: true
         allowUpdates: true
         updateOnlyUnreleased: true
 
