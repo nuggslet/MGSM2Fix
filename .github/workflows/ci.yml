@@ -76,19 +76,19 @@ jobs:
     - run: mv .\loader\dinput8.dll .\dist\dinput8.dll
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Build Debug (x64)
-      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x64
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x64 -property:PlatformToolset=v143
 
     - name: Build Debug (x86)
-      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x86
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Debug -property:Platform=x86 -property:PlatformToolset=v143
 
     - name: Build Release (x64)
-      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x64
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x64 -property:PlatformToolset=v143
 
     - name: Build Release (x86)
-      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x86
+      run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x86 -property:PlatformToolset=v143
 
     - name: Package
       run: |
