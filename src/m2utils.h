@@ -8,20 +8,24 @@ class M2Utils
 public:
 	M2Utils() {}
 
+	static std::filesystem::path EnsureAppData();
+
 	static void LogSystemInfo();
 
 	static void CompatibilityWarnings();
 
 	static void memsetHook();
-	static void *memsetWait(void *str, int c, size_t n);
+	static void * __cdecl memsetWait(void *str, int c, size_t n);
 	static void memsetRelease();
 
-	static std::mutex memsetHookMutex;
-	static bool memsetHookCalled;
+	static void nullsub();
 
-	static std::mutex mainThreadFinishedMutex;
-	static std::condition_variable mainThreadFinishedVar;
-	static bool mainThreadFinished;
+	static inline std::mutex memsetHookMutex = {};
+	static inline bool memsetHookCalled = false;
+
+	static inline std::mutex mainThreadFinishedMutex = {};
+	static inline std::condition_variable mainThreadFinishedVar = {};
+	static inline bool mainThreadFinished = false;
 
 	static bool IsSteamOS();
 	static std::string GetSteamOSVersion();

@@ -74,8 +74,8 @@ void M2Config::Load()
         inipp::get_value(ini.sections[section], "Enabled", bExternalEnabled);
         inipp::get_value(ini.sections[section], "Width", iExternalWidth);
         inipp::get_value(ini.sections[section], "Height", iExternalHeight);
-        inipp::get_value(ini.sections[section], "Windowed", bWindowedMode);
-        inipp::get_value(ini.sections[section], "Borderless", bBorderlessMode);
+        inipp::get_value(ini.sections[section], "Windowed", bExternalWindowed);
+        inipp::get_value(ini.sections[section], "Borderless", bExternalBorderless);
     }
 
     inipp::get_value(ini.sections["Internal Resolution"], "Enabled", bInternalEnabled);
@@ -97,17 +97,13 @@ void M2Config::Load()
 
     inipp::get_value(ini.sections["Game"], "StageSelect", bGameStageSelect);
 
-
     inipp::get_value(ini.sections["Update Notifications"], "CheckForUpdates", bShouldCheckForUpdates);
     inipp::get_value(ini.sections["Update Notifications"], "ConsoleNotifications", bConsoleUpdateNotifications);
 
     inipp::get_value(ini.sections["Fixes"], "DisableWindowsFullscreenOptimization", bDisableWindowsFullscreenOptimization);
 
-
-
-    // Force windowed mode if borderless is enabled but windowed is not.
-    if (bBorderlessMode) {
-        bWindowedMode = true;
+    if (bExternalBorderless) {
+        bExternalWindowed = true;
     }
 
     if (iExternalWidth <= 0 || iExternalHeight <= 0) {
@@ -122,7 +118,7 @@ void M2Config::Load()
         iInternalHeight = iExternalHeight;
     }
 
-    sFullscreenMode = bWindowedMode ? "0" : "1";
+    sFullscreenMode = bExternalWindowed ? "0" : "1";
     sExternalWidth  = std::to_string(iExternalWidth);
     sExternalHeight = std::to_string(iExternalHeight);
 
@@ -144,8 +140,8 @@ void M2Config::Load()
     spdlog::info("[Config] bExternalEnabled: {}", bExternalEnabled);
     spdlog::info("[Config] iExternalWidth: {}", iExternalWidth);
     spdlog::info("[Config] iExternalHeight: {}", iExternalHeight);
-    spdlog::info("[Config] bWindowedMode: {}", bWindowedMode);
-    spdlog::info("[Config] bBorderlessMode: {}", bBorderlessMode);
+    spdlog::info("[Config] bExternalWindowed: {}", bExternalWindowed);
+    spdlog::info("[Config] bExternalBorderless: {}", bExternalBorderless);
     spdlog::info("[Config] bInternalEnabled: {}", bInternalEnabled);
     spdlog::info("[Config] iInternalHeight: {}", iInternalHeight);
     spdlog::info("[Config] bInternalWidescreen: {}", bInternalWidescreen);

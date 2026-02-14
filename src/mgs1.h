@@ -5,13 +5,15 @@
 #include "m2config.h"
 
 #include "psx.h"
+#ifndef _WIN64
 #include "analog.h"
 #include "d3d11.h"
-
-#include "sqhook.h"
+#endif
 
 #include "sqemutask.h"
 #include "sqtitleprof.h"
+
+#include "sqhook.h"
 
 class MGS1 : public M2Game
 {
@@ -31,13 +33,16 @@ public:
 
     virtual void Load() override
     {
-        D3D11::LoadInstance();
-
         DisableWindowsFullscreenOptimization();
+
+#ifndef _WIN64
+        static D3D11 d3d11;
+        D3D11::LoadInstance(&d3d11);
 
         if (M2Config::bAnalogMode) {
             Analog::LoadInstance();
         }
+#endif
 
         SQHook<Squirk::Standard>::SetReturnHook("set_playside_mgs", SQReturn_set_playside_mgs);
 
@@ -68,7 +73,7 @@ public:
                         path /= std::to_string(disk.id);
                     }
                     std::error_code ec;
-                    bool success = std::filesystem::create_directories(path, ec);
+                    std::filesystem::create_directories(path, ec);
                 }
             }
         }
@@ -85,6 +90,7 @@ public:
         return &MGS1_Ketchup;
     }
 
+#ifndef _WIN64
     virtual void GWRenderGeometry(int & gw_width, int & gw_height, int & fb_width, int & fb_height, int & img_width, int & img_height) override
     {
         gw_width   = 1024;
@@ -96,10 +102,11 @@ public:
     }
 
     virtual bool GWBlank() override;
+#endif
 
     virtual void SQOnMemoryDefine() override;
     virtual void SQOnUpdateGadgets() override;
-    virtual void EPIOnLoadImage(void *image, size_t size) override;
+    virtual void EPIOnLoadImage(void *image, unsigned int size) override;
     virtual bool EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args) override;
 
     static int MGS1_main(M2_EmuR3000 *cpu, int cycle, unsigned int address);
@@ -108,13 +115,17 @@ public:
 
     static SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM<Squirk::Standard> v);
 
+#ifndef _WIN64
     static void AnalogLoop();
+#endif
 
 private:
     uintptr_t MGS1_GlobalsPTR = 0;
     uintptr_t MGS1_LoaderPTR = 0;
 
+#ifndef _WIN64
     int MGS1_Blank = 0;
+#endif
 
     static void DisableWindowsFullscreenOptimization();
 
@@ -128,6 +139,19 @@ private:
 
     const std::vector<unsigned char> MGS1_DataFilter_Medicine = {
         0, 152, 0, 72, 152, 72, 152, 152, 152
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_EU = {
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_US = {
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_JP = {
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_Integral = {
+        {0x80098F14, MGS1_main},
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_ES = {
@@ -160,18 +184,21 @@ private:
         {0x800DB61C, MGS1_s03d_disable_mosaic},
     };
 
-    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_Integral = {
-        {0x80098F14, MGS1_main},
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_JP = {
     };
 
     const PSX_ModuleTables MGS1_ModuleTables { {
+        { "mgs_r3000_vr_eu",  &MGS1_ModuleTable_VR_EU },
+        { "mgs_r3000_vr_us",  &MGS1_ModuleTable_VR_US },
+        { "mgs_r3000_vr_jp",  &MGS1_ModuleTable_VR_JP },
+        { "mgs_r3000_int", &MGS1_ModuleTable_Integral },
         { "mgs_r3000_es",  &MGS1_ModuleTable_ES },
         { "mgs_r3000_de",  &MGS1_ModuleTable_DE },
         { "mgs_r3000_it",  &MGS1_ModuleTable_IT },
         { "mgs_r3000_fr",  &MGS1_ModuleTable_FR },
         { "mgs_r3000_uk",  &MGS1_ModuleTable_UK },
         { "mgs_r3000_us",  &MGS1_ModuleTable_US },
-        { "mgs_r3000_int", &MGS1_ModuleTable_Integral },
+        { "mgs_r3000_jp",  &MGS1_ModuleTable_JP },
         },
         std::bind([](const char *x, const char *y) {
                 return strcmp(x, y) < 0;

@@ -1,10 +1,13 @@
 #include "m2fix.h"
 #include "psx.h"
 
-M2_EmuPSX *PSX::Emulator = nullptr;
+std::map<unsigned, PSXFUNCTION> PSX::KernelHandlers = {
+    {0xA, Kernel_Event},
+};
 
-std::map<unsigned, PSXFUNCTION> PSX::ModuleHandlers = {};
-std::map<unsigned, PSXFUNCTION> PSX::LibraryHandlers = {};
+std::map<unsigned, PSXFUNCTION> PSX::EventHandlers = {
+    {0xF0000001, Event_VBlank},
+};
 
 std::map<unsigned, const char *> PSX::Libraries = {
     {0x0, "kernel"},
@@ -28,15 +31,6 @@ std::vector<std::pair<unsigned int, PSXFUNCTION>> PSX::ModuleTable_Kernel = {
     {0xFFF0, Kernel_Vector},
 };
 
-std::map<M2_EmuPSX_Module *, M2_EmuPSX_Module *> PSX::ModuleMap = {};
-
-unsigned int PSX::ScreenWidth = 0;
-unsigned int PSX::ScreenHeight = 0;
-unsigned int PSX::ScreenScaleX = 0;
-unsigned int PSX::ScreenScaleY = 0;
-unsigned int PSX::ScreenMode = 0;
-unsigned int PSX::VideoMode = 0;
-
 std::map<std::string, PSX::R3000_InstructionRecord> PSX::R3000_InstructionRecords = {
     {"BcondZ",  {0x04000000,  0}},
     {"SCP",     {0x42000010, -1}},
@@ -50,9 +44,6 @@ std::map<std::string, PSX::R3000_InstructionRecord> PSX::R3000_InstructionRecord
     {"NOP",     {0x00000000, -1}},
 };
 
-std::map<PSXFUNCTION, PSXFUNCTION> PSX::R3000_HookTable;
-
-std::function<PSXFUNCTION(uint32_t)> PSX::R3000_Decode;
 
 M2_EmuPSX_Module *PSX::LoadSystemModule(M2_EmuPSX_Module *mod)
 {
@@ -135,33 +126,73 @@ void * __fastcall PSX::LoadModule(M2_EmuPSX_Module *mod, void *list)
     return M2Hook::GetInstance().Invoke<void *>(PSX::LoadModule, mod, list);
 }
 
-void * __fastcall PSX::ListInsert(void *list, void *object)
+int PSX::R3000_Execute(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    // Didn't end up using this but the detour might be useful for something else in future...
-    return M2Hook::GetInstance().Invoke<void *>(PSX::ListInsert, list, object);
+    int ret = R3000_ExecuteFunc(cpu, cycle, address);
+    return ret;
+}
+
+int PSX::R3000_Step(M2_EmuR3000 *cpu, int cycle, unsigned int address)
+{
+    int ret = M2Hook::GetInstance().Invoke<int>(R3000_Step, cpu, cycle, address);
+    return ret;
 }
 
 void PSX::main(M2_EmuR3000 *cpu)
 {
     Emulator = cpu->Bus->Machine;
-    spdlog::info("[PSX] Machine at {}.", fmt::ptr(cpu->Bus->Machine));
-    spdlog::info("[PSX] Archive at {}.", cpu->Bus->Machine->Archive);
-    spdlog::info("[PSX] BIOS at {}.", fmt::ptr(cpu->Bus->Machine->ImageBIOS));
-    spdlog::info("[PSX] Image at {}.", fmt::ptr(cpu->Bus->Machine->ImageDRAM));
-    spdlog::info("[PSX] DRAM at {}.", cpu->Bus->Machine->MemoryDRAM);
-    spdlog::info("[PSX] TCM at {}.", cpu->Bus->Machine->MemoryTCM);
-    spdlog::info("[PSX] Bus at {}.", fmt::ptr(cpu->Bus->Machine->Bus));
-    spdlog::info("[PSX] R3000 at {}.", fmt::ptr(cpu->Bus->Machine->DevR3000));
+
+    M2_EmuBusPSX *bus = cpu->Bus;
+    M2_EmuPSX    *psx = cpu->Bus->Machine;
+
+    spdlog::info("[PSX] Machine at {}.", fmt::ptr(psx));
+    spdlog::info("[PSX] Archive at {}.", psx->Archive);
+    spdlog::info("[PSX] BIOS at {}.", fmt::ptr(psx->ImageBIOS));
+    spdlog::info("[PSX] Image at {}.", fmt::ptr(psx->ImageDRAM));
+    spdlog::info("[PSX] DRAM at {}.", psx->MemoryDRAM);
+    spdlog::info("[PSX] TCM at {}.", psx->MemoryTCM);
+    spdlog::info("[PSX] Bus at {}.", fmt::ptr(psx->Bus));
+    spdlog::info("[PSX] R3000 at {}.", fmt::ptr(psx->DevR3000));
     spdlog::info("[PSX] GTE at {}.", fmt::ptr(cpu->CoprocGTE));
-    spdlog::info("[PSX] CDROM at {}.", cpu->Bus->Machine->DevCDROM);
-    spdlog::info("[PSX] DMAC at {}.", cpu->Bus->Machine->DevDMAC);
-    spdlog::info("[PSX] GPU at {}.", fmt::ptr(cpu->Bus->Machine->DevGPU));
-    spdlog::info("[PSX] VRAM at {}.", fmt::ptr(cpu->Bus->Machine->DevGPU->MemoryVRAM));
-    spdlog::info("[PSX] INTC at {}.", cpu->Bus->Machine->DevINTC);
-    spdlog::info("[PSX] MDEC at {}.", cpu->Bus->Machine->DevMDEC);
-    spdlog::info("[PSX] RTC at {}.", cpu->Bus->Machine->DevRTC);
-    spdlog::info("[PSX] SIO at {}.", cpu->Bus->Machine->DevSIO);
-    spdlog::info("[PSX] SPU at {}.", cpu->Bus->Machine->DevSPU);
+    spdlog::info("[PSX] CDROM at {}.", psx->DevCDROM);
+    spdlog::info("[PSX] DMAC at {}.", fmt::ptr(psx->DevDMAC));
+    spdlog::info("[PSX] GPU at {}.", fmt::ptr(psx->DevGPU));
+    spdlog::info("[PSX] VRAM at {}.", fmt::ptr(psx->DevGPU->MemoryVRAM));
+    spdlog::info("[PSX] INTC at {}.", psx->DevINTC);
+    spdlog::info("[PSX] MDEC at {}.", psx->DevMDEC);
+    spdlog::info("[PSX] RTC at {}.", fmt::ptr(psx->DevRTC));
+    spdlog::info("[PSX] SIO at {}.", psx->DevSIO);
+    spdlog::info("[PSX] SPU at {}.", psx->DevSPU);
+
+    if (cpu->Execute != R3000_Execute)
+    {
+        R3000_ExecuteFunc = cpu->Execute;
+        cpu->Execute = R3000_Execute;
+    }
+}
+
+int PSX::Event_VBlank(M2_EmuR3000 *cpu, int cycle, unsigned int address)
+{
+    return 0;
+}
+
+int PSX::Kernel_Event(M2_EmuR3000 *cpu, int cycle, unsigned int address)
+{
+    PSXFUNCTION Kernel_Event = ModuleHandlers[address];
+
+    unsigned int r4 = cpu->Reg[4];
+
+    if (M2Config::iEmulatorLevel >= 1) {
+        unsigned int ra = cpu->Reg[31];
+        spdlog::info("[PSX] Kernel_Event(0x{:x}): 0x{:x}.", r4, ra);
+    }
+
+    if (EventHandlers.contains(r4)) {
+        auto Handler = EventHandlers[r4];
+        Handler(cpu, cycle, address);
+    }
+
+    return Kernel_Event(cpu, cycle, address);
 }
 
 int PSX::Kernel_Function(M2_EmuR3000 *cpu, int cycle, unsigned int address)
@@ -189,10 +220,10 @@ int PSX::Kernel_Vector(M2_EmuR3000 *cpu, int cycle, unsigned int address)
         spdlog::info("[PSX] Vector({}: 0x{:x}): 0x{:x}.", Libraries[r9 >> 8], r9 & 0xFF, ra);
     }
 
-    if (LibraryHandlers.count(r9)) {
+    if (KernelHandlers.contains(r9)) {
         cpu->Reg[9] &= 0xFF;
-        auto Library_Handler = LibraryHandlers[r9];
-        return Library_Handler(cpu, cycle + 1, address);
+        auto Handler = KernelHandlers[r9];
+        return Handler(cpu, cycle + 1, address);
     }
 
     return Kernel_Vector(cpu, cycle, address);
@@ -221,6 +252,7 @@ void PSX::BindKernelModules(std::vector<std::pair<unsigned int, PSXFUNCTION>> &t
         for (auto & func : table) {
             for (int i = 0; i < kernel->count; i++) {
                 if (kernel->table[i].address != func.first) continue;
+                spdlog::info("[PSX] Hooked kernel module at 0x{:x}.", func.first);
                 ModuleHandlers[kernel->table[i].address] = kernel->table[i].handler;
                 kernel->table[i].handler = func.second;
                 break;
@@ -240,8 +272,8 @@ void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
         auto basetable = tables[basename];
 
         M2_EmuPSX_Module *base = NULL;
-        for (auto const &i : ModuleMap) {
-            M2_EmuPSX_Module *module = i.second;
+        for (auto const & map : ModuleMap) {
+            M2_EmuPSX_Module *module = map.second;
             if (module->type != 4) continue;
             if (strcmp(module->name, basename) == 0) {
                 base = module;
@@ -271,8 +303,8 @@ void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
         spdlog::info("[PSX] Applied hooks to {}.", base->name);
 
         // With the mapping created, hook each module's handler.
-        for (auto const & i : ModuleMap) {
-            M2_EmuPSX_Module *module = i.second;
+        for (auto const & map : ModuleMap) {
+            M2_EmuPSX_Module *module = map.second;
             if (module->type != 4) continue;
             M2_EmuPSX_UserModule *user = module->user;
 
@@ -297,8 +329,8 @@ void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
     // Fall-back for cases where the native functions are essentially duplicated with e.g.
     // only changes to ReadN/WriteN/Step parameters but are otherwise conceptually the same.
     // These require populating the table for each game version.
-    for (auto const & i : ModuleMap) {
-        M2_EmuPSX_Module *module = i.second;
+    for (auto const & map : ModuleMap) {
+        M2_EmuPSX_Module *module = map.second;
         if (module->type != 4) continue;
         M2_EmuPSX_UserModule *user = module->user;
 
@@ -340,7 +372,7 @@ void PSX::UpdateScreenGeometry(unsigned int width, unsigned int height, unsigned
     ScreenMode = mode;
 }
 
-void PSX::CommandR3000(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
+void __cdecl PSX::CommandR3000(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
 {
     struct M2_EmuPSX *psx = cpu->Bus->Machine;
     switch (cmd)
@@ -360,7 +392,7 @@ void PSX::CommandR3000(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
     }
 }
 
-void PSX::CommandPSX(M2_EmuPSX *psx, int cmd, unsigned int **args)
+void __cdecl PSX::CommandPSX(M2_EmuPSX *psx, int cmd, unsigned int **args)
 {
     bool ret = M2Fix::GameInstance().EPIOnMachineCommand(psx, cmd, args);
     if (ret) {
@@ -368,35 +400,20 @@ void PSX::CommandPSX(M2_EmuPSX *psx, int cmd, unsigned int **args)
     }
 }
 
-void PSX::LoadImage(void *image, size_t size)
+void PSX::LoadImage(void *image, unsigned int size)
 {
     spdlog::info("[PSX] Loading image at {} with size {} bytes.", image, size);
     M2Fix::GameInstance().EPIOnLoadImage(image, size);
 }
 
-void PSX::R3000_Hook(const char *table, int index, PSXFUNCTION func)
-{
-    if (R3000_InstructionRecords.count(table) == 0) return;
-    auto & rec = R3000_InstructionRecords[table];
-    if (rec.index < 0) return;
-
-    PSXFUNCTION *funcs = std::get<PSXFUNCTION *>(rec.table);
-
-    R3000_HookTable[func] = funcs[index];
-    M2Hook::GetInstance().Patch(&funcs[index], &func, sizeof(PSXFUNCTION), nullptr);
-
-    spdlog::info("[PSX] R3000 hooked {}[{}] at {}.", table, index, fmt::ptr(&func));
-}
-
-#ifndef _WIN64
-void PSX::GTE_RTP(safetyhook::Context & ctx)
+void PSX::GTE_RotTransPersSX2(safetyhook::Context & ctx)
 {
     int64_t sx2 = 0;
 
     int64_t x = 1;
     int64_t y = 1;
 
-    if (M2Config::bInternalWidescreen)
+    if (M2Config::bInternalWidescreen && !Emulator->Flag.HighP)
     {
         switch (ScreenMode)
         {
@@ -412,18 +429,25 @@ void PSX::GTE_RTP(safetyhook::Context & ctx)
         }
     }
 
+#ifndef _WIN64
     sx2 = ctx.edx;
     sx2 <<= 32;
     sx2 |= ctx.eax;
+#else
+    sx2 = ctx.r9;
+#endif
 
     sx2 = (sx2 * y) / x;
 
+#ifndef _WIN64
     ctx.eax = sx2 & UINT32_MAX;
     ctx.edx = sx2 >> 32;
-}
+#else
+    ctx.r9 = sx2;
 #endif
+}
 
-void PSX::CommandR3000101(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
+void __cdecl PSX::CommandR3000101(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
 {
     struct M2_EmuPSX *psx = cpu->Bus->Machine;
     switch (cmd)
@@ -443,7 +467,7 @@ void PSX::CommandR3000101(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
     }
 }
 
-void PSX::CommandPSX101(M2_EmuPSX *psx, int cmd, unsigned int **args)
+void __cdecl PSX::CommandPSX101(M2_EmuPSX *psx, int cmd, unsigned int **args)
 {
     bool ret = M2Fix::GameInstance().EPIOnMachineCommand(psx, cmd, args);
     if (ret) {
@@ -457,6 +481,7 @@ void PSX::Load()
     {
         case M2FixGame::MGS1:
         {
+#ifndef _WIN64
             M2Hook::GetInstance().Hook(
                 "8B 44 24 ?? 05 ?? ?? ?? ?? 83 F8 ?? 0F 87 ?? ?? "
                 "?? ?? 53",
@@ -475,9 +500,30 @@ void PSX::Load()
             );
 
             M2Hook::GetInstance().Hook(
-                "83 EC 0C 89 4C 24 04 56 8D 74 24 04 57 8B FA 85",
-                0, PSX::ListInsert, "[PSX] m2epi_list_insert"
+                "8B 54 24 04 56 8B 74 24 0C 3B 72 3C 7C 20 81 7A",
+                0, PSX::R3000_Step, "[PSX] r3000_step"
             );
+#else
+            M2Hook::GetInstance().Hook(
+                "48 89 5C 24 18 48 89 74 24 20 57 48 83 EC 40 4D",
+                0, PSX::CommandPSX, "[PSX] machine_psx_cmd"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "48 83 EC 38 FF CA 4D 8B D8 4C 8B D1 83 FA 0A 0F",
+                0, PSX::CommandR3000, "[PSX] cpu_r3000_cmd"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "48 8B DA 48 8B F1 4D 85 C9 74 38 4C 8B 11 90 49",
+                -0x11, PSX::LoadModule, "[PSX] m2epi_load_module"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "40 57 48 83 EC 20 8B FA 3B 51 78 7C 2E 48 8D 05",
+                0, PSX::R3000_Step, "[PSX] r3000_step"
+            );
+#endif
 
             break;
         }
@@ -510,11 +556,6 @@ void PSX::Load()
                 0, PSX::LoadModule, "[PSX] m2epi_load_module"
             );
 
-            M2Hook::GetInstance().Hook(
-                "83 EC 0C 89 4C 24 04 56 8D 74 24 04 57 8B FA 85",
-                0, PSX::ListInsert, "[PSX] m2epi_list_insert"
-            );
-
             break;
         }
 
@@ -525,11 +566,19 @@ void PSX::Load()
     {
         case M2FixGame::MGS1:
         {
+#ifndef _WIN64
             PSX::R3000_Decode = reinterpret_cast<PSXFUNCTION(__fastcall *)(uint32_t)>(
                 M2Hook::GetInstance().Scan(
                     "8B C1 C1 E8 1A 85 C0 75 15 85 C9 75 06 B8",
                     0, "[PSX] r3000_decode"
                 ));
+#else
+            PSX::R3000_Decode = reinterpret_cast<PSXFUNCTION(__fastcall *)(uint32_t)>(
+                M2Hook::GetInstance().Scan(
+                    "8B D1 C1 EA 1A 85 D2 75 21 85 C9 75 08 48",
+                    0, "[PSX] r3000_decode"
+                ));
+#endif
 
             for (auto & rec : PSX::R3000_InstructionRecords) {
                 auto & [label, record] = rec;
@@ -549,12 +598,17 @@ void PSX::Load()
                     ));
             }
 
-    #ifndef _WIN64
+#ifndef _WIN64
             M2Hook::GetInstance().MidHook(
                 "8B D8 8B CA 8B 86 E0 00 00 00 99 03 D8 13 CA 0F",
-                0, PSX::GTE_RTP, "[PSX] GTE RTP"
+                0, PSX::GTE_RotTransPersSX2, "[PSX] GTE_RotTransPersSX2"
             );
-    #endif
+#else
+            M2Hook::GetInstance().MidHook(
+                "4C 03 C0 49 C1 F8 10 41 81 F8 00 FC FF FF 7D 08",
+                -4, PSX::GTE_RotTransPersSX2, "[PSX] GTE_RotTransPersSX2"
+            );
+#endif
 
             break;
         }

@@ -30,47 +30,49 @@ private:
     static M2_EmuPSX_Module *LoadUserModule(M2_EmuPSX_Module *mod);
 
     static void * __fastcall LoadModule(M2_EmuPSX_Module *mod, void *list);
-    static void * __fastcall ListInsert(void *list, void *object);
 
     static int Kernel_Function(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
     static int Kernel_Vector(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
     static int Kernel_Call(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
+    static int Kernel_Event(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
+
+    static int Event_VBlank(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
     static void BindKernelModules(std::vector<std::pair<unsigned int, PSXFUNCTION>> &table = ModuleTable_Kernel);
     static void BindUserModules(PSX_ModuleTables & tables, const char *basename);
 
-    static void CommandR3000(struct M2_EmuR3000 *cpu, int cmd, unsigned int **args);
-    static void CommandPSX(struct M2_EmuPSX *psx, int cmd, unsigned int **args);
-    static void CommandR3000101(struct M2_EmuR3000 *cpu, int cmd, unsigned int **args);
-    static void CommandPSX101(struct M2_EmuPSX *psx, int cmd, unsigned int **args);
-    static void LoadImage(void *image, size_t size);
+    static void __cdecl CommandR3000(struct M2_EmuR3000 *cpu, int cmd, unsigned int **args);
+    static void __cdecl CommandPSX(struct M2_EmuPSX *psx, int cmd, unsigned int **args);
+    static void __cdecl CommandR3000101(struct M2_EmuR3000 *cpu, int cmd, unsigned int **args);
+    static void __cdecl CommandPSX101(struct M2_EmuPSX *psx, int cmd, unsigned int **args);
+    static void __cdecl LoadImage(void *image, unsigned int size);
 
-    static void R3000_Hook(const char *table, int index, PSXFUNCTION func);
+    static int R3000_Execute(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
+    static int R3000_Step(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
-#ifndef _WIN64
-    static void GTE_RTP(safetyhook::Context & ctx);
-#endif
+    static void GTE_RotTransPersSX2(safetyhook::Context & ctx);
 
 public:
-    static std::map<unsigned, PSXFUNCTION> ModuleHandlers;
+    static inline std::map<unsigned, PSXFUNCTION> ModuleHandlers = {};
 
-    static unsigned int VideoMode;
-    static M2_EmuPSX *Emulator;
+    static inline unsigned int VideoMode = 0;
+    static inline M2_EmuPSX *Emulator = nullptr;
 
 private:
 
-    static std::map<unsigned, PSXFUNCTION> LibraryHandlers;
+    static std::map<unsigned, PSXFUNCTION> KernelHandlers;
+    static std::map<unsigned, PSXFUNCTION> EventHandlers;
     static std::map<unsigned, const char *> Libraries;
 
     static std::vector<std::pair<unsigned int, PSXFUNCTION>> ModuleTable_Kernel;
 
-    static std::map<M2_EmuPSX_Module *, M2_EmuPSX_Module *> ModuleMap;
+    static inline std::map<M2_EmuPSX_Module *, M2_EmuPSX_Module *> ModuleMap = {};
 
-    static unsigned int ScreenWidth;
-    static unsigned int ScreenHeight;
-    static unsigned int ScreenScaleX;
-    static unsigned int ScreenScaleY;
-    static unsigned int ScreenMode;
+    static inline unsigned int ScreenWidth  = 0;
+    static inline unsigned int ScreenHeight = 0;
+    static inline unsigned int ScreenScaleX = 0;
+    static inline unsigned int ScreenScaleY = 0;
+    static inline unsigned int ScreenMode   = 0;
 
     typedef struct {
         unsigned int spec;
@@ -78,7 +80,15 @@ private:
         std::variant<PSXFUNCTION, PSXFUNCTION *> table;
     } R3000_InstructionRecord;
 
+    typedef struct
+    {
+        std::string table;
+        int index;
+        PSXFUNCTION function;
+    } R3000_InstructionHook;
+
     static std::map<std::string, R3000_InstructionRecord> R3000_InstructionRecords;
-    static std::map<PSXFUNCTION, PSXFUNCTION> R3000_HookTable;
-    static std::function<PSXFUNCTION(uint32_t)> R3000_Decode;
+    static std::map<PSXFUNCTION, R3000_InstructionHook> R3000_HookTable;
+    static inline std::function<PSXFUNCTION(uint32_t)> R3000_Decode = {};
+    static inline int (*R3000_ExecuteFunc)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address) = nullptr;
 };

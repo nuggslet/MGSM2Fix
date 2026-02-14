@@ -18,7 +18,8 @@ This is a fix that adds custom resolutions, mod support and more to Metal Gear S
 See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other games in the MGS Master Collection.
 
 ## Features
-- Custom internal render resolution & widescreen support (MGS 1).
+- ~~Upscaled render resolution (MGS 1).~~ Fixed by Konami officially via patch 3.0.0 on 12th February 2026.
+- Widescreen support (MGS 1).
 - Borderless/windowed mode.
 - Corrects the monitor going to sleep during long periods with no input (e.g. during cutscenes).
 - Control over Master Collection game patches.

@@ -1,12 +1,12 @@
 # M2Install.yaml: install manifest for M2Fix development.
 # This is nuggs's personal manifest, so it isn't immediately useful to anyone else, but it's here to serve as an example.
 x64:
+  - F:\Steam\steamapps\common\MGS1\MGSM2Fix.asi
   - F:\Steam\steamapps\common\MGS Master Collection Bonus Content\MGSM2Fix.asi
   - I:\Steam\steamapps\common\Castlevania Dominus Collection\MGSM2Fix.asi
   - F:\Steam\steamapps\common\Ray’z Arcade Chronology\MGSM2Fix.asi
   - F:\Steam\steamapps\common\GRADIUS origin collection\MGSM2Fix.asi
 x86:
-  - F:\Steam\steamapps\common\MGS1\MGSM2Fix.asi
   - I:\Steam\steamapps\common\Contra Anniversary Collection\MGSM2Fix.asi
   - I:\Steam\steamapps\common\Castlevania Advance Collection\MGSM2Fix.asi
   - I:\Steam\steamapps\common\Castlevania Anniversary Collection\MGSM2Fix.asi

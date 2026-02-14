@@ -41,7 +41,7 @@ private:
 
 	static bool ApplyBlock(HSQUIRRELVM<Q> v,
 		Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk,
-		int64_t offset, unsigned char *data, size_t size);
+		uint64_t offset, unsigned char *data, size_t size);
 	static bool Apply(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::ifstream &data);
 
 	static bool ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::ifstream &data);

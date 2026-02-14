@@ -1,4 +1,5 @@
 #include "m2utils.h"
+#include "m2fix.h"
 
 #include <setupapi.h>
 #include <devguid.h>
@@ -6,19 +7,24 @@
 #include "warning_background_shuffle.hpp"
 #pragma comment(lib, "setupapi.lib")
 
+std::filesystem::path M2Utils::EnsureAppData()
+{
+    std::filesystem::path path = std::getenv("APPDATA");
+    path = path / "M2Fix" / M2Fix::GameInfo()->classname;
+    std::filesystem::create_directories(path);
+    return path;
+}
 
 bool M2Utils::IsSteamOS()
 {
     static bool bCheckedSteamDeck = false;
     static bool bIsSteamDeck = false;
-    if (bCheckedSteamDeck)
-    {
+    if (bCheckedSteamDeck) {
         return bIsSteamDeck;
     }
     bCheckedSteamDeck = true;
     // Check for Proton/Steam Deck environment variables
-    if (std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") || std::getenv("STEAM_COMPAT_DATA_PATH") || std::getenv("XDG_SESSION_TYPE"))
-    {
+    if (std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") || std::getenv("STEAM_COMPAT_DATA_PATH") || std::getenv("XDG_SESSION_TYPE")) {
         bIsSteamDeck = true;
     }
     return bIsSteamDeck;
@@ -62,10 +68,8 @@ void M2Utils::LogSystemInfo()
         cpu += std::string(buffer);
     }
 
-    cpu.erase(std::remove(cpu.begin(), cpu.end(), '\n'), cpu.end());
+    cpu.erase(cpu.find_last_not_of(" \t\n\r\f\v") + 1);
     if (!cpu.empty()) spdlog::info("[System] CPU: {}", cpu);
-
-    std::string gpu;
 
     SP_DEVINFO_DATA devInfo = {};
     devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
@@ -84,7 +88,7 @@ void M2Utils::LogSystemInfo()
             sizeof(deviceName), nullptr
         );
         if (!deviceResult) continue;
-        gpu = std::string(deviceName);
+        std::string gpu = std::string(deviceName);
 
         HKEY key = SetupDiOpenDevRegKey(
             hDevInfo, &devInfo,
@@ -93,8 +97,8 @@ void M2Utils::LogSystemInfo()
             DIREG_DRV,
             KEY_READ
         );
-        if (!key || key == INVALID_HANDLE_VALUE){
-            gpu.erase(std::remove(gpu.begin(), gpu.end(), '\n'), gpu.end());
+        if (!key || key == INVALID_HANDLE_VALUE) {
+            gpu.erase(gpu.find_last_not_of(" \t\n\r\f\v") + 1);
             if (!gpu.empty()) spdlog::info("[System] GPU: {}", gpu);
             continue;
         }
@@ -109,16 +113,15 @@ void M2Utils::LogSystemInfo()
         );
 
         RegCloseKey(key);
-        if (versionResult != ERROR_SUCCESS)
-        {
-            gpu.erase(std::remove(gpu.begin(), gpu.end(), '\n'), gpu.end());
+        if (versionResult != ERROR_SUCCESS) {
+            gpu.erase(gpu.find_last_not_of(" \t\n\r\f\v") + 1);
             if (!gpu.empty()) spdlog::info("[System] GPU: {}", gpu);
             continue;
         }
 
         std::string drv = driverVersion;
         if (!drv.empty()) gpu += " (driver " + drv + ")";
-        gpu.erase(std::remove(gpu.begin(), gpu.end(), '\n'), gpu.end());
+        gpu.erase(gpu.find_last_not_of(" \t\n\r\f\v") + 1);
         if (!gpu.empty()) spdlog::info("[System] GPU: {}", gpu);
     }
     SetupDiDestroyDeviceInfoList(hDevInfo);
@@ -210,14 +213,8 @@ void M2Utils::LogSystemInfo()
     spdlog::info("----------");
 }
 
-bool M2Utils::memsetHookCalled = false;
-bool M2Utils::mainThreadFinished = false;
-std::mutex M2Utils::memsetHookMutex = {};
-std::mutex M2Utils::mainThreadFinishedMutex = {};
-std::condition_variable M2Utils::mainThreadFinishedVar = {};
-
 // Thanks emoose!
-void *M2Utils::memsetWait(void *str, int c, size_t n)
+void * __cdecl M2Utils::memsetWait(void *str, int c, size_t n)
 {
     std::lock_guard lock(memsetHookMutex);
     if (!memsetHookCalled)
@@ -255,4 +252,8 @@ void M2Utils::memsetHook()
 void M2Utils::CompatibilityWarnings()
 {
     BackgroundShuffleWarning::Check();
+}
+
+void M2Utils::nullsub()
+{
 }

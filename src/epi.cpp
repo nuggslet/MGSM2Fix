@@ -1,7 +1,7 @@
 #include "m2fix.h"
 #include "epi.h"
 
-void EPI::Print(const char *fmt, ...)
+void __cdecl EPI::Print(const char *fmt, ...)
 {
     static std::string buffer;
 
@@ -30,7 +30,9 @@ void EPI::Load()
     std::string module;
     switch (M2Fix::Game())
     {
+#ifndef _WIN64
         case M2FixGame::MGS1:
+#endif
         case M2FixGame::Contra:
         case M2FixGame::Dracula:
         case M2FixGame::DraculaAdvance:
@@ -49,6 +51,9 @@ void EPI::Load()
         case M2FixGame::DraculaDominus:
             module = "emu_integration";
             [[fallthrough]];
+#ifdef _WIN64
+        case M2FixGame::MGS1:
+#endif
         case M2FixGame::MGSR:
         case M2FixGame::Ray:
         case M2FixGame::Gradius:

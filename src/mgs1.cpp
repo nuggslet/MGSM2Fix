@@ -75,10 +75,12 @@ void MGS1::SQOnUpdateGadgets()
         }
     }
 
+#ifndef _WIN64
     if (M2Config::bAnalogMode) AnalogLoop();
+#endif
 }
 
-void MGS1::EPIOnLoadImage(void *image, size_t size)
+void MGS1::EPIOnLoadImage(void *image, unsigned int size)
 {
     MGS1_LoaderPTR = M2Hook::GetInstance().ScanBuffer(
         "00 00 00 00 69 6E 69 74 00 00 00 00",
@@ -87,6 +89,7 @@ void MGS1::EPIOnLoadImage(void *image, size_t size)
     );
 }
 
+#ifndef _WIN64
 bool MGS1::GWBlank()
 {
     if (!PSX::Emulator) return false;
@@ -105,6 +108,7 @@ bool MGS1::GWBlank()
         return false;
     }
 }
+#endif
 
 bool MGS1::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
 {
@@ -114,6 +118,7 @@ bool MGS1::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
 
     switch (cmd)
     {
+#ifndef _WIN64
         case 0x8002: // GET_POSITION
         {
             if (!M2Config::bInternalEnabled) {
@@ -165,6 +170,7 @@ bool MGS1::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
             PSX::VideoMode = reinterpret_cast<unsigned int>(args[0]);
             break;
         }
+#endif
 
         default: break;
     }
@@ -174,8 +180,7 @@ bool MGS1::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
 
 void MGS1::DisableWindowsFullscreenOptimization()
 {
-    if (M2Utils::IsSteamOS())
-    {
+    if (M2Utils::IsSteamOS()) {
         return;
     }
 
@@ -184,21 +189,18 @@ void MGS1::DisableWindowsFullscreenOptimization()
     std::string sExePath = path.string();
 
     const bool shouldApply = M2Config::bDisableWindowsFullscreenOptimization;
-    const auto markerFile = "MGSHDFix_fullscreen_optimization.bin"; // Marker file to track if we're the one who applied the fix, or if the user did it manually.
+    const auto markerFile = M2Utils::EnsureAppData() / "fullscreen_optimization.bin"; // Marker file to track if we're the one who applied the fix, or if the user did it manually.
     const bool markerExists = std::filesystem::exists(markerFile); 
     const bool shouldRemove = !shouldApply && markerExists; // Only remove if we're the ones who initially applied the compatibility setting.
-    if (!shouldApply && !shouldRemove)
-    {
-        spdlog::info("[Registry Compat Fix] Fullscreen optimization registry fix not required for {}", sExePath);
+    if (!shouldApply && !shouldRemove) {
         return;
     }
-    spdlog::info("[Registry Compat Fix] {} fullscreen optimization registry fix for {}", shouldApply ? "Applying" : "Reverting", sExePath);
+    spdlog::info("[Registry] {} fullscreen optimization registry fix for {}", shouldApply ? "Applying" : "Reverting", path.filename().string());
     HKEY hKey;
     const char* subKey = R"(Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers)";
     LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ | KEY_WRITE, &hKey);
-    if (result != ERROR_SUCCESS)
-    {
-        spdlog::error("[Registry Compat Fix] Failed to open registry key: {}", subKey);
+    if (result != ERROR_SUCCESS) {
+        spdlog::error("[Registry] Failed to open registry key: {}", subKey);
         return;
     }
 
@@ -222,13 +224,11 @@ void MGS1::DisableWindowsFullscreenOptimization()
 
     if (shouldApply)
     {
-        if (!value.empty() && value[0] != '~')
-        {
+        if (!value.empty() && value[0] != '~') {
             value = "~ " + value;
             modified = true;
         }
-        if (value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE") == std::string::npos)
-        {
+        if (value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE") == std::string::npos) {
             if (!value.empty() && value.back() != ' ')
                 value.push_back(' ');
             value += "DISABLEDXMAXIMIZEDWINDOWEDMODE";
@@ -254,22 +254,22 @@ void MGS1::DisableWindowsFullscreenOptimization()
         if (value.empty())
         {
             if (RegDeleteValueA(hKey, sExePath.c_str()) == ERROR_SUCCESS)
-                spdlog::info("[Registry Compat Fix] Deleted registry entry for {}", sExePath);
+                spdlog::info("[Registry] Deleted registry entry for {}", path.filename().string());
             else
-                spdlog::error("[Registry Compat Fix] Failed to delete registry entry for {}", sExePath);
+                spdlog::error("[Registry] Failed to delete registry entry for {}", path.filename().string());
         }
         else
         {
             DWORD valueSize = static_cast<DWORD>(value.size() + 1);
             if (RegSetValueExA(hKey, sExePath.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(value.c_str()), valueSize) == ERROR_SUCCESS)
-                spdlog::info("[Registry Compat Fix] Wrote registry entry for {}: {}", sExePath, value);
+                spdlog::info("[Registry] Wrote registry entry for {}: {}", path.filename().string(), value);
             else
-                spdlog::error("[Registry Compat Fix] Failed to write registry entry for {}", sExePath);
+                spdlog::error("[Registry] Failed to write registry entry for {}", path.filename().string());
         }
     }
     else
     {
-        spdlog::info("[Registry Compat Fix] No registry changes required for {}", sExePath);
+        spdlog::info("[Registry] No registry changes required for {}", path.filename().string());
     }
 
     RegCloseKey(hKey);
@@ -286,12 +286,12 @@ void MGS1::DisableWindowsFullscreenOptimization()
                     out << "  ...A surveillance camera?!\n";
                     out << "MGSM2Fix wrote this file to track fullscreen optimization registry state.\n";
                     out.close();
-                    spdlog::info("[Registry Compat Fix] Created marker file: {}", markerFile);
+                    spdlog::info("[Registry] Created marker file: {}", markerFile.string());
                 }
             }
             catch (const std::exception& e)
             {
-                spdlog::error("[Registry Compat Fix] Failed to create marker file: {} - {}", markerFile, e.what());
+                spdlog::error("[Registry] Failed to create marker file: {} - {}", markerFile.string(), e.what());
             }
         }
     }
@@ -300,8 +300,8 @@ void MGS1::DisableWindowsFullscreenOptimization()
         std::error_code ec;
         std::filesystem::remove(markerFile, ec);
         if (!ec)
-            spdlog::info("[Registry Compat Fix] Removed marker file: {}", markerFile);
+            spdlog::info("[Registry] Removed marker file: {}", markerFile.string());
         else
-            spdlog::warn("[Registry Compat Fix] Failed to remove marker file: {}", markerFile);
+            spdlog::warn("[Registry] Failed to remove marker file: {}", markerFile.string());
     }
 }

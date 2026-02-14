@@ -7,6 +7,8 @@
 #include "sqrdbg.h"
 #include "sqdbgserver.h"
 
+#include "sqsystemprof.h"
+
 template <Squirk Q>
 class M2FixData
 {
@@ -58,11 +60,11 @@ public:
     }
 
 #ifdef _WIN64
-    static HSQUIRRELVM<Q> Create(HSQUIRRELVM<Q> v, SQSharedState<Q> *ss);
+    static HSQUIRRELVM<Q> CreateVM(HSQUIRRELVM<Q> v, SQSharedState<Q> *ss);
     static bool CallNative(HSQUIRRELVM<Q> v, SQNativeClosure<Q> *nclosure, SQInteger nargs, SQInteger stackbase, SQObjectPtr<Q> &retval, bool &suspend);
     static void BindFunc(Sqrat::Table<Q> *ctx, const SQChar *name, void *method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar);
 #else
-    static HSQUIRRELVM<Q> __fastcall Create(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQSharedState<Q> *ss);
+    static HSQUIRRELVM<Q> __fastcall CreateVM(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQSharedState<Q> *ss);
     static bool __fastcall CallNative(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQNativeClosure<Q> *nclosure, SQInteger nargs, SQInteger stackbase, SQObjectPtr<Q> &retval, bool &suspend);
     static void __fastcall BindFunc(Sqrat::Table<Q> *ctx, uintptr_t _EDX, const SQChar *name, void *method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar);
 #endif
@@ -115,19 +117,21 @@ private:
     static SQInteger SQNative_setDotmatrix(HSQUIRRELVM<Q> v);
 
 private:
-    static HSQREMOTEDBG<Q> DBG;
-    static std::vector<std::string> FileFilter;
-    static std::vector<std::vector<unsigned char>> DataFilter;
+    static inline HSQREMOTEDBG<Q> DBG = nullptr;
+    static inline std::vector<std::string> FileFilter = {};
+    static inline std::vector<std::vector<unsigned char>> DataFilter = {};
+    static inline unsigned int ThreadCount           = 0;
+    static inline unsigned int InitializeFinishCount = 0;
+    static inline unsigned int ScreenWidth  = 0;
+    static inline unsigned int ScreenHeight = 0;
+    static inline unsigned int ScreenScaleX = 0;
+    static inline unsigned int ScreenScaleY = 0;
+    static inline unsigned int ScreenMode   = 0;
+    static inline bool LaunchIntent    = true;
+    static inline SQInteger StartPadId = 4;
+    static inline bool CdRomShellOpen  = false;
+
+private:
     static std::vector<std::pair<std::string, SQFUNCTION<Q>>> ReturnTable;
     static std::vector<std::pair<const SQChar *, SQFUNCTION<Q>>> NativeTable;
-    static unsigned int ThreadCount;
-    static unsigned int InitializeFinishCount;
-    static unsigned int ScreenWidth;
-    static unsigned int ScreenHeight;
-    static unsigned int ScreenScaleX;
-    static unsigned int ScreenScaleY;
-    static unsigned int ScreenMode;
-    static bool LaunchIntent;
-    static SQInteger StartPadId;
-    static bool CdRomShellOpen;
 };

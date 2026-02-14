@@ -3,27 +3,74 @@
 #include "m2fixbase.h"
 
 #include <d3d11.h>
+#include <d3dcompiler.h>
 
 class D3D11 : public M2FixBase
 {
 public:
-	static auto & GetInstance()
+	static auto & GetInstance(D3D11 *instance = nullptr)
 	{
-		static D3D11 instance;
-		return instance;
+		static D3D11 _instance_;
+		static D3D11 *_instance = nullptr;
+		if (instance) _instance = instance;
+		if (!instance && !_instance) {
+			_instance = &_instance_;
+		}
+		return *_instance;
 	}
 
-	static void LoadInstance() {
-		GetInstance().Load();
+	static void LoadInstance(D3D11 *instance = nullptr) {
+		GetInstance(instance).Load();
 	}
 
 	virtual void Load() override;
 
-private:
+	static inline pD3DCompile D3DCompile = nullptr;
+
+protected:
 	static void Upscale(ID3D11DeviceContext *pContext);
 #if defined(M2FIX_USE_IMGUI)
 	static void Overlay(ID3D11DeviceContext *pContext);
 #endif
+
+	typedef struct
+	{
+		D3D11_PRIMITIVE_TOPOLOGY                PrimitiveTopology;
+		ID3D11InputLayout                       *InputLayout;
+		ID3D11Buffer                            *IndexBuffer;
+		DXGI_FORMAT                             IndexBufferFormat;
+		UINT                                    IndexBufferOffset;
+		std::vector<ID3D11RenderTargetView *>   RenderTargetViews;
+		ID3D11DepthStencilView                  *DepthStencilView;
+		std::vector<ID3D11Buffer *>             VertexBuffers;
+		std::vector<UINT>                       VertexStrides;
+		std::vector<UINT>                       VertexOffsets;
+		std::vector<D3D11_VIEWPORT>             Viewports;
+		std::vector<D3D11_RECT>                 ScissorRects;
+		ID3D11VertexShader                      *VertexShader;
+		std::vector<ID3D11SamplerState *>       VertexSamplers;
+		std::vector<ID3D11ShaderResourceView *> VertexShaderResources;
+		std::vector<ID3D11Buffer *>             VertexConstantBuffers;
+		ID3D11PixelShader                       *PixelShader;
+		std::vector<ID3D11SamplerState *>       PixelSamplers;
+		std::vector<ID3D11ShaderResourceView *> PixelShaderResources;
+		std::vector<ID3D11Buffer *>             PixelConstantBuffers;
+		ID3D11BlendState                        *BlendState;
+		FLOAT                                   BlendFactor[4];
+		UINT                                    BlendSampleMask;
+		ID3D11RasterizerState                   *RasterizerState;
+		ID3D11DepthStencilState                 *DepthStencilState;
+		UINT                                    DepthStencilRef;
+		UINT VertexCount;
+		UINT StartVertexLocation;
+		std::map<ID3D11RenderTargetView *, bool>     ClearRenderTargetViews;
+		std::map<ID3D11RenderTargetView *, FLOAT[4]> ColorRenderTargetViews;
+		std::map<ID3D11Buffer *, std::vector<unsigned char>> VertexConstantArchives;
+		std::map<ID3D11Buffer *, std::vector<unsigned char>> PixelConstantArchives;
+	} State;
+
+	static void Queue(ID3D11DeviceContext *pContext, std::deque<State> & states, UINT VertexCount = 0, UINT StartVertexLocation = 0);
+	static void Serve(ID3D11DeviceContext *pContext, std::deque<State> & states);
 
 #if defined(M2FIX_USE_IMGUI)
 	static BOOL WINAPI ShowWindow(
@@ -31,6 +78,7 @@ private:
 		int  nCmdShow
 	);
 #endif
+
 	class Immediate {
 	public:
 		static void WINAPI UpdateSubresource(
@@ -333,7 +381,72 @@ private:
 		);
 	};
 
-	static void WINAPI UpdateSubresource(
+	class Device {
+	public:
+		static HRESULT WINAPI CreateTexture2D(
+			ID3D11Device           *pDevice,
+			D3D11_TEXTURE2D_DESC   *pDesc,
+			D3D11_SUBRESOURCE_DATA *pInitialData,
+			ID3D11Texture2D        **ppTexture2D
+		);
+
+		static HRESULT WINAPI CreateVertexShader(
+			ID3D11Device       *pDevice,
+			void               *pShaderBytecode,
+			SIZE_T             BytecodeLength,
+			ID3D11ClassLinkage *pClassLinkage,
+			ID3D11VertexShader **ppVertexShader
+		);
+
+		static HRESULT WINAPI CreatePixelShader(
+			ID3D11Device       *pDevice,
+			void               *pShaderBytecode,
+			SIZE_T             BytecodeLength,
+			ID3D11ClassLinkage *pClassLinkage,
+			ID3D11PixelShader  **ppPixelShader
+		);
+
+		static HRESULT WINAPI CreateRenderTargetView(
+			ID3D11Device                  *pDevice,
+			ID3D11Resource                *pResource,
+			D3D11_RENDER_TARGET_VIEW_DESC *pDesc,
+			ID3D11RenderTargetView        **ppRTView
+		);
+
+		static HRESULT WINAPI CreateShaderResourceView(
+			ID3D11Device                    *pDevice,
+			ID3D11Resource                  *pResource,
+			D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc,
+			ID3D11ShaderResourceView        **ppSRView
+		);
+
+		static HRESULT WINAPI CreateSamplerState(
+			ID3D11Device       *pDevice,
+			D3D11_SAMPLER_DESC *pSamplerDesc,
+			ID3D11SamplerState **ppSamplerState
+		);
+
+		static HRESULT WINAPI CreateDeferredContext(
+			ID3D11Device        *pDevice,
+			UINT                ContextFlags,
+			ID3D11DeviceContext **ppDeferredContext
+		);
+
+		static HRESULT WINAPI CreateDevice(
+			IDXGIAdapter        *pAdapter,
+			D3D_DRIVER_TYPE     DriverType,
+			HMODULE             Software,
+			UINT                Flags,
+			D3D_FEATURE_LEVEL   *pFeatureLevels,
+			UINT                FeatureLevels,
+			UINT                SDKVersion,
+			ID3D11Device        **ppDevice,
+			D3D_FEATURE_LEVEL   *pFeatureLevel,
+			ID3D11DeviceContext **ppImmediateContext
+		);
+	};
+
+	virtual void WINAPI UpdateSubresource(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11Resource      *pDstResource,
@@ -352,7 +465,7 @@ private:
 		UINT                SrcDepthPitch
 	);
 
-	static void WINAPI CopySubresourceRegion(
+	virtual void WINAPI CopySubresourceRegion(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11Resource      *pDstResource,
@@ -375,7 +488,7 @@ private:
 		D3D11_BOX           *pSrcBox
 	);
 
-	static void WINAPI VSSetShaderResources(
+	virtual void WINAPI VSSetShaderResources(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext      *pContext,
 			UINT                     StartSlot,
@@ -388,7 +501,7 @@ private:
 		ID3D11ShaderResourceView **ppShaderResourceViews
 	);
 
-	static void WINAPI PSSetShaderResources(
+	virtual void WINAPI PSSetShaderResources(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext      *pContext,
 			UINT                     StartSlot,
@@ -401,7 +514,7 @@ private:
 		ID3D11ShaderResourceView **ppShaderResourceViews
 	);
 
-	static void WINAPI VSSetSamplers(
+	virtual void WINAPI VSSetSamplers(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                StartSlot,
@@ -414,7 +527,7 @@ private:
 		ID3D11SamplerState  **ppSamplers
 	);
 
-	static void WINAPI PSSetSamplers(
+	virtual void WINAPI PSSetSamplers(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                StartSlot,
@@ -427,7 +540,7 @@ private:
 		ID3D11SamplerState  **ppSamplers
 	);
 
-	static void WINAPI RSSetViewports(
+	virtual void WINAPI RSSetViewports(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                NumViewports,
@@ -438,7 +551,7 @@ private:
 		D3D11_VIEWPORT      *pViewports
 	);
 
-	static void WINAPI RSSetScissorRects(
+	virtual void WINAPI RSSetScissorRects(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                NumRects,
@@ -449,7 +562,7 @@ private:
 		D3D11_RECT          *pRects
 	);
 
-	static void WINAPI ClearRenderTargetView(
+	virtual void WINAPI ClearRenderTargetView(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext    *pContext,
 			ID3D11RenderTargetView *pRenderTargetView,
@@ -460,7 +573,7 @@ private:
 		FLOAT                  ColorRGBA[4]
 	);
 
-	static void WINAPI Draw(
+	virtual void WINAPI Draw(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                VertexCount,
@@ -471,7 +584,7 @@ private:
 		UINT                StartVertexLocation
 	);
 
-	static void WINAPI VSSetShader(
+	virtual void WINAPI VSSetShader(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11VertexShader  *pVertexShader,
@@ -484,7 +597,7 @@ private:
 		UINT                NumClassInstances
 	);
 
-	static void WINAPI PSSetShader(
+	virtual void WINAPI PSSetShader(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11PixelShader   *pPixelShader,
@@ -497,7 +610,7 @@ private:
 		UINT                NumClassInstances
 	);
 
-	static void WINAPI IASetPrimitiveTopology(
+	virtual void WINAPI IASetPrimitiveTopology(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext      *pContext,
 			D3D11_PRIMITIVE_TOPOLOGY Topology
@@ -506,7 +619,7 @@ private:
 		D3D11_PRIMITIVE_TOPOLOGY Topology
 	);
 
-	static void WINAPI IASetInputLayout(
+	virtual void WINAPI IASetInputLayout(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11InputLayout   *pInputLayout
@@ -515,7 +628,7 @@ private:
 		ID3D11InputLayout   *pInputLayout
 	);
 
-	static void WINAPI IASetIndexBuffer(
+	virtual void WINAPI IASetIndexBuffer(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11Buffer        *pIndexBuffer,
@@ -528,7 +641,7 @@ private:
 		UINT                Offset
 	);
 
-	static void WINAPI IASetVertexBuffers(
+	virtual void WINAPI IASetVertexBuffers(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                StartSlot,
@@ -545,7 +658,7 @@ private:
 		UINT                *pOffsets
 	);
 
-	static void WINAPI OMSetRenderTargets(
+	virtual void WINAPI OMSetRenderTargets(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext    *pContext,
 			UINT                   NumViews,
@@ -558,7 +671,7 @@ private:
 		ID3D11DepthStencilView *pDepthStencilView
 	);
 
-	static void WINAPI ClearDepthStencilView(
+	virtual void WINAPI ClearDepthStencilView(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext    *pContext,
 			ID3D11DepthStencilView *pDepthStencilView,
@@ -573,7 +686,7 @@ private:
 		UINT8                  Stencil
 	);
 
-	static void WINAPI ExecuteCommandList(
+	virtual void WINAPI ExecuteCommandList(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			ID3D11CommandList   *pCommandList,
@@ -584,7 +697,7 @@ private:
 		BOOL                RestoreContextState
 	);
 
-	static HRESULT WINAPI FinishCommandList(
+	virtual HRESULT WINAPI FinishCommandList(
 		HRESULT (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			BOOL                RestoreDeferredContextState,
@@ -595,7 +708,7 @@ private:
 		ID3D11CommandList   **ppCommandList
 	);
 
-	static void WINAPI DrawIndexed(
+	virtual void WINAPI DrawIndexed(
 		void (WINAPI *pFunction)(
 			ID3D11DeviceContext *pContext,
 			UINT                IndexCount,
@@ -608,14 +721,27 @@ private:
 		INT                 BaseVertexLocation
 	);
 
-	static HRESULT WINAPI CreateTexture2D(
+	virtual HRESULT WINAPI CreateTexture2D(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device           *pDevice,
+			D3D11_TEXTURE2D_DESC   *pDesc,
+			D3D11_SUBRESOURCE_DATA *pInitialData,
+			ID3D11Texture2D        **ppTexture2D
+		),
 		ID3D11Device           *pDevice,
 		D3D11_TEXTURE2D_DESC   *pDesc,
 		D3D11_SUBRESOURCE_DATA *pInitialData,
 		ID3D11Texture2D        **ppTexture2D
 	);
 
-	static HRESULT WINAPI CreateVertexShader(
+	virtual HRESULT WINAPI CreateVertexShader(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device       *pDevice,
+			void               *pShaderBytecode,
+			SIZE_T             BytecodeLength,
+			ID3D11ClassLinkage *pClassLinkage,
+			ID3D11VertexShader **ppVertexShader
+		),
 		ID3D11Device       *pDevice,
 		void               *pShaderBytecode,
 		SIZE_T             BytecodeLength,
@@ -623,7 +749,14 @@ private:
 		ID3D11VertexShader **ppVertexShader
 	);
 
-	static HRESULT WINAPI CreatePixelShader(
+	virtual HRESULT WINAPI CreatePixelShader(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device       *pDevice,
+			void               *pShaderBytecode,
+			SIZE_T             BytecodeLength,
+			ID3D11ClassLinkage *pClassLinkage,
+			ID3D11PixelShader  **ppPixelShader
+		),
 		ID3D11Device       *pDevice,
 		void               *pShaderBytecode,
 		SIZE_T             BytecodeLength,
@@ -631,33 +764,67 @@ private:
 		ID3D11PixelShader  **ppPixelShader
 	);
 
-	static HRESULT WINAPI CreateRenderTargetView(
+	virtual HRESULT WINAPI CreateRenderTargetView(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device                  *pDevice,
+			ID3D11Resource                *pResource,
+			D3D11_RENDER_TARGET_VIEW_DESC *pDesc,
+			ID3D11RenderTargetView        **ppRTView
+		),
 		ID3D11Device                  *pDevice,
 		ID3D11Resource                *pResource,
 		D3D11_RENDER_TARGET_VIEW_DESC *pDesc,
 		ID3D11RenderTargetView        **ppRTView
 	);
 
-	static HRESULT WINAPI CreateShaderResourceView(
+	virtual HRESULT WINAPI CreateShaderResourceView(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device                    *pDevice,
+			ID3D11Resource                  *pResource,
+			D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc,
+			ID3D11ShaderResourceView        **ppSRView
+		),
 		ID3D11Device                    *pDevice,
 		ID3D11Resource                  *pResource,
 		D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc,
 		ID3D11ShaderResourceView        **ppSRView
 	);
 
-	static HRESULT WINAPI CreateSamplerState(
+	virtual HRESULT WINAPI CreateSamplerState(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device       *pDevice,
+			D3D11_SAMPLER_DESC *pSamplerDesc,
+			ID3D11SamplerState **ppSamplerState
+		),
 		ID3D11Device       *pDevice,
 		D3D11_SAMPLER_DESC *pSamplerDesc,
 		ID3D11SamplerState **ppSamplerState
 	);
 
-	static HRESULT WINAPI CreateDeferredContext(
+	virtual HRESULT WINAPI CreateDeferredContext(
+		HRESULT (WINAPI *pFunction)(
+			ID3D11Device        *pDevice,
+			UINT                ContextFlags,
+			ID3D11DeviceContext **ppDeferredContext
+		),
 		ID3D11Device        *pDevice,
 		UINT                ContextFlags,
 		ID3D11DeviceContext **ppDeferredContext
 	);
 
-	static HRESULT WINAPI CreateDevice(
+	virtual HRESULT WINAPI CreateDevice(
+		HRESULT (WINAPI *pFunction)(
+			IDXGIAdapter        *pAdapter,
+			D3D_DRIVER_TYPE     DriverType,
+			HMODULE             Software,
+			UINT                Flags,
+			D3D_FEATURE_LEVEL   *pFeatureLevels,
+			UINT                FeatureLevels,
+			UINT                SDKVersion,
+			ID3D11Device        **ppDevice,
+			D3D_FEATURE_LEVEL   *pFeatureLevel,
+			ID3D11DeviceContext **ppImmediateContext
+		),
 		IDXGIAdapter        *pAdapter,
 		D3D_DRIVER_TYPE     DriverType,
 		HMODULE             Software,
@@ -670,22 +837,28 @@ private:
 		ID3D11DeviceContext **ppImmediateContext
 	);
 
-private:
-	static ID3D11Device        *Device;
-	static ID3D11DeviceContext *DeferredContext;
+public:
+	static inline ID3D11Device        *Device           = nullptr;
+	static inline ID3D11DeviceContext *ImmediateContext = nullptr;
+	static inline ID3D11DeviceContext *DeferredContext  = nullptr;
 
-	static ID3D11VertexShader *upscalerVertexShader;
-	static ID3D11PixelShader  *upscalerPixelShader;
-	static ID3DBlob           *upscalerVertexBlob;
-	static ID3DBlob           *upscalerPixelBlob;
+	static inline ID3D11VertexShader *upscalerVertexShader = nullptr;
+	static inline ID3D11PixelShader  *upscalerPixelShader  = nullptr;
+	static inline ID3DBlob           *upscalerVertexBlob   = nullptr;
+	static inline ID3DBlob           *upscalerPixelBlob    = nullptr;
+	static inline ID3D11SamplerState *upscalerSampler      = nullptr;
 
-	static std::vector<ID3D11Texture2D *> texVram;
-	static std::vector<ID3D11Texture2D *> texVramRemastered;
-	static std::map<ID3D11Texture2D *,          ID3D11ShaderResourceView *> srvVram;
-	static std::map<ID3D11ShaderResourceView *, ID3D11ShaderResourceView *> srvVramRemastered;
-	static std::map<ID3D11ShaderResourceView *, ID3D11RenderTargetView *>   rtvVramRemastered;
-	static D3D11_TEXTURE2D_DESC descVramRemastered;
+	static inline std::vector<ID3D11Texture2D *> texVram = {};
+	static inline std::vector<ID3D11Texture2D *> texVramRemastered = {};
+	static inline std::map<ID3D11Texture2D *,          ID3D11ShaderResourceView *> srvVram = {};
+	static inline std::map<ID3D11ShaderResourceView *, ID3D11ShaderResourceView *> srvVramRemastered = {};
+	static inline std::map<ID3D11ShaderResourceView *, ID3D11RenderTargetView *>   rtvVramRemastered = {};
+	static inline D3D11_TEXTURE2D_DESC descVramRemastered = {};
 
-	static bool upscalerDisabled;
-	static bool overlayDisabled;
+	static inline bool upscalerDisabled = true;
+	static inline bool overlayDisabled  = true;
+
+	static inline std::map<ID3D11Buffer *, std::vector<unsigned char>> Buffers = {};
+
+	static inline std::deque<State> upscalerDraws = {};
 };

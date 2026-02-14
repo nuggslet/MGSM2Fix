@@ -45,6 +45,30 @@ public:
 		}
 	};
 
+	class SettingScreen : public SQInvoker<Q>
+	{
+	public:
+		enum class SizeAuto {
+			NORMAL,
+			ORIGINAL_ONLY_ONE,
+			FIT,
+			FULL,
+			ORIGINAL,
+			MANUAL,
+			CUSTOM,
+			FIT_WIDE,
+		};
+
+		SettingScreen() : SQInvoker<Q>(_SC("g_systemdata")) {
+			auto obj = this->Invoke<Sqrat::Object<Q>>("get_value", static_cast<int>(Index::SETTING_SCREEN));
+			this->m_instance = obj.GetObject();
+		}
+
+		static SizeAuto GetSizeAuto() {
+			return static_cast<SizeAuto>(SettingScreen().Invoke<int>("get_size_auto"));
+		}
+	};
+
 	class SettingETC : public SQInvoker<Q>
 	{
 	public:

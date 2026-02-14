@@ -8,6 +8,7 @@
 #include "sqinput.h"
 #include "sqinputhub.h"
 
+#ifndef _WIN64
 unsigned char *Analog_PadPTR;
 unsigned int __fastcall Analog_ReadPad(unsigned int addr, unsigned int id, unsigned char *state)
 {
@@ -99,3 +100,4 @@ void Analog::Load()
         default: break;
     }
 }
+#endif

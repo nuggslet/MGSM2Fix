@@ -26,10 +26,12 @@ public:
 
 	virtual void SQOnMemoryDefine() {}
 	virtual void SQOnUpdateGadgets() {}
+	virtual void SQOnInitSystemFirst() {}
+	virtual void SQOnInitSystemLast() {}
 
 	virtual std::pair<std::any, const char *> EPIModuleHook() { return {}; }
 
-	virtual void EPIOnLoadImage(void *image, size_t size) {}
+	virtual void EPIOnLoadImage(void *image, unsigned int size) {}
 	virtual bool EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args) { return true; }
 	virtual bool EPIOnCommandCPU(std::any cpu, int cmd, unsigned int **args) { return true; }
 

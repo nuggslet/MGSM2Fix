@@ -124,7 +124,7 @@ public:
         unsigned index = static_cast<unsigned>(instruction.raw.disp.value) / sizeof(uintptr_t);
         auto && hook = safetyhook::create_vm(m_vmtHooks[object], index, function);
 
-        if (label) spdlog::info("{} hook succeeded.", label);
+        if (label) spdlog::info("{} (# {}) hook succeeded.", label, index);
 
         m_vmHooks[function] = std::move(hook);
         return true;
@@ -155,7 +155,16 @@ public:
         else if constexpr (CallingConvention_v<Function> == CallingConvention::Stdcall) {
             return hook.stdcall<Return>(std::forward<Args>(args) ...);
         }
+        else if constexpr (CallingConvention_v<Function> == CallingConvention::Cdecl) {
+            return hook.ccall<Return>(std::forward<Args>(args) ...);
+        }
         return hook.call<Return>(std::forward<Args>(args) ...);
+    }
+
+    template<typename Function>
+    void VirtualClear(Function && function)
+    {
+        m_vmHooks.erase(function);
     }
 
     template<typename Return, typename Function, typename ... Args>
@@ -167,6 +176,9 @@ public:
         }
         else if constexpr (CallingConvention_v<Function> == CallingConvention::Stdcall) {
             return hook.stdcall<Return>(std::forward<Args>(args) ...);
+        }
+        else if constexpr (CallingConvention_v<Function> == CallingConvention::Cdecl) {
+            return hook.ccall<Return>(std::forward<Args>(args) ...);
         }
         return hook.call<Return>(std::forward<Args>(args) ...);
     }

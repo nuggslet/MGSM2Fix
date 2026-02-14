@@ -6,6 +6,7 @@ void Borderless::Load()
 {
     switch (M2Fix::Game())
     {
+#ifndef _WIN64
         case M2FixGame::MGS1:
         {
             M2Hook::GetInstance().Patch(
@@ -16,6 +17,7 @@ void Borderless::Load()
 
             break;
         }
+#endif
 
         case M2FixGame::Contra:
         case M2FixGame::Dracula:
@@ -57,6 +59,21 @@ void Borderless::Load()
             break;
         }
 
+#ifdef _WIN64
+        case M2FixGame::MGS1:
+        {
+            M2Hook::GetInstance().Patch(
+                "B8 00 00 CE 02 4C 89 AC 24 50 01 00 00 4C 89 BC "
+                "24 48 01 00 00 41 BF 00 00 CA 02", 0,
+                "B8 00 00 00 90 4C 89 AC 24 50 01 00 00 4C 89 BC "
+                "24 48 01 00 00 41 BF 00 00 00 90",
+                "[Borderless-64A] MWin::CreateWindow"
+            );
+
+            break;
+        }
+#endif
+
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
@@ -67,7 +84,7 @@ void Borderless::Load()
                 "?? ?? 74 0B BE 00 00 CF 02 41 BE 00 00 CF 00", 0,
                 "BE 00 00 00 90 41 BE 00 00 00 00 90 90 90 90 90 "
                 "90 90 90 90 90 90 90 90 90 90 90 90 90 90 90",
-                "[Borderless-64A] MWin::CreateWindow"
+                "[Borderless-64B] MWin::CreateWindow"
             );
 
             break;

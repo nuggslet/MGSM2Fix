@@ -1,5 +1,6 @@
 #pragma once
 #include "resource.h"
+#include "m2utils.h"
 
 #include <string>
 #include <chrono>
@@ -8,7 +9,7 @@
 class LatestVersionChecker
 {
 public:
-    explicit LatestVersionChecker(const std::filesystem::path& cacheFile = FIX_NAME "_version_cache.txt");
+    explicit LatestVersionChecker(const std::filesystem::path& cacheFile = M2Utils::EnsureAppData() / "version_cache.txt");
 
     bool checkForUpdates();
 

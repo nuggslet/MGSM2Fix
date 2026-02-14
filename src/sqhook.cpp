@@ -13,29 +13,6 @@
 #include "ketchup.h"
 
 template <Squirk Q>
-unsigned int SQHook<Q>::InitializeFinishCount = 0;
-template <Squirk Q>
-std::vector<std::string> SQHook<Q>::FileFilter = {};
-template <Squirk Q>
-std::vector<std::vector<unsigned char>> SQHook<Q>::DataFilter = {};
-template <Squirk Q>
-bool SQHook<Q>::CdRomShellOpen = false;
-template <Squirk Q>
-unsigned int SQHook<Q>::ScreenWidth = 0;
-template <Squirk Q>
-unsigned int SQHook<Q>::ScreenHeight = 0;
-template <Squirk Q>
-unsigned int SQHook<Q>::ScreenScaleX = 0;
-template <Squirk Q>
-unsigned int SQHook<Q>::ScreenScaleY = 0;
-template <Squirk Q>
-unsigned int SQHook<Q>::ScreenMode = 0;
-template <Squirk Q>
-bool SQHook<Q>::LaunchIntent = true;
-template <Squirk Q>
-SQInteger SQHook<Q>::StartPadId = 4;
-
-template <Squirk Q>
 std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::ReturnTable = {
     {"init_system_1st",                         SQReturn_init_system_1st},
     {"init_system_last",                        SQReturn_init_system_last},
@@ -60,9 +37,6 @@ std::vector<std::pair<const SQChar *, SQFUNCTION<Q>>> SQHook<Q>::NativeTable = {
     {"setLogFilename",    SQNative_setLogFilename},
     {"setDotmatrix",      SQNative_setDotmatrix},
 };
-
-template <Squirk Q>
-HSQREMOTEDBG<Q> SQHook<Q>::DBG;
 
 template <Squirk Q>
 void SQHook<Q>::SetHook(HSQUIRRELVM<Q> v)
@@ -90,15 +64,15 @@ void SQHook<Q>::SetHook(HSQUIRRELVM<Q> v)
 
 template <Squirk Q>
 #ifdef _WIN64
-HSQUIRRELVM<Q> SQHook<Q>::Create(HSQUIRRELVM<Q> v, SQSharedState<Q> *ss)
+HSQUIRRELVM<Q> SQHook<Q>::CreateVM(HSQUIRRELVM<Q> v, SQSharedState<Q> *ss)
 #else
-HSQUIRRELVM<Q> __fastcall SQHook<Q>::Create(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQSharedState<Q> *ss)
+HSQUIRRELVM<Q> __fastcall SQHook<Q>::CreateVM(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQSharedState<Q> *ss)
 #endif
 {
 #ifdef _WIN64
-    v = M2Hook::GetInstance().Invoke<decltype(v)>(Create, v, ss);
+    v = M2Hook::GetInstance().Invoke<decltype(v)>(CreateVM, v, ss);
 #else
-    v = M2Hook::GetInstance().Invoke<decltype(v)>(Create, v, _EDX, ss);
+    v = M2Hook::GetInstance().Invoke<decltype(v)>(CreateVM, v, _EDX, ss);
 #endif
 
     SQInteger scratchpadsize = _ss(v)->_scratchpadsize;
@@ -153,7 +127,7 @@ void __fastcall SQHook<Q>::BindFunc(Sqrat::Table<Q> *ctx, uintptr_t _EDX, const 
     }
 
     if (M2Config::iNativeLevel >= 1) {
-        spdlog::info("Sqrat: BindFunc(0x{:x}, 0x{:x}, \"{}\").", fmt::underlying(obj_type(obj)), _rawval(obj), name);
+        spdlog::info("[SQ] BindFunc(0x{:x}, 0x{:x}, \"{}\").", fmt::underlying(obj_type(obj)), _rawval(obj), name);
     }
 }
 
@@ -292,6 +266,8 @@ SQInteger SQHook<Q>::SQReturn_init_system_1st(HSQUIRRELVM<Q> v)
     HookMethod(v, _SC("SystemEtc"), _SC("setStartPadId"), SQ_SystemEtc_setStartPadId);
     HookMethod(v, _SC("SystemEtc"), _SC("getStartPadId"), SQ_SystemEtc_getStartPadId);
 
+    M2Fix::GameInstance().SQOnInitSystemFirst();
+
     return 0;
 }
 
@@ -306,6 +282,9 @@ template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_init_system_last(HSQUIRRELVM<Q> v)
 {
     HookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
+
+    M2Fix::GameInstance().SQOnInitSystemLast();
+
     return 0;
 }
 
@@ -330,18 +309,22 @@ SQInteger SQHook<Q>::SQNative_setDotmatrix(HSQUIRRELVM<Q> v)
 template <Squirk Q>
 SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
 {
-    //&v->_stack._vals[v->_stackbase + 1];
     unsigned width = SQHelper<Q>::GetObject(2).Cast<unsigned>();
-    //&v->_stack._vals[v->_stackbase + 2];
     unsigned offset = SQHelper<Q>::GetObject(3).Cast<unsigned>();
-    //&v->_stack._vals[v->_stackbase + 3];
     unsigned value = SQHelper<Q>::GetObject(4).Cast<unsigned>();
 
-    //&v->_stack._vals[v->_stackbase - 5];
-    auto patch = SQHelper<Q>::GetObject(-10);
-    if (patch.GetType() != OT_TABLE) return 0;
+    Sqrat::RootTable root = Sqrat::RootTable<Q>();
+    Sqrat::Array<Q> patches = root.GetSlot("s_ram_patch_binary");
 
-    unsigned address = patch["offset"].Cast<unsigned>();
+    static unsigned address = 0;
+    for (int i = 0; i < patches.Length(); ++i) {
+        Sqrat::Table<Q> _patch = *patches.GetValue<Sqrat::Table<Q>>(i);
+        unsigned addr = _patch["offset"].Cast<unsigned>() & 0xFFFFFF;
+        if (addr != offset) continue;
+        address = addr;
+        break;
+    }
+    if (address == 0) return 0;
 
     if (M2Config::bPatchesDisableRAM && address != 0x200000) {
         if (offset != address) return 1;
@@ -360,10 +343,12 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
 
     //&v->_stack._vals[v->_stackbase + 2];
     auto data = SQHelper<Q>::GetObject(3);
+    if (data.GetType() != OT_INSTANCE) data = SQHelper<Q>::GetObject(4);
 
     //&v->_stack._vals[v->_stackbase - 3];
     //&v->_stack._vals[v->_stackbase - 4];
     auto patch = SQHelper<Q>::GetObject(data.GetType() != OT_INSTANCE ? -7 : -8);
+    if (patch.GetType() != OT_TABLE) patch = SQHelper<Q>::GetObject(-10);
 
     auto file = patch["file"].Cast<std::string>();
     auto buffer = SQHelper<Q>::template MakeVector<unsigned char>(data);
@@ -487,10 +472,11 @@ template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM<Q> v)
 {
     auto bounds = SQHelper<Q>::GetObject(-10);
+    if (bounds.GetType() != OT_TABLE) bounds = SQHelper<Q>::GetObject(-11);
 
     if (bounds["width"].Cast<unsigned>()  != ScreenWidth ||
         bounds["height"].Cast<unsigned>() != ScreenHeight) {
-        ScreenWidth = bounds["width"].Cast<unsigned>();
+        ScreenWidth  = bounds["width"].Cast<unsigned>();
         ScreenHeight = bounds["height"].Cast<unsigned>();
 
         spdlog::info("[SQ] Screen bounds are {}x{}.", ScreenWidth, ScreenHeight);
@@ -499,6 +485,8 @@ SQInteger SQHook<Q>::SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM<Q>
     unsigned x = 4 * ScreenHeight;
     unsigned y = 3 * ScreenWidth;
     unsigned gcd = std::gcd(x, y);
+    if (!gcd) return 0;
+
     ScreenScaleX = y / gcd;
     ScreenScaleY = x / gcd;
 
@@ -518,9 +506,9 @@ SQInteger SQHook<Q>::SQReturn_util_get_multimonitor_screen_bounds(HSQUIRRELVM<Q>
 template <Squirk Q>
 SQInteger SQHook<Q>::_SQReturn_setting_screen_set_parameter_auto_size(HSQUIRRELVM<Q> v)
 {
-    if (SQHelper<Q>::GetObject(-24).Cast<unsigned>() != ScreenMode) {
-        ScreenMode = SQHelper<Q>::GetObject(-24).Cast<unsigned>();
-
+    auto mode = static_cast<unsigned>(SQSystemData<Q>::SettingScreen::GetSizeAuto());
+    if (mode != ScreenMode) {
+        ScreenMode = mode;
         spdlog::info("[SQ] Screen mode is {}.", ScreenMode);
     }
 
@@ -564,11 +552,6 @@ SQInteger SQHook<Q>::HookNative(HSQUIRRELVM<Q> v)
     Sqrat::DefaultVM<Q>::Set(v);
     SetHook(v);
 
-    if (M2Config::bError && sq_isstring(v->_lasterror)) {
-        spdlog::error("[SQ] [Error] {}", _stringval(v->_lasterror));
-        sq_reseterror(v);
-    }
-
     const SQChar *name = nullptr;
     SQNativeClosure<Q> *closure = nullptr;
     if (v && v->ci && sq_isnativeclosure(v->ci->_closure)) {
@@ -587,15 +570,17 @@ SQInteger SQHook<Q>::HookNative(HSQUIRRELVM<Q> v)
     }
 
     if (name && (strcmp(name, "printf") == 0 || strcmp(name, "print") == 0)) {
-        SQChar *str = nullptr;
+        SQChar *cstr = nullptr;
         SQInteger length = 0;
-
         const SQChar *format = SQHelper<Q>::GetObject(2).Cast<const SQChar *>();
-        if (format && *format != 0 && SQ_SUCCEEDED(sqstd_format(v, 2, &length, &str))) {
-            str[scstrcspn(str, "\r\n")] = 0;
-            if (*str != 0) {
-                spdlog::info("[SQ] [printf] {}", str);
-            }
+        if (format && *format != 0 && SQ_SUCCEEDED(sqstd_format(v, 2, &length, &cstr))) {
+            cstr[scstrcspn(cstr, "\r\n")] = 0;
+        }
+        std::string str;
+        if (cstr) str = cstr;
+
+        if (!str.empty()) {
+            spdlog::info("[SQ] [printf] {}", str);
         }
     }
 
@@ -639,10 +624,21 @@ SQInteger SQHook<Q>::Hook(HSQUIRRELVM<Q> v)
 
     Sqrat::RootTable<Q> root = Sqrat::RootTable<Q>();
 
-    if (M2Config::bError && sq_isstring(v->_lasterror)) {
-        spdlog::error("[SQ] [Error] {}", _stringval(v->_lasterror));
-        sq_reseterror(v);
+    std::string message = Sqrat::Error<Q>::Message(v);
+    if (M2Config::bError) {
+        if (sq_isstring(v->_lasterror) && !message.empty()) {
+            spdlog::error("[SQ] [Error] [#1] {} [#2] {}", _stringval(v->_lasterror), message);
+            sq_reseterror(v);
+            message = {};
+        }
+        if (sq_isstring(v->_lasterror)) {
+            spdlog::error("[SQ] [Error] [#1] {}", _stringval(v->_lasterror));
+        }
+        if (!message.empty()) {
+            spdlog::error("[SQ] [Error] [#2] {}", message);
+        }
     }
+    sq_reseterror(v);
 
     if (M2Config::bDebuggerEnabled && !M2Config::bDebuggerExclusive && DBG) {
         debug_hook(static_cast<HSQUIRRELVM<Q>>(nullptr), v, DBG);
@@ -699,7 +695,9 @@ void SQHook<Q>::Load()
 
     switch (M2Fix::Game())
     {
+#ifndef _WIN64
         case M2FixGame::MGS1:
+#endif
         case M2FixGame::Contra:
         case M2FixGame::Dracula:
         case M2FixGame::DraculaAdvance:
@@ -716,6 +714,9 @@ void SQHook<Q>::Load()
             break;
         }
 
+#ifdef _WIN64
+        case M2FixGame::MGS1:
+#endif
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
@@ -736,11 +737,12 @@ void SQHook<Q>::Load()
 
     switch (M2Fix::Game())
     {
+#ifndef _WIN64
         case M2FixGame::MGS1:
         {
             M2Hook::GetInstance().Hook(
                 "C7 86 A4 00 00 00 FF FF FF FF 89 86 A0 00 00 00",
-                -0x111, SQHook<Squirk::Standard>::Create, "[SQ-32<Standard>] SQVM::SQVM"
+                -0x111, SQHook<Squirk::Standard>::CreateVM, "[SQ-32<Standard>] SQVM::SQVM"
             );
 
             M2Hook::GetInstance().Hook(
@@ -755,6 +757,7 @@ void SQHook<Q>::Load()
 
             break;
         }
+#endif
 
         case M2FixGame::Contra:
         case M2FixGame::Dracula:
@@ -766,12 +769,12 @@ void SQHook<Q>::Load()
 
             ret = M2Hook::GetInstance().Hook(
                 "C7 86 D4 00 00 00 FF FF FF FF 89 86 D0 00 00 00",
-                -0x185, SQHook<Squirk::AlignObject>::Create, "[SQ-32<AlignObject>] SQVM::SQVM"
+                -0x185, SQHook<Squirk::AlignObject>::CreateVM, "[SQ-32<AlignObject>] SQVM::SQVM"
             );
             if (!ret) {
                 M2Hook::GetInstance().Hook(
                     "C7 86 C4 00 00 00 FF FF FF FF 89 86 C0 00 00 00",
-                    -0x138, SQHook<Squirk::AlignObjectShared>::Create, "[SQ-32<AlignObjectShared>] SQVM::SQVM"
+                    -0x138, SQHook<Squirk::AlignObjectShared>::CreateVM, "[SQ-32<AlignObjectShared>] SQVM::SQVM"
                 );
             }
 
@@ -804,7 +807,7 @@ void SQHook<Q>::Load()
         {
             M2Hook::GetInstance().Hook(
                 "C7 86 9C 00 00 00 FF FF FF FF 89 86 98 00 00 00",
-                -0xFD, SQHook<Squirk::StandardShared>::Create, "[SQ-32<StandardShared>] SQVM::SQVM"
+                -0xFD, SQHook<Squirk::StandardShared>::CreateVM, "[SQ-32<StandardShared>] SQVM::SQVM"
             );
 
             M2Hook::GetInstance().Hook(
@@ -820,6 +823,27 @@ void SQHook<Q>::Load()
             break;
         }
 
+#ifdef _WIN64
+        case M2FixGame::MGS1:
+        {
+            M2Hook::GetInstance().Hook(
+                "48 C7 81 0C 01 00 00 FF FF FF FF 48 89 B1 F0 00",
+                -0xC4, SQHook<Squirk::Standard>::CreateVM, "[SQ-64<Standard>] SQVM::SQVM"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "FF 53 68 FF 8F 00 01 00 00 48 8B 8C 24 F8 00 00",
+                -0x2D0, SQHook<Squirk::Standard>::CallNative, "[SQ-64<Standard>] SQVM::CallNative"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "44 0F B6 44 24 78 BA FD FF FF FF 49 8B 4E 08 E8",
+                -0x25A, SQHook<Squirk::Standard>::BindFunc, "[SQ-64<Standard>] Sqrat::BindFunc"
+            );
+
+            break;
+        }
+#endif
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
@@ -827,7 +851,7 @@ void SQHook<Q>::Load()
         {
             M2Hook::GetInstance().Hook(
                 "48 C7 81 FC 00 00 00 FF FF FF FF 48 89 B1 E0 00",
-                -0xB3, SQHook<Squirk::StandardShared>::Create, "[SQ-64<StandardShared>] SQVM::SQVM"
+                -0xB3, SQHook<Squirk::StandardShared>::CreateVM, "[SQ-64<StandardShared>] SQVM::SQVM"
             );
 
             M2Hook::GetInstance().Hook(

@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "borderless.h"
-#include "d3d11.h"
 #include "versionchecker.h"
 
 enum class M2FixGame
@@ -33,7 +32,7 @@ enum class M2FixGame
 struct M2FixInfo
 {
     int id;
-    std::string_view M2classname;
+    std::string_view classname;
     std::string_view title;
     M2Game & game;
 };
@@ -110,7 +109,7 @@ public:
             SQHook<>::LoadInstance();
 
             if (M2Config::bExternalEnabled) Config::LoadInstance();
-            if (M2Config::bBorderlessMode) Borderless::LoadInstance();
+            if (M2Config::bExternalBorderless) Borderless::LoadInstance();
 
             auto & Game = M2Fix::GameInstance();
             for (auto & Machine : Game.MachineInstances()) {
@@ -125,6 +124,7 @@ public:
         {
             LatestVersionChecker checker;
             checker.checkForUpdates();
+            spdlog::info("----------");
         }
     }
 
@@ -240,23 +240,39 @@ public:
         );
         spdlog::info("----------");
 
-        std::string_view classname = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("43 4C 41 53 53 4E 41 4D 45 20 3D 20", 0xC)); // CLASSNAME
+        std::string_view classname = M2Hook::ReadUntilTabOrCRLF(
+            M2Hook::GetInstance().Scan(
+                "43 4C 41 53 53 4E 41 4D 45 20 3D 20",
+                0xC
+            )); // `CLASSNAME = `
+
         for (auto & [type, info] : M2Fix::GetInstance().m_kGames)
         {
-            if (info.M2classname == classname)
+            if (info.classname == classname)
             {
                 m_eGame = type;
                 m_kGame = &info;
-                m_kGame->title = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("43 41 50 54 49 4F 4E 20 3D 20", 0xA)); // CAPTION
-                if (const std::string_view backup_base_path = M2Hook::ReadUntilTabOrCRLF(M2Hook::GetInstance().Scan("42 41 43 4B 55 50 5F 42 41 53 45 5F 50 41 54 48 20 3D 20", 0x13)); backup_base_path.find("?Epic_AccountID?") != std::string::npos)
-                {
+
+                m_kGame->title = M2Hook::ReadUntilTabOrCRLF(
+                    M2Hook::GetInstance().Scan(
+                        "43 41 50 54 49 4F 4E 20 3D 20",
+                        0xA
+                    )); // `CAPTION = `
+
+                const std::string_view path = M2Hook::ReadUntilTabOrCRLF(
+                    M2Hook::GetInstance().Scan(
+                        "42 41 43 4B 55 50 5F 42 41 53 45 5F 50 41 54 48 20 3D 20",
+                        0x13
+                    )); // `BACKUP_BASE_PATH = `
+
+                if (path.find("?Epic_AccountID?") != std::string::npos) {
                     m_kGame->id = -1;
                     spdlog::info("Detected game: {} (Epic Games).", info.title);
                 }
-                else
-                {
-                    spdlog::info("Detected game: {} (Steam App {}).", info.title, info.id);
+                else {
+                    spdlog::info("Detected game: {} (Steam app {}).", info.title, info.id);
                 }
+
                 return true;
             }
         }
@@ -265,6 +281,7 @@ public:
             M2Hook::GetInstance().ModuleIdentifier(),
             m_sFixName
         );
+
         return false;
     }
 

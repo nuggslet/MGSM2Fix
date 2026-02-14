@@ -21,6 +21,7 @@ def main():
     args = parser.parse_args()
 
     rules = os.path.join(os.path.dirname(__file__), 'M2Install.yml')
+    if not os.path.isfile(rules): return
     rules = open(rules, 'r', encoding='utf-8')
     rules = yaml.load(rules, Loader=yaml.Loader)
 
@@ -46,5 +47,4 @@ def main():
             if os.path.isfile(file): os.remove(file)
 
 if __name__ == "__main__":
-    if 'GITHUB_WORKSPACE' in os.environ: sys.exit()
     main()

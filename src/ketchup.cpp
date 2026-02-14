@@ -9,26 +9,26 @@
 template <Squirk Q>
 bool Ketchup<Q>::ApplyBlock(HSQUIRRELVM<Q> v,
 	Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk,
-	int64_t offset, unsigned char *data, size_t size)
+	uint64_t offset, unsigned char *data, size_t size)
 {
 	Sqrat::Array<Q> block(v, size);
 	for (size_t i = 0; i < size; i++) {
 		block.SetValue(i, data[i]);
 	}
-	SQEmuTask<Q>::EntryCdRomPatch((SQInteger) offset, block);
-	spdlog::info("[Ketchup] CD-ROM write 0x{:08x} with {} bytes.", offset, size);
+	SQEmuTask<Q>::EntryCdRomPatch(static_cast<SQInteger>(offset), block);
+	spdlog::info("[SQ] [Ketchup] CD-ROM write 0x{:08x} with {} bytes.", offset, size);
 
 	// If tray is open this isn't a cold boot, so we can skip this.
 	while (!SQHook<Q>::IsCdRomShellOpen() && size != 0) {
 		if (offset >= disk.ram_base && offset < (disk.ram_base + disk.ram_range)) {
-			unsigned int address = (unsigned int) offset - disk.ram_base;
+			unsigned int address = static_cast<unsigned int>(offset) - disk.ram_base;
 			unsigned int sector = address / PSX_SectorRange;
 			unsigned int pos = address % PSX_SectorRange;
 
 			if (pos < PSX_SectorSize) {
 				address = (sector * PSX_SectorSize) + pos;
 				SQEmuTask<Q>::SetRamValue(CHAR_BIT, PSX_ImageBase + address, *data);
-				spdlog::info("[Ketchup] Mapped RAM write 0x{:08x} [0x{:08x}] with value 0x{:02x}.",
+				spdlog::info("[SQ] [Ketchup] Mapped RAM write 0x{:08x} [0x{:08x}] with value 0x{:02x}.",
 					PSX_ImageBase + address, offset, *data);
 			}
 		}
@@ -53,14 +53,14 @@ int Ketchup<Q>::MetaPPF_FileId(std::ifstream &data, int version)
 	}
 
 	data.seekg(-(index + 4), std::ios_base::end);
-	data.read((char *) &magic, sizeof(magic));
+	data.read(reinterpret_cast<char *>(&magic), sizeof(magic));
 
 	if (magic != 'ZID.') {
 		return 0;
 	}
 
 	data.seekg(-index, std::ios_base::end);
-	data.read((char *) &length, index);
+	data.read(reinterpret_cast<char *>(&length), index);
 	return length;
 }
 
@@ -72,9 +72,9 @@ bool Ketchup<Q>::ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_V
 
 	unsigned char image_type, block_check, undo;
 	data.seekg(56, std::ios_base::beg);
-	data.read((char *) &image_type, sizeof(image_type));
-	data.read((char *) &block_check, sizeof(block_check));
-	data.read((char *) &undo, sizeof(undo));
+	data.read(reinterpret_cast<char *>(&image_type), sizeof(image_type));
+	data.read(reinterpret_cast<char *>(&block_check), sizeof(block_check));
+	data.read(reinterpret_cast<char *>(&undo), sizeof(undo));
 
 	data.seekg(0, std::ios_base::end);
 	std::streampos count = data.tellg();
@@ -92,13 +92,13 @@ bool Ketchup<Q>::ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_V
 	if (length)
 		count -= (length + 18 + 16 + 2);
 
-	int64_t offset;
+	uint64_t offset;
 	unsigned char anz;
 	data.seekg(pos, std::ios_base::beg);
 	do {
-		data.read((char *) &offset, sizeof(offset));
-		data.read((char *) &anz, sizeof(anz));
-		data.read((char *) ppfmem, anz);
+		data.read(reinterpret_cast<char *>(&offset), sizeof(offset));
+		data.read(reinterpret_cast<char *>(&anz), sizeof(anz));
+		data.read(reinterpret_cast<char *>(ppfmem), anz);
 		if (undo) data.seekg(anz, std::ios_base::cur);
 
 		if (!ApplyBlock(v, title, version, disk, offset, ppfmem, anz))
@@ -116,7 +116,7 @@ bool Ketchup<Q>::Apply(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_Versi
 {
 	unsigned int magic;
 	data.seekg(0, std::ios_base::beg);
-	data.read((char *) &magic, sizeof(magic));
+	data.read(reinterpret_cast<char *>(&magic), sizeof(magic));
 
 	switch (magic) {
 		case '3FPP': return ApplyPPF3(v, title, version, disk, data);
@@ -144,13 +144,13 @@ template <Squirk Q>
 bool Ketchup<Q>::ProcessDisk(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk)
 {
 	std::filesystem::directory_entry root { RootPath(title, version, disk) };
-	spdlog::info("[Ketchup] base path is {}.", root.path().string());
+	spdlog::info("[SQ] [Ketchup] base path is {}.", root.path().string());
 
 	if (!root.exists() || !root.is_directory()) return true;
 	for (const auto &entry : std::filesystem::directory_iterator(root)) {
 		std::ifstream data(entry.path(), std::ios::in | std::ios::binary);
 		if (Apply(v, title, version, disk, data)) {
-			spdlog::info("[Ketchup] loaded {}.", entry.path().string());
+			spdlog::info("[SQ] [Ketchup] loaded {}.", entry.path().string());
 		}
 	}
 

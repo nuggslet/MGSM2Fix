@@ -200,7 +200,9 @@ void Config::Load()
 {
     switch (M2Fix::Game())
     {
+#ifndef _WIN64
         case M2FixGame::MGS1:
+#endif
         case M2FixGame::Contra:
         case M2FixGame::Dracula:
         case M2FixGame::DraculaAdvance:
@@ -234,6 +236,9 @@ void Config::Load()
             break;
         }
 
+#ifdef _WIN64
+        case M2FixGame::MGS1:
+#endif
         case M2FixGame::MGSR:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:

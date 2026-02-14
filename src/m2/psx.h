@@ -2,6 +2,17 @@
 
 typedef int (*PSXFUNCTION)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
+typedef union
+{
+    struct { unsigned char l, h, h2, h3; } b;
+    struct { unsigned short l, h; } w;
+    struct { char l, h, h2, h3; } sb;
+    struct { short l, h; } sw;
+
+    unsigned int d;
+    int sd;
+} PSXVALUE;
+
 typedef struct M2_EmuPSX {
     struct M2_MethodsPSX *Methods;
     void *Components;
@@ -13,11 +24,11 @@ typedef struct M2_EmuPSX {
     struct M2_EmuBusPSX *Bus;
     struct M2_EmuR3000 *DevR3000;
     void *DevCDROM;
-    void *DevDMAC;
+    struct M2_EmuDMAC *DevDMAC;
     struct M2_EmuGPU *DevGPU;
     void *DevINTC;
     void *DevMDEC;
-    void *DevRTC;
+    struct M2_EmuRTC *DevRTC;
     void *DevSIO;
     void *DevSPU;
     union {
@@ -48,13 +59,13 @@ static_assert(sizeof(M2_MethodsPSX) == 0x14);
 #endif
 
 typedef struct M2_EmuBusPSX {
-    unsigned char  (_cdecl *Read8)  (struct M2_EmuBusPSX *bus, unsigned int address);
-    void           (_cdecl *Write8) (struct M2_EmuBusPSX *bus, unsigned int address, unsigned char value);
-    unsigned short (_cdecl *Read16) (struct M2_EmuBusPSX *bus, unsigned int address);
-    void           (_cdecl *Write16)(struct M2_EmuBusPSX *bus, unsigned int address, unsigned short value);
-    unsigned int   (_cdecl *Read32) (struct M2_EmuBusPSX *bus, unsigned int address);
-    void           (_cdecl *Write32)(struct M2_EmuBusPSX *bus, unsigned int address, unsigned int value);
-    unsigned int _Spare[2];
+    unsigned char  (_cdecl *Read8)  (struct M2_EmuPSX *psx, unsigned int address);
+    void           (_cdecl *Write8) (struct M2_EmuPSX *psx, unsigned int address, unsigned char value);
+    unsigned short (_cdecl *Read16) (struct M2_EmuPSX *psx, unsigned int address);
+    void           (_cdecl *Write16)(struct M2_EmuPSX *psx, unsigned int address, unsigned short value);
+    unsigned int   (_cdecl *Read32) (struct M2_EmuPSX *psx, unsigned int address);
+    void           (_cdecl *Write32)(struct M2_EmuPSX *psx, unsigned int address, unsigned int value);
+    uintptr_t _Spare[2];
     struct M2_EmuPSX *Machine;
 } M2_EmuBusPSX;
 
@@ -63,7 +74,8 @@ static_assert(sizeof(M2_EmuBusPSX) == 0x24);
 #endif
 
 typedef struct M2_EmuCoprocGTE {
-    unsigned int Reg[64];
+    unsigned int RegData[32];
+    unsigned int RegCtrl[32];
     unsigned int Instruction;
     int (*Command)(struct M2_EmuCoprocGTE *gte, int id);
     int (*Result) (struct M2_EmuCoprocGTE *gte, int id);
@@ -80,7 +92,7 @@ typedef struct M2_EmuR3000 {
     void *DevINTC;
     struct M2_EmuCoprocGTE *CoprocGTE;
     PSXFUNCTION *Segment; // The main/non-accelerated segment.
-    bool           (*Execute)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
+    int            (*Execute)(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
     unsigned char  (*Read8)  (struct M2_EmuR3000 *cpu, unsigned int address);
     unsigned short (*Read16) (struct M2_EmuR3000 *cpu, unsigned int address);
     unsigned int   (*Read32) (struct M2_EmuR3000 *cpu, unsigned int address);
@@ -88,7 +100,7 @@ typedef struct M2_EmuR3000 {
     void           (*Write16)(struct M2_EmuR3000 *cpu, unsigned int address, unsigned short value);
     void           (*Write32)(struct M2_EmuR3000 *cpu, unsigned int address, unsigned int value);
     unsigned int Accelerator;
-    bool           (*Step)   (struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
+    int            (*Step)   (struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
     unsigned int Cycle;
     unsigned int _Spare; // Unused, leaks uninitialised memory.
     unsigned int Target;
@@ -155,11 +167,22 @@ typedef struct M2_EmuGPU {
 static_assert(sizeof(M2_EmuGPU) == 0x2000EC);
 #endif
 
+typedef struct M2_VertexGPU {
+    unsigned int Color;
+    short X, Y;
+    unsigned int TexCoord;
+    unsigned int Clut;
+} M2_VertexGPU;
+
+#ifndef _WIN64
+static_assert(sizeof(M2_VertexGPU) == 0x10);
+#endif
+
 typedef struct M2_SceneGPU {
     unsigned int Type;
     unsigned int *CommandBuffer;
     unsigned int Command;
-    unsigned int *VertexBuffer;
+    struct M2_VertexGPU *VertexBuffer;
     unsigned int Vertex;
     unsigned int _14[34];
     unsigned int TextureWindow;
@@ -183,6 +206,52 @@ typedef struct M2_SceneGPU {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_SceneGPU) == 0x13C);
+#endif
+
+typedef struct M2_EmuRTC {
+    void *Methods;
+    void *Components;
+    unsigned int RefCount;
+    struct M2_EmuR3000 *DevR3000;
+    struct M2_EmuGPU *DevGPU;
+    void *DevINTC;
+    unsigned char _18[192];
+    unsigned char _D8[32];
+    unsigned int _F8;
+    unsigned int _FC;
+    unsigned int _100[16];
+    unsigned int Count[16];
+    unsigned short _180[12];
+    unsigned short OverclockRatio[2];
+    unsigned int Tick;
+    unsigned int Rate;
+} M2_EmuRTC;
+
+#ifndef _WIN64
+static_assert(sizeof(M2_EmuRTC) == 0x1A4);
+#endif
+
+typedef struct M2_EmuDMAC
+{
+    struct M2_MethodsR3000 *Methods;
+    void *Components;
+    void *DevCDROM;
+    struct M2_EmuR3000 *DevR3000;
+    void *DevINTC;
+    void *DevMDEC;
+    struct M2_EmuBusPSX *Bus;
+    struct M2_EmuRTC *DevRTC;
+    void *DevSPU;
+    void *SourceMDEConRTC;
+    void *SourceXonRTC;
+    unsigned int Regs[32];
+    unsigned char Flags;
+    unsigned char _Flags[3];
+    unsigned int Status;
+} M2_EmuDMAC;
+
+#ifndef _WIN64
+static_assert(sizeof(M2_EmuDMAC) == 0xB4);
 #endif
 
 typedef struct {
