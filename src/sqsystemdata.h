@@ -33,7 +33,7 @@ public:
 	public:
 		SettingPad() : SQInvoker<Q>(_SC("g_systemdata")) {
 			auto obj = this->Invoke<Sqrat::Object<Q>>("get_value", static_cast<int>(Index::SETTING_PAD));
-			this->m_instance = obj.GetObject();
+			this->SetInstance(obj.GetObject());
 		}
 
 		static int GetPlaySide_MGS1() {
@@ -61,11 +61,15 @@ public:
 
 		SettingScreen() : SQInvoker<Q>(_SC("g_systemdata")) {
 			auto obj = this->Invoke<Sqrat::Object<Q>>("get_value", static_cast<int>(Index::SETTING_SCREEN));
-			this->m_instance = obj.GetObject();
+			this->SetInstance(obj.GetObject());
 		}
 
 		static SizeAuto GetSizeAuto() {
 			return static_cast<SizeAuto>(SettingScreen().Invoke<int>("get_size_auto"));
+		}
+
+		static bool GetSmoothing() {
+			return SettingScreen().Invoke<bool>("get_smoothing");
 		}
 	};
 
@@ -74,7 +78,7 @@ public:
 	public:
 		SettingETC() : SQInvoker<Q>(_SC("g_systemdata")) {
 			auto obj = this->Invoke<Sqrat::Object<Q>>("get_value", static_cast<int>(Index::SETTING_ETC));
-			this->m_instance = obj.GetObject();
+			this->SetInstance(obj.GetObject());
 		}
 
 		static std::string GetVersion() {

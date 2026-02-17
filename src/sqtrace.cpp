@@ -53,12 +53,31 @@ void SQHook<Q>::TraceParameter(std::stringstream &trace, SQObjectPtr<Q> obj, int
             break;
         }
         case OT_CLASS:
+        {
+            std::string classname;
+            Sqrat::RootTable root = Sqrat::RootTable<Q>();
+            for (auto &name : ClassNames) {
+                Sqrat::Object<Q> object = root.GetSlot(name.c_str());
+                if (object.GetType() != OT_CLASS) continue;
+                if (!_instance(obj)->InstanceOf(_class(object.GetObject()))) continue;
+                classname = name;
+                break;
+            }
+
+            if (!classname.empty()) {
+                trace << classname << "{";
+            }
             trace << std::hex << "C" << (uintptr_t)_class(obj)->_typetag << std::dec;
+            if (!classname.empty()) {
+                trace << "}";
+            }
+
             if (_class(obj)->_base) {
                 trace << "::";
                 TraceParameter(trace, _class(obj)->_base, level);
             }
             break;
+        }
         case OT_INSTANCE:
             trace << std::hex << "I" << (uintptr_t)_instance(obj)->_userpointer << std::dec;
             if (_instance(obj)->_class) {

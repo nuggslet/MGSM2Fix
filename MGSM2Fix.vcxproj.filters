@@ -186,6 +186,9 @@
     <ClCompile Include="src\versionchecker.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
+    <ClCompile Include="src\sqnames.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

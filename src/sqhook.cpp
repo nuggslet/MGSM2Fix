@@ -13,6 +13,11 @@
 #include "ketchup.h"
 
 template <Squirk Q>
+std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::CallTable = {
+    {"util_load_script",                        SQCall_util_load_script},
+};
+
+template <Squirk Q>
 std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::ReturnTable = {
     {"init_system_1st",                         SQReturn_init_system_1st},
     {"init_system_last",                        SQReturn_init_system_last},
@@ -26,16 +31,28 @@ std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::ReturnTable = {
     {"_setting_screen_set_parameter_auto_size", _SQReturn_setting_screen_set_parameter_auto_size},
     {"util_get_multimonitor_screen_bounds",     SQReturn_util_get_multimonitor_screen_bounds},
     {"util_get_memory_define_table",            SQReturn_util_get_memory_define_table},
+    {"util_load_script",                        SQReturn_util_load_script},
+    {"constructor",                             SQReturn_constructor},
+};
+
+template <Squirk Q>
+std::vector<std::pair<std::string, SQInteger(*)(HSQUIRRELVM<Q>, HSQOBJECT<Q>)>> SQHook<Q>::ConstructorTable = {
+};
+
+template <Squirk Q>
+std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::LoadScriptTable = {
+    {"pause_main_mgs",                          SQLoadScript_pause_main_mgs},
+    {"mode_title_select_mgs",                   SQLoadScript_mode_title_select_mgs},
 };
 
 template <Squirk Q>
 std::vector<std::pair<const SQChar *, SQFUNCTION<Q>>> SQHook<Q>::NativeTable = {
-    {"setRamValue",       SQNative_setRamValue},
-    {"entryCdRomPatch",   SQNative_entryCdRomPatch},
-    {"setCdRomShellOpen", SQNative_setCdRomShellOpen},
-    {"setupCdRom",        SQNative_setupCdRom},
-    {"setLogFilename",    SQNative_setLogFilename},
-    {"setDotmatrix",      SQNative_setDotmatrix},
+    {"setRamValue",                             SQNative_setRamValue},
+    {"entryCdRomPatch",                         SQNative_entryCdRomPatch},
+    {"setCdRomShellOpen",                       SQNative_setCdRomShellOpen},
+    {"setupCdRom",                              SQNative_setupCdRom},
+    {"setLogFilename",                          SQNative_setLogFilename},
+    {"setDotmatrix",                            SQNative_setDotmatrix},
 };
 
 template <Squirk Q>
@@ -182,9 +199,45 @@ void SQHook<Q>::HookMethod(HSQUIRRELVM<Q> v, const SQChar *name, const SQChar *f
 }
 
 template <Squirk Q>
+void SQHook<Q>::HookMethod(HSQUIRRELVM<Q> v, HSQOBJECT<Q> name, const SQChar *func, SQFUNCTION<Q> hook, HSQOBJECT<Q> *obj)
+{
+    sq_pushobject(v, name);
+    {
+        if (obj) {
+            sq_pushstring(v, func, -1);
+            if (SQ_SUCCEEDED(sq_get(v, -2))) {
+                sq_getstackobj(v, -1, obj);
+                sq_addref(v, obj);
+                sq_pop(v, 1);
+            }
+        }
+
+        sq_pushstring(v, func, -1);
+        sq_newclosure(v, hook, 0);
+        sq_newslot(v, -3, false);
+
+        sq_pop(v, 1);
+    }
+
+    sq_pop(v, 1);
+}
+
+template <Squirk Q>
+void SQHook<Q>::SetCallHook(const char *name, SQFUNCTION<Q> func)
+{
+    CallTable.push_back({ name, func });
+}
+
+template <Squirk Q>
 void SQHook<Q>::SetReturnHook(const char *name, SQFUNCTION<Q> func)
 {
     ReturnTable.push_back({ name, func });
+}
+
+template <Squirk Q>
+void SQHook<Q>::SetLoadScriptHook(const char *name, SQFUNCTION<Q> func)
+{
+    LoadScriptTable.push_back({ name, func });
 }
 
 template <Squirk Q>
@@ -248,6 +301,98 @@ template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_util_get_memory_define_table(HSQUIRRELVM<Q> v)
 {
     M2Fix::GameInstance().SQOnMemoryDefine();
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQCall_util_load_script(HSQUIRRELVM<Q> v)
+{
+    Sqrat::Object<Q> object = SQHelper<Q>::GetParameter(1);
+    if (object.GetType() == OT_ARRAY) {
+        LoadScript = SQHelper<Q>::template MakeVector<std::string>(object);
+    } else {
+        LoadScript.push_back(object.Cast<std::string>());
+    }
+    for (std::string & script : LoadScript) {
+        spdlog::info("[SQ] Loading script {}.", script);
+    }
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQReturn_util_load_script(HSQUIRRELVM<Q> v)
+{
+    for (auto & func : LoadScriptTable) {
+        for (std::string & script : LoadScript) {
+            if (!script.contains(func.first)) continue;
+            func.second(v);
+            break;
+        }
+    }
+    LoadScript = {};
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQLoadScript_pause_main_mgs(HSQUIRRELVM<Q> v)
+{
+    Sqrat::RootTable root = Sqrat::RootTable<Q>();
+    Sqrat::Object<Q> object = root.GetSlot("MenuModePauseMgsOptionScreen");
+    HookMethod(v, object.GetObject(), "_is_highp", _SQ_MenuModePauseMgsOptionScreen_is_highp);
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQLoadScript_mode_title_select_mgs(HSQUIRRELVM<Q> v)
+{
+    Sqrat::RootTable root = Sqrat::RootTable<Q>();
+    Sqrat::Object<Q> object = root.GetSlot("MenuModeTitleMgsOptionScreen");
+    HookMethod(v, object.GetObject(), "_is_highp", _SQ_MenuModeTitleMgsOptionScreen_is_highp);
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::_SQ_MenuModeTitleMgsOptionScreen_is_highp(HSQUIRRELVM<Q> v)
+{
+    sq_pushinteger(v, 0);
+    return 1;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::_SQ_MenuModePauseMgsOptionScreen_is_highp(HSQUIRRELVM<Q> v)
+{
+    sq_pushinteger(v, 0);
+    return 1;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQReturn_constructor(HSQUIRRELVM<Q> v)
+{
+    auto &my = v->_callsstack[v->_callsstacksize - 1];
+    auto &ci = v->_callsstack[v->_callsstacksize - 2];
+    SQInteger i = ci._target;
+    if (ci._ip[-1].op == _OP_RETURN) i = ci._ip[-1]._arg1;
+    if (ci._ip[-1].op == _OP_YIELD)  i = ci._ip[-1]._arg1;
+
+    HSQOBJECT<Q> obj = v->_stack._vals[v->_stackbase - my._prevstkbase + i];
+    Sqrat::RootTable root = Sqrat::RootTable<Q>();
+
+    for (auto &name : ClassNames) {
+        Sqrat::Object<Q> object = root.GetSlot(name.c_str());
+        if (object.GetType() != OT_CLASS) continue;
+        if (!_instance(obj)->InstanceOf(_class(object.GetObject()))) continue;
+        InstanceTable[name] = obj;
+        break;
+    }
+
+    for (auto &func : ConstructorTable) {
+        Sqrat::Object<Q> object = root.GetSlot(func.first.c_str());
+        if (object.GetType() != OT_CLASS) continue;
+        if (!_instance(obj)->InstanceOf(_class(object.GetObject()))) continue;
+        func.second(v, obj);
+        break;
+    }
+
     return 0;
 }
 
@@ -423,6 +568,7 @@ template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_setSmoothing(HSQUIRRELVM<Q> v)
 {
     if (M2Config::bSmoothing) SQEmuTask<Q>::SetSmoothing(M2Config::bSmoothing.value());
+    else SQEmuTask<Q>::SetSmoothing(SQSystemData<Q>::SettingScreen::GetSmoothing());
     if (M2Config::bScanline)  SQEmuTask<Q>::SetScanline(M2Config::bScanline.value());
     return 0;
 }
@@ -532,6 +678,13 @@ void SQHook<Q>::FixScript(HSQUIRRELVM<Q> v)
     if (data->func.empty()) return;
     
     switch (data->event_type) {
+        case 'c':
+            for (auto &func : CallTable) {
+                if (func.first != data->func) continue;
+                func.second(v);
+                break;
+            }
+            break;
         case 'r':
             for (auto &func : ReturnTable) {
                 if (func.first != data->func) continue;

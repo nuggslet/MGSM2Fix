@@ -22,6 +22,16 @@ public:
 		m_instance = obj;
 	}
 
+	inline HSQOBJECT<Q> GetInstance()
+	{
+		return m_instance;
+	}
+
+	inline void SetInstance(HSQOBJECT<Q> instance)
+	{
+		m_instance = instance;
+	}
+
 protected:
 	inline Sqrat::Function<Q> Function(const char *function)
 	{

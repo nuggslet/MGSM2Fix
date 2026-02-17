@@ -43,6 +43,7 @@
     <ClCompile Include="src\spdlog\src\file_sinks.cpp" />
     <ClCompile Include="src\spdlog\src\spdlog.cpp" />
     <ClCompile Include="src\spdlog\src\stdout_sinks.cpp" />
+    <ClCompile Include="src\sqnames.cpp" />
     <ClCompile Include="src\sqtrace.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\FunctionTraits\CompilerVersions.cppm" />

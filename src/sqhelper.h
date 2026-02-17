@@ -40,6 +40,14 @@ public:
 		return Sqrat::Object<Q>(object);
 	}
 
+	static Sqrat::Object<Q> GetParameter(SQInteger idx, HSQUIRRELVM<Q> v = Sqrat::DefaultVM<Q>::Get())
+	{
+		auto &my = v->_callsstack[v->_callsstacksize - 1];
+		auto &ci = v->_callsstack[v->_callsstacksize - 2];
+		SQObjectPtr<Q> object = v->_stack._vals[v->_stackbase - my._prevstkbase + idx];
+		return Sqrat::Object<Q>(object);
+	}
+
 	template <typename T>
 	static T *AcquireForeignObject(HSQUIRRELVM<Q> v = Sqrat::DefaultVM<Q>::Get())
 	{
