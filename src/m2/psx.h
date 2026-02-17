@@ -39,11 +39,12 @@ typedef struct M2_EmuPSX {
         } Flag;
         unsigned char Flags[16]; // "InfoIntegers".
     };
-
 } M2_EmuPSX;
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuPSX) == 0x54);
+#else
+static_assert(sizeof(M2_EmuPSX) == 0x98);
 #endif
 
 typedef struct M2_MethodsPSX {
@@ -56,6 +57,8 @@ typedef struct M2_MethodsPSX {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_MethodsPSX) == 0x14);
+#else
+static_assert(sizeof(M2_MethodsPSX) == 0x28);
 #endif
 
 typedef struct M2_EmuBusPSX {
@@ -71,6 +74,8 @@ typedef struct M2_EmuBusPSX {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuBusPSX) == 0x24);
+#else
+static_assert(sizeof(M2_EmuBusPSX) == 0x48);
 #endif
 
 typedef struct M2_EmuCoprocGTE {
@@ -83,6 +88,8 @@ typedef struct M2_EmuCoprocGTE {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuCoprocGTE) == 0x10C);
+#else
+static_assert(sizeof(M2_EmuCoprocGTE) == 0x118);
 #endif
 
 typedef struct M2_EmuR3000 {
@@ -124,6 +131,8 @@ typedef struct M2_EmuR3000 {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuR3000) == 0x4100);
+#else
+static_assert(sizeof(M2_EmuR3000) == 0x8148);
 #endif
 
 typedef struct M2_MethodsR3000 {
@@ -138,6 +147,8 @@ typedef struct M2_MethodsR3000 {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_MethodsR3000) == 0x1C);
+#else
+static_assert(sizeof(M2_MethodsR3000) == 0x38);
 #endif
 
 typedef struct M2_EmuGPU {
@@ -165,6 +176,8 @@ typedef struct M2_EmuGPU {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuGPU) == 0x2000EC);
+#else
+static_assert(sizeof(M2_EmuGPU) == 0x200108);
 #endif
 
 typedef struct M2_VertexGPU {
@@ -174,9 +187,7 @@ typedef struct M2_VertexGPU {
     unsigned int Clut;
 } M2_VertexGPU;
 
-#ifndef _WIN64
 static_assert(sizeof(M2_VertexGPU) == 0x10);
-#endif
 
 typedef struct M2_SceneGPU {
     unsigned int Type;
@@ -206,6 +217,8 @@ typedef struct M2_SceneGPU {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_SceneGPU) == 0x13C);
+#else
+static_assert(sizeof(M2_SceneGPU) == 0x150);
 #endif
 
 typedef struct M2_EmuRTC {
@@ -229,6 +242,8 @@ typedef struct M2_EmuRTC {
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuRTC) == 0x1A4);
+#else
+static_assert(sizeof(M2_EmuRTC) == 0x1C0);
 #endif
 
 typedef struct M2_EmuDMAC
@@ -252,6 +267,8 @@ typedef struct M2_EmuDMAC
 
 #ifndef _WIN64
 static_assert(sizeof(M2_EmuDMAC) == 0xB4);
+#else
+static_assert(sizeof(M2_EmuDMAC) == 0xE0);
 #endif
 
 typedef struct {
