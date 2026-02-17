@@ -413,7 +413,7 @@ void PSX::GTE_RotTransPersSX2(safetyhook::Context & ctx)
     int64_t x = 1;
     int64_t y = 1;
 
-    if (M2Config::bInternalWidescreen && !Emulator->Flag.HighP)
+    if (M2Config::bInternalWidescreen)
     {
         switch (ScreenMode)
         {
@@ -446,6 +446,42 @@ void PSX::GTE_RotTransPersSX2(safetyhook::Context & ctx)
     ctx.r9 = sx2;
 #endif
 }
+
+#ifdef _WIN64
+void PSX::GTE_RotTransPersSX2P(safetyhook::Context & ctx)
+{
+    int64_t sx2 = 0;
+
+    int64_t x = 1;
+    int64_t y = 1;
+
+    if (M2Config::bInternalWidescreen)
+    {
+        switch (ScreenMode)
+        {
+            case 3:
+                x = ScreenScaleX;
+                y = ScreenScaleY;
+                break;
+            case 7:
+                x = 4;
+                y = 3;
+                break;
+            default: break;
+        }
+    }
+
+    sx2 = ctx.r9;
+    sx2 = (sx2 * y) / x;
+    ctx.r9 = sx2;
+}
+
+void PSX::GPU_SetResolution(safetyhook::Context & ctx)
+{
+    if (!M2Config::bInternalEnabled) return;
+    ctx.rax = M2Config::iInternalHeight;
+}
+#endif
 
 void __cdecl PSX::CommandR3000101(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
 {
@@ -605,8 +641,18 @@ void PSX::Load()
             );
 #else
             M2Hook::GetInstance().MidHook(
-                "4C 03 C0 49 C1 F8 10 41 81 F8 00 FC FF FF 7D 08",
-                -4, PSX::GTE_RotTransPersSX2, "[PSX] GTE_RotTransPersSX2"
+                "4D 0F AF C1 4C 03 C0 49 C1 F8 10 41 81 F8 00 FC",
+                0, PSX::GTE_RotTransPersSX2, "[PSX] GTE_RotTransPersSX2"
+            );
+
+            M2Hook::GetInstance().MidHook(
+                "49 0F AF D1 48 C1 FA 04 48 03 D0 48 C1 FA 0C 3B",
+                0, PSX::GTE_RotTransPersSX2P, "[PSX] GTE_RotTransPersSX2P"
+            );
+
+            M2Hook::GetInstance().MidHook(
+                "89 43 14 3B C1 7E 05 89 4B 14 EB 02 8B C8 44 8B",
+                0, PSX::GPU_SetResolution, "[PSX] GPU_SetResolution"
             );
 #endif
 

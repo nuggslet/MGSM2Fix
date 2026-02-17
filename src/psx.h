@@ -51,6 +51,10 @@ private:
     static int R3000_Step(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
     static void GTE_RotTransPersSX2(safetyhook::Context & ctx);
+#ifdef _WIN64
+    static void GTE_RotTransPersSX2P(safetyhook::Context & ctx);
+    static void GPU_SetResolution(safetyhook::Context & ctx);
+#endif
 
 public:
     static inline std::map<unsigned, PSXFUNCTION> ModuleHandlers = {};
