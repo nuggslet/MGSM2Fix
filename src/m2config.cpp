@@ -102,6 +102,7 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Update Notifications"], "ConsoleNotifications", bConsoleUpdateNotifications);
 
     inipp::get_value(ini.sections["Fixes"], "DisableWindowsFullscreenOptimization", bDisableWindowsFullscreenOptimization);
+    inipp::get_value(ini.sections["Fixes"], "DisableWindowsSlideshowWarning", bDisableWindowsSlideshowWarning);
 
     if (bExternalBorderless) {
         bExternalWindowed = true;
@@ -160,6 +161,7 @@ void M2Config::Load()
     spdlog::info("[Config] bShouldCheckForUpdates: {}", bShouldCheckForUpdates);
     spdlog::info("[Config] bConsoleUpdateNotifications: {}", bConsoleUpdateNotifications);
     spdlog::info("[Config] bDisableWindowsFullscreenOptimization: {}", bDisableWindowsFullscreenOptimization);
+    spdlog::info("[Config] bDisableWindowsSlideshowWarning: {}", bDisableWindowsSlideshowWarning);
 
     if (bDebuggerEnabled && bDebuggerExclusive)
     {

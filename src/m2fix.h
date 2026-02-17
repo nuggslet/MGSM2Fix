@@ -90,9 +90,9 @@ public:
         M2Fix::CheckModules();
         M2Fix::Logging();
         M2Utils::LogSystemInfo();
-        M2Utils::CompatibilityWarnings();
 
         M2Config::LoadInstance();
+        M2Utils::CompatibilityWarnings();
         if (M2Config::bConsole) M2Fix::Console();
         if (M2Config::bBreak) __debugbreak();
 

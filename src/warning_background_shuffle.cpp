@@ -2,10 +2,15 @@
 #include "warning_background_shuffle.hpp"
 
 #include "m2utils.h"
+#include "m2config.h"
 
 void BackgroundShuffleWarning::Check()
 {
 	if (M2Utils::IsSteamOS()) {
+		return;
+	}
+
+	if (M2Config::bDisableWindowsSlideshowWarning) {
 		return;
 	}
 
