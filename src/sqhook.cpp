@@ -462,9 +462,19 @@ SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
     Sqrat::Array<Q> patches = root.GetSlot("s_ram_patch_binary");
 
     static unsigned address = 0;
+    static unsigned length = 0;
+    static unsigned index = 0;
     for (int i = 0; i < patches.Length(); ++i) {
         Sqrat::Table<Q> _patch = *patches.GetValue<Sqrat::Table<Q>>(i);
         unsigned addr = _patch["offset"].Cast<unsigned>() & 0xFFFFFF;
+        if (_patch.HasKey("data")) {
+            Sqrat::Array<Q> data = _patch["data"].Cast<Sqrat::Array<Q>>();
+            length = data.Length();
+        } else {
+            Sqrat::Object<Q> _binary = _patch["binary"].Cast<Sqrat::Object<Q>>();
+            SQBinary<Q> binary = _binary.GetObject();
+            length = binary.Size();
+        }
         if (addr != offset) continue;
         address = addr;
         break;
@@ -472,8 +482,12 @@ SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
     if (address == 0) return 0;
 
     if (M2Config::bPatchesDisableRAM && address != 0x200000) {
-        if (offset != address) return 1;
-        spdlog::info("[SQ] [Patch] filtering RAM patch offset 0x{:x}.", address);
+        spdlog::info("[SQ] [Patch] filtering RAM patch offset 0x{:x}.", address + index);
+        if (++index == length) {
+            address = 0;
+            length = 0;
+            index = 0;
+        }
         return 1;
     }
 
