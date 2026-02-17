@@ -7,7 +7,7 @@
 #define FALLBACK_REPO_URL "https://github.com/h-i-d-e-o/MGSM2Fix"
 
 #define VERSION_MAJOR     3
-#define VERSION_MINOR     1
+#define VERSION_MINOR     2
 #define VERSION_PATCH     0
 
 #define STRINGIFY_HELPER(x) #x
