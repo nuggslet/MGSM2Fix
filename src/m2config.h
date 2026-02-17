@@ -49,6 +49,7 @@ public:
     static inline bool bExternalWindowed;
     static inline bool bExternalBorderless;
     static inline bool bInternalEnabled;
+    static inline bool bInternalBorderless;
     static inline int iInternalHeight;
     static inline bool bInternalWidescreen;
     static inline bool bAnalogMode;

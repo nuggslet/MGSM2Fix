@@ -81,6 +81,7 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Internal Resolution"], "Enabled", bInternalEnabled);
     inipp::get_value(ini.sections["Internal Resolution"], "Height", iInternalHeight);
     inipp::get_value(ini.sections["Internal Resolution"], "Widescreen", bInternalWidescreen);
+    inipp::get_value(ini.sections["Internal Resolution"], "Borderless", bInternalBorderless);
 
     inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
 
@@ -145,6 +146,7 @@ void M2Config::Load()
     spdlog::info("[Config] bInternalEnabled: {}", bInternalEnabled);
     spdlog::info("[Config] iInternalHeight: {}", iInternalHeight);
     spdlog::info("[Config] bInternalWidescreen: {}", bInternalWidescreen);
+    spdlog::info("[Config] bInternalBorderless: {}", bInternalBorderless);
     spdlog::info("[Config] bAnalogMode: {}", bAnalogMode);
     spdlog::info("[Config] bLauncherSkipNotice: {}", bLauncherSkipNotice);
     spdlog::info("[Config] bLauncherStartGame: {}", bLauncherStartGame);

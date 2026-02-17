@@ -104,6 +104,35 @@ public:
     virtual bool GWBlank() override;
 #endif
 
+    static SQInteger MGS1_EmuTask_getHeight(HSQUIRRELVM<Squirk::Standard> v)
+    {
+        auto id = SQGlobals<Squirk::Standard>::GetTitle();
+        static std::set<int> NTSC = { 980, 981, 99, 101 };
+
+        SQObjectPtr<Squirk::Standard> func = SQ_EmuTask_getHeight;
+        SQObjectPtr<Squirk::Standard> res = {};
+        v->Call(func, 1, v->_stackbase, res, false);
+
+        SQFloat height = _float(res);
+        if (M2Config::bInternalBorderless && NTSC.contains(id)) {
+            height = (height * 224.0f) / 256.0f;
+        }
+
+        sq_pushfloat(v, height);
+        return 1;
+    }
+
+    virtual void SQOnInitSystemFirst() override
+    {
+        SQHook<Squirk::Standard>::HookMethod(
+            Sqrat::DefaultVM<Squirk::Standard>::Get(),
+            "EmuTask",
+            "getHeight",
+            MGS1_EmuTask_getHeight,
+            &SQ_EmuTask_getHeight
+        );
+    }
+
     virtual void SQOnMemoryDefine() override;
     virtual void SQOnUpdateGadgets() override;
     virtual void EPIOnLoadImage(void *image, unsigned int size) override;
@@ -122,6 +151,7 @@ public:
 private:
     uintptr_t MGS1_GlobalsPTR = 0;
     uintptr_t MGS1_LoaderPTR = 0;
+    static inline HSQOBJECT<Squirk::Standard> SQ_EmuTask_getHeight = {};
 
 #ifndef _WIN64
     int MGS1_Blank = 0;
@@ -188,17 +218,17 @@ private:
     };
 
     const PSX_ModuleTables MGS1_ModuleTables { {
-        { "mgs_r3000_vr_eu",  &MGS1_ModuleTable_VR_EU },
-        { "mgs_r3000_vr_us",  &MGS1_ModuleTable_VR_US },
-        { "mgs_r3000_vr_jp",  &MGS1_ModuleTable_VR_JP },
-        { "mgs_r3000_int", &MGS1_ModuleTable_Integral },
-        { "mgs_r3000_es",  &MGS1_ModuleTable_ES },
-        { "mgs_r3000_de",  &MGS1_ModuleTable_DE },
-        { "mgs_r3000_it",  &MGS1_ModuleTable_IT },
-        { "mgs_r3000_fr",  &MGS1_ModuleTable_FR },
-        { "mgs_r3000_uk",  &MGS1_ModuleTable_UK },
-        { "mgs_r3000_us",  &MGS1_ModuleTable_US },
-        { "mgs_r3000_jp",  &MGS1_ModuleTable_JP },
+        { "mgs_r3000_vr_eu", &MGS1_ModuleTable_VR_EU },
+        { "mgs_r3000_vr_us", &MGS1_ModuleTable_VR_US },
+        { "mgs_r3000_vr_jp", &MGS1_ModuleTable_VR_JP },
+        { "mgs_r3000_int",   &MGS1_ModuleTable_Integral },
+        { "mgs_r3000_es",    &MGS1_ModuleTable_ES },
+        { "mgs_r3000_de",    &MGS1_ModuleTable_DE },
+        { "mgs_r3000_it",    &MGS1_ModuleTable_IT },
+        { "mgs_r3000_fr",    &MGS1_ModuleTable_FR },
+        { "mgs_r3000_uk",    &MGS1_ModuleTable_UK },
+        { "mgs_r3000_us",    &MGS1_ModuleTable_US },
+        { "mgs_r3000_jp",    &MGS1_ModuleTable_JP },
         },
         std::bind([](const char *x, const char *y) {
                 return strcmp(x, y) < 0;
