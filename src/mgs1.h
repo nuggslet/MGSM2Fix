@@ -115,7 +115,7 @@ public:
 
         SQFloat height = _float(res);
         if (M2Config::bInternalBorderless && NTSC.contains(id)) {
-            height = (height * 224.0f) / 256.0f;
+            height = (height * 224.0f) / 240.0f;
         }
 
         sq_pushfloat(v, height);
