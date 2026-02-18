@@ -434,7 +434,7 @@ void PSX::GTE_RotTransPersSX2(safetyhook::Context & ctx)
     sx2 <<= 32;
     sx2 |= ctx.eax;
 #else
-    sx2 = ctx.r9;
+    sx2 = ctx.r8;
 #endif
 
     sx2 = (sx2 * y) / x;
@@ -443,7 +443,7 @@ void PSX::GTE_RotTransPersSX2(safetyhook::Context & ctx)
     ctx.eax = sx2 & UINT32_MAX;
     ctx.edx = sx2 >> 32;
 #else
-    ctx.r9 = sx2;
+    ctx.r8 = sx2;
 #endif
 }
 
@@ -471,9 +471,9 @@ void PSX::GTE_RotTransPersSX2P(safetyhook::Context & ctx)
         }
     }
 
-    sx2 = ctx.r9;
+    sx2 = ctx.rdx;
     sx2 = (sx2 * y) / x;
-    ctx.r9 = sx2;
+    ctx.rdx = sx2;
 }
 
 void PSX::GPU_SetResolution(safetyhook::Context & ctx)
