@@ -417,17 +417,8 @@ SQInteger SQHook<Q>::SQReturn_init_system_1st(HSQUIRRELVM<Q> v)
 }
 
 template <Squirk Q>
-SQInteger SQHook<Q>::_SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM<Q> v)
-{
-    sq_pushinteger(v, USE_ANALOG);
-    return 1;
-}
-
-template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_init_system_last(HSQUIRRELVM<Q> v)
 {
-    HookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
-
     M2Fix::GameInstance().SQOnInitSystemLast();
 
     return 0;
