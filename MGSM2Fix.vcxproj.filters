@@ -189,6 +189,9 @@
     <ClCompile Include="src\sqnames.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="src\patriots.cpp">
+      <Filter>M2Fix</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -723,6 +726,9 @@
       <Filter>M2Fix</Filter>
     </ClInclude>
     <ClInclude Include="src\versionchecker.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
+    <ClInclude Include="src\patriots.hpp">
       <Filter>M2Fix</Filter>
     </ClInclude>
   </ItemGroup>

@@ -36,8 +36,10 @@ typedef struct M2_EmuPSX {
             // No more, but space for up to 16.
             unsigned char Wide;
             unsigned char HighP;
-        } Flag;
-        unsigned char Flags[16]; // "InfoIntegers".
+            unsigned char _Reserved2[6];
+            unsigned char MovieNo;
+        } DipSwitch;
+        unsigned char DipSwitches[16]; // "InfoIntegers".
     };
 } M2_EmuPSX;
 

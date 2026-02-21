@@ -11,6 +11,8 @@
 
 #include "config.h"
 #include "borderless.h"
+
+#include "patriots.hpp"
 #include "versionchecker.h"
 
 enum class M2FixGame
@@ -90,6 +92,7 @@ public:
         M2Fix::CheckModules();
         M2Fix::Logging();
         M2Utils::LogSystemInfo();
+        Patriots::Check();
 
         M2Config::LoadInstance();
         M2Utils::CompatibilityWarnings();
@@ -162,11 +165,15 @@ public:
         bool has_double = std::filesystem::exists(path / name_double);
         if (has_single && has_double) {
             if (name == name_double) {
+                std::string title = fmt::format(
+                    "{}: Duplicate Install",
+                    m_sFixName
+                );
                 std::string message = fmt::format(
                     "{}.asi and {} both exist. One of them must be deleted as the current configuration is loading the mod twice.",
                     m_sFixName, name_double
                 );
-                MessageBox(NULL, message.c_str(), m_sFixName.data(), MB_ICONERROR | MB_OK);
+                MessageBox(NULL, message.c_str(), title.c_str(), MB_ICONERROR | MB_OK);
                 std::exit(1);
             }
             Sleep(INFINITE);

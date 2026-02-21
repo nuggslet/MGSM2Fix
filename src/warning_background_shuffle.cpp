@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "warning_background_shuffle.hpp"
 
+#include "m2fix.h"
 #include "m2utils.h"
 #include "m2config.h"
 
@@ -26,12 +27,20 @@ void BackgroundShuffleWarning::Check()
 	RegCloseKey(hKey);
 
 	if (status == ERROR_SUCCESS && value > 1) {
-		const char* message =
-			"Warning:\n\n"
-			"Having Windows wallpaper set to Slideshow / Windows Spotlight mode is known to cause stuttering while in DirectX games.\n"
-	        "\n"
-			"If you experience intermittent stuttering, change your wallpaper to a static picture in your personalization settings.";
+		std::string title = fmt::format(
+			"{}: Performance Warning",
+			M2Fix::FixName()
+		);
 
-		MessageBoxA(nullptr, message, "Performance Warning", MB_ICONWARNING | MB_OK);
+		std::string message = fmt::format(
+			"Having Windows wallpaper set to Slideshow / Windows Spotlight mode is known to cause stuttering while in DirectX games."
+	        "\n\n"
+			"If you experience intermittent stuttering, change your wallpaper to a static picture in your personalization settings."
+			"\n\n"
+			"If you want to disable this warning, edit {}.",
+			M2Fix::ConfigFile()
+		);
+
+		MessageBoxA(nullptr, message.c_str(), title.c_str(), MB_ICONWARNING | MB_OK);
 	}
 }
