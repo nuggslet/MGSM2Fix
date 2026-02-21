@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "patriots.hpp"
 #include "m2fix.h"
-#include <shellapi.h>
 
 void Patriots::Check()
 {
@@ -76,9 +75,15 @@ void Patriots::Check()
     }
 
     if (eGameType != UNKNOWN) {
-        std::string title = fmt::format(
-            "{}: Unsupported Game",
+        spdlog::critical("Failed to detect supported game, {} isn't supported by {}.",
+            M2Hook::GetInstance().ModuleIdentifier(),
             M2Fix::GetInstance().FixName()
+        );
+
+        std::string title = fmt::format(
+            "{}: Unsupported Game ({})",
+            M2Fix::GetInstance().FixName(),
+            sFixName
         );
 
         std::string message = fmt::format(

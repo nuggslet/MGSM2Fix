@@ -8,6 +8,7 @@ using namespace StdExt;
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
+#include <shellapi.h>
 
 #include <cassert>
 #include <cstdint>

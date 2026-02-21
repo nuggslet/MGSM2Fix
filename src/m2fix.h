@@ -247,14 +247,15 @@ public:
         );
         spdlog::info("----------");
 
-        std::string_view classname = M2Hook::ReadUntilTabOrCRLF(
-            M2Hook::GetInstance().Scan(
-                "43 4C 41 53 53 4E 41 4D 45 20 3D 20",
-                0xC
-            )); // `CLASSNAME = `
-
+        uintptr_t _classname = M2Hook::GetInstance().Scan(
+            "43 4C 41 53 53 4E 41 4D 45 20 3D 20",
+            0xC // `CLASSNAME = `
+        );
         for (auto & [type, info] : M2Fix::GetInstance().m_kGames)
         {
+            if (_classname == 0) break;
+            std::string_view classname = M2Hook::ReadUntilTabOrCRLF(_classname);
+
             if (info.classname == classname)
             {
                 m_eGame = type;
@@ -288,6 +289,52 @@ public:
             M2Hook::GetInstance().ModuleIdentifier(),
             m_sFixName
         );
+
+        std::string title = fmt::format(
+            "{}: Unsupported Game",
+            M2Fix::GetInstance().FixName()
+        );
+
+        std::string message = fmt::format(
+            "Failed to detect {} as a game supported by {}."
+            "\n\n",
+            M2Hook::GetInstance().ModuleIdentifier(),
+            m_sFixName
+        );
+
+        if (M2Hook::GetInstance().Scan(
+            "53 71 75 69 72 72 65 6C 20 32 2E 32 2E 34 20 73 74 61 62 6C 65",
+            0 /* `Squirrel 2.2.4 stable` */) != 0) {
+            message += fmt::format(
+                "This may be due to a {} bug, faulty install, a recent game update or the game is a fresh release requiring an update to {}."
+                "\n\n",
+                m_sFixName, m_sFixName
+            );
+        } else {
+            message += fmt::format(
+                "The game does not appear to use the Squirrel virtual machine, which means it will likely never be compatible with {}."
+                "\n\n",
+                m_sFixName
+            );
+        }
+
+        if (!M2Utils::IsSteamOS()) {
+            message += fmt::format(
+                "Want to visit the {} issue tracker?",
+                m_sFixName
+            );
+            if (MessageBoxA(nullptr, message.c_str(), title.c_str(), MB_ICONERROR | MB_OKCANCEL) == IDOK) {
+                ShellExecuteA(0, NULL, (std::string(PRIMARY_REPO_URL) + "/issues").c_str(), NULL, NULL, SW_SHOWDEFAULT);
+            }
+        }
+        else {
+            message += fmt::format(
+                "Visit {} for the {} issue tracker.",
+                std::string(PRIMARY_REPO_URL) + "/issues",
+                m_sFixName
+            );
+            MessageBoxA(nullptr, message.c_str(), title.c_str(), MB_ICONERROR | MB_OK);
+        }
 
         return false;
     }
