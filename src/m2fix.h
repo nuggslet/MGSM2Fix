@@ -348,7 +348,7 @@ private:
     std::multimap<M2FixGame, M2FixInfo> m_kGames = {
         { M2FixGame::MGS1,               { 2131630, "MGS1",                           "", MGS1::GetInstance()   } },
         { M2FixGame::MGSR,               { 2306740, "MGSBC",                          "", M2Game::GetInstance() } },
-        { M2FixGame::Contra,             { 1018020, "CONTRALLECTION",                 "", M2Game::GetInstance() } },
+        { M2FixGame::Contra,             { 1018020, "CONTRACOLLECTION",               "", M2Game::GetInstance() } },
         { M2FixGame::Dracula,            { 1018010, "CASTLEVANIACOLLECTION",          "", M2Game::GetInstance() } },
         { M2FixGame::DraculaAdvance,     { 1552550, "CASTLEVANIAADVANCECOLLECTION",   "", M2Game::GetInstance() } },
         { M2FixGame::DraculaDominus,     { 2369900, "CASTLEVANIADOMINUSCOLLECTION",   "", M2Game::GetInstance() } },
