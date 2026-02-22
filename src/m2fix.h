@@ -96,7 +96,6 @@ public:
 
         M2Config::LoadInstance();
         M2Utils::CompatibilityWarnings();
-        if (M2Config::bConsole) M2Fix::Console();
         if (M2Config::bBreak) __debugbreak();
 
         if (M2Fix::DetectGame())
@@ -107,6 +106,8 @@ public:
                 M2Fix::GameInfo()->title
             );
             spdlog::info("----------");
+
+            if (M2Config::bConsole) M2Fix::Console();
 
             EPI::LoadInstance();
             SQHook<>::LoadInstance();
