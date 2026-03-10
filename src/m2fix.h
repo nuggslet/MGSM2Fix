@@ -196,6 +196,7 @@ public:
     {
         FILE *dummy = {};
         AllocConsole();
+        freopen_s(&dummy, "CONIN$", "r", stdin);
         freopen_s(&dummy, "CONOUT$", "w", stdout);
 
         auto title = fmt::format("{} v{} - {}", m_sFixName, m_sFixVer, m_kGame->title);
@@ -211,10 +212,12 @@ public:
         );
         ShowWindow(window, SW_NORMAL);
 
+        SetConsoleMode(window, ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
+
         CONSOLE_FONT_INFOEX font = { sizeof(font) };
         GetCurrentConsoleFontEx(console, false, &font);
-        font.dwFontSize.X = 10;
-        font.dwFontSize.Y = 10;
+        font.dwFontSize.X = 12;
+        font.dwFontSize.Y = 12;
         SetCurrentConsoleFontEx(console, false, &font);
 
         RECT rect = {};
@@ -225,7 +228,7 @@ public:
 
         COLORREF key = {}; BYTE alpha = {}; DWORD flags = {};
         GetLayeredWindowAttributes(window, &key, &alpha, &flags);
-        alpha = (256 / 4) * 3;
+        alpha = (256 / 5) * 4;
         flags = LWA_ALPHA;
         SetLayeredWindowAttributes(window, key, alpha, flags);
 
@@ -234,6 +237,16 @@ public:
         auto logger = spdlog::default_logger();
         auto sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
         logger->sinks().push_back(sink);
+    }
+
+    static std::string Command()
+    {
+        if (_kbhit() == 0) return {};
+
+        std::string command;
+        std::getline(std::cin, command);
+
+        return command;
     }
 
     static bool DetectGame()

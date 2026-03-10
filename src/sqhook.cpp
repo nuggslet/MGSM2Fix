@@ -783,6 +783,141 @@ bool SQHook<Q>::Main(HSQUIRRELVM<Q> v)
     return false;
 }
 
+template <Squirk Q>
+void SQHook<Q>::Command()
+{
+    HSQUIRRELVM<Q> _v = Sqrat::DefaultVM<Q>::Get();
+
+    extern const SQChar *PtrToString(void *p);
+    extern const SQChar *IntToString(SQInteger n);
+    extern const SQChar *FloatToString(SQFloat n);
+
+    std::string command = M2Fix::Command();
+    if (command.empty()) return;
+    std::string response;
+    if (SQ_FAILED(sq_compilebuffer(_v, command.c_str(), scstrlen(command.c_str()), _SC("CONSOLE"), SQFalse)))
+        response = "error compiling the console function";
+    else
+    {
+        HSQOBJECT<Q> func;
+        sq_getstackobj(_v, -1, &func);
+        sq_addref(_v, &func);
+        sq_pop(_v, 1);
+
+        sq_pushobject(_v, func);
+        sq_pushroottable(_v);
+
+        if (SQ_FAILED(sq_call(_v, 1, SQTrue, SQFalse)))
+            response = "error calling the console function";
+        else
+        {
+            switch (sq_gettype(_v, -1)) {
+                case OT_NULL:
+                    response = "OT_NULL";
+                    break;
+                case OT_STRING:
+                {
+                    const SQChar *value;
+                    sq_getstring(_v, -1, &value);
+                    response = fmt::format("OT_STRING: {}", value);
+                }
+                break;
+                case OT_FLOAT:
+                {
+                    SQFloat value;
+                    sq_getfloat(_v, -1, &value);
+                    response = fmt::format("OT_FLOAT: {}", FloatToString(value));
+                }
+                break;
+                case OT_INTEGER:
+                {
+                    SQInteger value;
+                    sq_getinteger(_v, -1, &value);
+                    response = fmt::format("OT_INTEGER: {}", IntToString(value));
+                }
+                break;
+                case OT_BOOL:
+                {
+                    SQBool value;
+                    sq_getbool(_v, -1, &value);
+                    response = fmt::format("OT_BOOL: {}", value ? "true" : "false");
+                }
+                break;
+                case OT_CLOSURE:
+                {
+                    HSQOBJECT<Q> obj;
+                    sq_getstackobj(_v, -1, &obj);
+                    SQClosure<Q> *closure = _closure(obj);
+                    if (closure) {
+                        SQFunctionProto<Q> *proto = _funcproto(closure->_function);
+                        if (proto && sq_isstring(proto->_name)) {
+                            response = fmt::format("OT_CLOSURE: {}", _stringval(proto->_name));
+                        }
+                    }
+                    response = "OT_CLOSURE";
+                }
+                break;
+                case OT_NATIVECLOSURE:
+                {
+                    HSQOBJECT<Q> obj;
+                    sq_getstackobj(_v, -1, &obj);
+                    SQNativeClosure<Q> *closure = _nativeclosure(obj);
+                    if (sq_isstring(closure->_name)) {
+                        response = fmt::format("OT_NATIVECLOSURE: {} [{}]", _stringval(closure->_name), PtrToString(closure->_function));
+                    }
+                    response = fmt::format("OT_NATIVECLOSURE: {}", PtrToString(closure->_function));
+                }
+                break;
+                default:
+                {
+                    std::string type;
+                    switch (sq_gettype(_v, -1)) {
+                    case OT_INSTANCE:
+                        type = "OT_INSTANCE";
+                        break;
+                    case OT_CLASS:
+                        type = "OT_CLASS";
+                        break;
+                    case OT_TABLE:
+                        type = "OT_TABLE";
+                        break;
+                    case OT_ARRAY:
+                        type = "OT_ARRAY";
+                        break;
+                    case OT_USERDATA:
+                        type = "OT_USERDATA";
+                        break;
+                    case OT_USERPOINTER:
+                        type = "OT_USERPOINTER";
+                        break;
+                    case OT_GENERATOR:
+                        type = "OT_GENERATOR";
+                        break;
+                    case OT_THREAD:
+                        type = "OT_THREAD";
+                        break;
+                    case OT_FUNCPROTO:
+                        type = "OT_FUNCPROTO";
+                        break;
+                    case OT_WEAKREF:
+                        type = "OT_WEAKREF";
+                        break;
+                    }
+                    HSQOBJECT<Q> obj;
+                    sq_getstackobj(_v, -1, &obj);
+                    response = fmt::format("{}: {}", type, PtrToString((void*)obj._unVal.raw));
+                }
+                break;
+            }
+        }
+
+        sq_pop(_v, 2);
+        sq_release(_v, &func);
+    }
+
+    spdlog::info("[SQ] [Command] {}", response);
+}
+
 template <Squirk Q> SQInteger debug_hook(HSQUIRRELVM<Q> v, HSQUIRRELVM<Q> _v, HSQREMOTEDBG<Q> rdbg);
 template <Squirk Q>
 SQInteger SQHook<Q>::Hook(HSQUIRRELVM<Q> v)
@@ -819,6 +954,8 @@ SQInteger SQHook<Q>::Hook(HSQUIRRELVM<Q> v)
         data->hooked = true;
         if (Main(v)) return 0;
     }
+
+    Command();
 
     data->event_type = SQHelper<Q>::GetObject(2).Cast<int>();
     data->src        = SQHelper<Q>::GetObject(3).Cast<std::string>();

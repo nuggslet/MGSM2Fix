@@ -46,6 +46,8 @@ public:
 
     virtual void Load() override;
 
+    static void Command();
+
     static void HookFunction(HSQUIRRELVM<Q> v, const SQChar *func, SQFUNCTION<Q> hook, HSQOBJECT<Q> *obj = nullptr);
     static void HookMethod(HSQUIRRELVM<Q> v, const SQChar *name, const SQChar *func, SQFUNCTION<Q> hook, HSQOBJECT<Q> *obj = nullptr);
     static void HookMethod(HSQUIRRELVM<Q> v, HSQOBJECT<Q> name, const SQChar *func, SQFUNCTION<Q> hook, HSQOBJECT<Q> *obj = nullptr);

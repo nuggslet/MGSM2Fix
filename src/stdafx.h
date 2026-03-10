@@ -9,6 +9,7 @@ using namespace StdExt;
 #define NOMINMAX
 #include <Windows.h>
 #include <shellapi.h>
+#include <conio.h>
 
 #include <cassert>
 #include <cstdint>
