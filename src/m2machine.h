@@ -17,4 +17,5 @@ public:
 	virtual void Load() {}
 	virtual void BindModules() {}
 	virtual void UpdateScreenGeometry(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int) {}
+	virtual void UpdateGraphicsSettings(bool) {}
 };

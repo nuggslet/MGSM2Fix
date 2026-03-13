@@ -372,6 +372,11 @@ void PSX::UpdateScreenGeometry(unsigned int width, unsigned int height, unsigned
     ScreenMode = mode;
 }
 
+void PSX::UpdateGraphicsSettings(bool smoothing)
+{
+    Smoothing = smoothing;
+}
+
 void __cdecl PSX::CommandR3000(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
 {
     struct M2_EmuPSX *psx = cpu->Bus->Machine;
@@ -480,6 +485,11 @@ void PSX::GPU_SetResolution(safetyhook::Context & ctx)
 {
     if (!M2Config::bInternalEnabled) return;
     ctx.rax = M2Config::iInternalHeight;
+}
+
+void PSX::GPU_SetSmoothing(safetyhook::Context & ctx)
+{
+    ctx.r14 = Smoothing ? 4 : 0;
 }
 #endif
 
@@ -653,6 +663,11 @@ void PSX::Load()
             M2Hook::GetInstance().MidHook(
                 "89 43 14 3B C1 7E 05 89 4B 14 EB 02 8B C8 44 8B",
                 0, PSX::GPU_SetResolution, "[PSX] GPU_SetResolution"
+            );
+
+            M2Hook::GetInstance().MidHook(
+                "44 89 74 24 28 39 75 83 0F 84 2F 06 00 00 8B FE",
+                0, PSX::GPU_SetSmoothing, "[PSX] GPU_SetSmoothing"
             );
 #endif
 

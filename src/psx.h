@@ -21,6 +21,7 @@ public:
     virtual void Load() override;
     virtual void BindModules() override;
     virtual void UpdateScreenGeometry(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int) override;
+    virtual void UpdateGraphicsSettings(bool) override;
 
     static void main(struct M2_EmuR3000 *cpu);
 
@@ -54,6 +55,7 @@ private:
 #ifdef _WIN64
     static void GTE_RotTransPersSX2P(safetyhook::Context & ctx);
     static void GPU_SetResolution(safetyhook::Context & ctx);
+    static void GPU_SetSmoothing(safetyhook::Context & ctx);
 #endif
 
 public:
@@ -77,6 +79,8 @@ private:
     static inline unsigned int ScreenScaleX = 0;
     static inline unsigned int ScreenScaleY = 0;
     static inline unsigned int ScreenMode   = 0;
+
+    static inline bool Smoothing = false;
 
     typedef struct {
         unsigned int spec;

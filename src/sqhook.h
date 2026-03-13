@@ -142,6 +142,7 @@ private:
     static inline bool LaunchIntent    = true;
     static inline SQInteger StartPadId = 4;
     static inline bool CdRomShellOpen  = false;
+    static inline bool Smoothing       = false;
     static inline std::vector<std::string> LoadScript = {};
 
     static std::vector<std::string> ClassNames;

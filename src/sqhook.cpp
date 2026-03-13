@@ -484,7 +484,9 @@ SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
     if (address == 0) return 0;
 
     if (M2Config::bPatchesDisableRAM && address != 0x200000) {
-        spdlog::info("[SQ] [Patch] filtering RAM patch offset 0x{:x}.", address + index);
+        if (index == 0) {
+            spdlog::info("[SQ] [Patch] filtering RAM patch offset 0x{:x} with size 0x{:x}.", address, length);
+        }
         if (++index == length) {
             address = 0;
             length = 0;
@@ -583,9 +585,18 @@ bool SQHook<Q>::FixNative(HSQUIRRELVM<Q> v, SQFUNCTION<Q> func, SQNativeClosure<
 template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_setSmoothing(HSQUIRRELVM<Q> v)
 {
-    if (M2Config::bSmoothing) SQEmuTask<Q>::SetSmoothing(M2Config::bSmoothing.value());
-    else SQEmuTask<Q>::SetSmoothing(SQSystemData<Q>::SettingScreen::GetSmoothing());
-    if (M2Config::bScanline)  SQEmuTask<Q>::SetScanline(M2Config::bScanline.value());
+    Smoothing = SQSystemData<Q>::SettingScreen::GetSmoothing();
+    if (M2Config::bSmoothing) Smoothing = M2Config::bSmoothing.value();
+    SQEmuTask<Q>::SetSmoothing(Smoothing);
+
+    for (auto & Machine : M2Fix::GameInstance().MachineInstances()) {
+        Machine.get().UpdateGraphicsSettings(
+            Smoothing
+        );
+    }
+
+    if (M2Config::bScanline) SQEmuTask<Q>::SetScanline(M2Config::bScanline.value());
+
     return 0;
 }
 
