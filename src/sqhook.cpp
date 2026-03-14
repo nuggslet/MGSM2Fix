@@ -448,6 +448,7 @@ template <Squirk Q>
 SQInteger SQHook<Q>::_SQReturn_update_gadgets(HSQUIRRELVM<Q> v)
 {
     M2Fix::GameInstance().SQOnUpdateGadgets();
+    Command();
     return 0;
 }
 
@@ -1010,8 +1011,6 @@ SQInteger SQHook<Q>::Hook(HSQUIRRELVM<Q> v)
         data->hooked = true;
         if (Main(v)) return 0;
     }
-
-    Command();
 
     data->event_type = SQHelper<Q>::GetObject(2).Cast<int>();
     data->src        = SQHelper<Q>::GetObject(3).Cast<std::string>();
