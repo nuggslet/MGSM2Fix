@@ -277,8 +277,7 @@ void PSX::BindUserModules(PSX_ModuleTables & tables)
         for (auto & func : *table) {
             for (int i = 0; i < user->count; i++) {
                 if (user->table[i].address != func.first) continue;
-                auto key = std::make_pair(user->id, user->table[i].address);
-                UserHandlers[key] = user->table[i].handler;
+                UserHandlers[user->table[i].address] = user->table[i].handler;
                 user->table[i].handler = func.second;
                 break;
             }

@@ -60,7 +60,7 @@ private:
 
 public:
     static inline std::map<unsigned, PSXFUNCTION> KernelHandlers = {};
-    static inline std::map<std::pair<unsigned, unsigned>, PSXFUNCTION> UserHandlers = {};
+    static inline std::map<unsigned, PSXFUNCTION> UserHandlers = {};
 
     static inline unsigned int VideoMode = 0;
     static inline M2_EmuPSX *Emulator = nullptr;
