@@ -7,7 +7,7 @@
 #define FALLBACK_REPO_URL "https://github.com/h-i-d-e-o/MGSM2Fix"
 
 #define VERSION_MAJOR     3
-#define VERSION_MINOR     3
+#define VERSION_MINOR     4
 #define VERSION_PATCH     0
 
 #define STRINGIFY_HELPER(x) #x
@@ -26,7 +26,7 @@
 #define ORIGINAL_FILENAME FIX_NAME ".asi"
 #define PRODUCT_VERSION   VERSION_STRING
 #define FILE_VERSION      VERSION_STRING
-#define LEGAL_COPYRIGHT   "(C) 2025 nuggslet. Licensed under the MIT License."
+#define LEGAL_COPYRIGHT   "(C) 2023-2026 nuggslet. Licensed under the MIT License."
 #define LEGAL_TRADEMARKS  ""
 #define COMMENTS          ""
 

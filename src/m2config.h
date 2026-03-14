@@ -58,6 +58,7 @@ public:
     static inline bool bGameStageSelect;
     static inline bool bPatchesDisableRAM;
     static inline bool bPatchesDisableCDROM;
+    static inline bool bPatchesDisableFont;
     static inline bool bPatchesRemoveUnderpants;
     static inline bool bPatchesEnableMosaic;
     static inline bool bPatchesRestoreGhosts;

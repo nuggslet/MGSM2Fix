@@ -6,12 +6,18 @@
 
 int MGS1::MGS1_main(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    PSX::main(cpu);
+    static unsigned accelerator = 0;
 
-    unsigned int ra = cpu->Reg[31];
-    spdlog::info("[MGS 1] __main: 0x{:08x} -> 0x{:08x}.", address, ra);
+    if (accelerator != cpu->Accelerator) {
+        PSX::main(cpu);
+        unsigned int ra = cpu->Reg[31];
+        spdlog::info("[MGS 1] __main: 0x{:08x} -> 0x{:08x}.", address, ra);
+        accelerator = cpu->Accelerator;
+    }
 
-    return cpu->Step(cpu, 0, ra);
+    auto key = std::make_pair(cpu->Accelerator, address);
+    PSXFUNCTION main = PSX::UserHandlers[key];
+    return main(cpu, cycle, address);
 }
 
 int MGS1::MGS1_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int address)
@@ -22,7 +28,8 @@ int MGS1::MGS1_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int add
         oneshot = true;
     }
     if (!M2Config::bPatchesEnableMosaic) {
-        PSXFUNCTION s03a_disable_mosaic = PSX::ModuleHandlers[address];
+        auto key = std::make_pair(cpu->Accelerator, address);
+        PSXFUNCTION s03a_disable_mosaic = PSX::UserHandlers[key];
         return s03a_disable_mosaic(cpu, cycle, address);
     }
 
@@ -37,8 +44,25 @@ int MGS1::MGS1_s03d_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int add
         oneshot = true;
     }
     if (!M2Config::bPatchesEnableMosaic) {
-        PSXFUNCTION s03d_disable_mosaic = PSX::ModuleHandlers[address];
+        auto key = std::make_pair(cpu->Accelerator, address);
+        PSXFUNCTION s03d_disable_mosaic = PSX::UserHandlers[key];
         return s03d_disable_mosaic(cpu, cycle, address);
+    }
+
+    return cpu->Execute(cpu, cycle, address);
+}
+
+int MGS1::MGS1_font(M2_EmuR3000 *cpu, int cycle, unsigned int address)
+{
+    static bool oneshot = false;
+    if (!oneshot) {
+        spdlog::info("[MGS 1] {} high resolution font system.", M2Config::bPatchesDisableFont ? "Blocking" : "Allowing");
+        oneshot = true;
+    }
+    if (!M2Config::bPatchesDisableFont) {
+        auto key = std::make_pair(cpu->Accelerator, address);
+        PSXFUNCTION font = PSX::UserHandlers[key];
+        return font(cpu, cycle, address);
     }
 
     return cpu->Execute(cpu, cycle, address);

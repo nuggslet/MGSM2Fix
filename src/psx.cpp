@@ -1,7 +1,7 @@
 #include "m2fix.h"
 #include "psx.h"
 
-std::map<unsigned, PSXFUNCTION> PSX::KernelHandlers = {
+std::map<unsigned, PSXFUNCTION> PSX::VectorHandlers = {
     {0xA, Kernel_Event},
 };
 
@@ -178,7 +178,7 @@ int PSX::Event_VBlank(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 
 int PSX::Kernel_Event(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    PSXFUNCTION Kernel_Event = ModuleHandlers[address];
+    PSXFUNCTION Kernel_Event = KernelHandlers[address];
 
     unsigned int r4 = cpu->Reg[4];
 
@@ -197,7 +197,7 @@ int PSX::Kernel_Event(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 
 int PSX::Kernel_Function(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    PSXFUNCTION Kernel_Function = ModuleHandlers[address];
+    PSXFUNCTION Kernel_Function = KernelHandlers[address];
 
     if (M2Config::iEmulatorLevel >= 2) {
         char type = (((address & 0xF0) - 0xA0) >> 4) + 'A';
@@ -211,7 +211,7 @@ int PSX::Kernel_Function(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 
 int PSX::Kernel_Vector(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    PSXFUNCTION Kernel_Vector = ModuleHandlers[address];
+    PSXFUNCTION Kernel_Vector = KernelHandlers[address];
 
     unsigned int ra = cpu->Reg[31];
     unsigned int r9 = cpu->Reg[9];
@@ -220,9 +220,9 @@ int PSX::Kernel_Vector(M2_EmuR3000 *cpu, int cycle, unsigned int address)
         spdlog::info("[PSX] Vector({}: 0x{:x}): 0x{:x}.", Libraries[r9 >> 8], r9 & 0xFF, ra);
     }
 
-    if (KernelHandlers.contains(r9)) {
+    if (VectorHandlers.contains(r9)) {
         cpu->Reg[9] &= 0xFF;
-        auto Handler = KernelHandlers[r9];
+        auto Handler = VectorHandlers[r9];
         return Handler(cpu, cycle + 1, address);
     }
 
@@ -231,7 +231,7 @@ int PSX::Kernel_Vector(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 
 int PSX::Kernel_Call(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    PSXFUNCTION Kernel_Call = ModuleHandlers[address];
+    PSXFUNCTION Kernel_Call = KernelHandlers[address];
 
     if (M2Config::iEmulatorLevel >= 3) {
         unsigned int ra = cpu->Reg[31];
@@ -253,7 +253,7 @@ void PSX::BindKernelModules(std::vector<std::pair<unsigned int, PSXFUNCTION>> &t
             for (int i = 0; i < kernel->count; i++) {
                 if (kernel->table[i].address != func.first) continue;
                 spdlog::info("[PSX] Hooked kernel module at 0x{:x}.", func.first);
-                ModuleHandlers[kernel->table[i].address] = kernel->table[i].handler;
+                KernelHandlers[kernel->table[i].address] = kernel->table[i].handler;
                 kernel->table[i].handler = func.second;
                 break;
             }
@@ -263,79 +263,13 @@ void PSX::BindKernelModules(std::vector<std::pair<unsigned int, PSXFUNCTION>> &t
     spdlog::info("[PSX] Applied hooks to kernel modules.");
 }
 
-void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
+void PSX::BindUserModules(PSX_ModuleTables & tables)
 {
-    // To avoid repetitively populating the tables for each game version, we can exploit certain hooks being 
-    // assigned to the same native function. This means if you're lucky only e.g. the Integral table needs 
-    // to be populated for a given hook. Integral has been chosen as it tends to receive the most attention.
-    while (basename && tables.count(basename) != 0) {
-        auto basetable = tables[basename];
-
-        M2_EmuPSX_Module *base = NULL;
-        for (auto const & map : ModuleMap) {
-            M2_EmuPSX_Module *module = map.second;
-            if (module->type != 4) continue;
-            if (strcmp(module->name, basename) == 0) {
-                base = module;
-                break;
-            }
-        }
-
-        if (!base) {
-            spdlog::info("[PSX] Couldn't find {} base module.", basename);
-            break;
-        }
-
-        std::map<PSXFUNCTION, PSXFUNCTION> basemap;
-
-        // Now the base module is located, we can create the mapping between handler and hook.
-        M2_EmuPSX_UserModule *user = base->user;
-        for (auto & func : *basetable) {
-            for (int i = 0; i < user->count; i++) {
-                if (user->table[i].address != func.first) continue;
-                basemap[func.second] = user->table[i].handler;
-                ModuleHandlers[user->table[i].address] = user->table[i].handler;
-                user->table[i].handler = func.second;
-                break;
-            }
-        }
-
-        spdlog::info("[PSX] Applied hooks to {}.", base->name);
-
-        // With the mapping created, hook each module's handler.
-        for (auto const & map : ModuleMap) {
-            M2_EmuPSX_Module *module = map.second;
-            if (module->type != 4) continue;
-            M2_EmuPSX_UserModule *user = module->user;
-
-            if (strcmp(basename, module->name) == 0)
-                continue;
-
-            for (auto & func : basemap) {
-                for (int i = 0; i < user->count; i++) {
-                    if (user->table[i].handler != func.second) continue;
-                    ModuleHandlers[user->table[i].address] = user->table[i].handler;
-                    user->table[i].handler = func.first;
-                    break;
-                }
-            }
-
-            spdlog::info("[PSX] Applied hooks from {} to {}.", base->name, module->name);
-        }
-
-        break;
-    }
-
-    // Fall-back for cases where the native functions are essentially duplicated with e.g.
-    // only changes to ReadN/WriteN/Step parameters but are otherwise conceptually the same.
-    // These require populating the table for each game version.
     for (auto const & map : ModuleMap) {
         M2_EmuPSX_Module *module = map.second;
         if (module->type != 4) continue;
         M2_EmuPSX_UserModule *user = module->user;
 
-        if (basename && strcmp(basename, module->name) == 0)
-            continue;
         if (tables.count(module->name) == 0)
             continue;
 
@@ -343,7 +277,8 @@ void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
         for (auto & func : *table) {
             for (int i = 0; i < user->count; i++) {
                 if (user->table[i].address != func.first) continue;
-                ModuleHandlers[user->table[i].address] = user->table[i].handler;
+                auto key = std::make_pair(user->id, user->table[i].address);
+                UserHandlers[key] = user->table[i].handler;
                 user->table[i].handler = func.second;
                 break;
             }
@@ -355,10 +290,10 @@ void PSX::BindUserModules(PSX_ModuleTables & tables, const char *basename)
 
 void PSX::BindModules()
 {
-    auto [_tables, basename] = M2Fix::GameInstance().EPIModuleHook();
+    auto _tables = M2Fix::GameInstance().EPIModuleHook();
     if (_tables.has_value()) {
         auto tables = std::any_cast<PSX_ModuleTables>(_tables);
-        BindUserModules(tables, basename);
+        BindUserModules(tables);
     }
     BindKernelModules();
 }

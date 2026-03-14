@@ -285,14 +285,14 @@ typedef struct {
 
 typedef struct {
     const char *name;
-    int id;
+    unsigned id;
     M2_EmuPSX_TableEntry *table;
     int count;
 } M2_EmuPSX_KernelModule;
 
 typedef struct {
     const char *name;
-    int id;
+    unsigned id;
     M2_EmuPSX_TableEntry *table;
     int count;
     void *deps;

@@ -40,7 +40,7 @@ private:
     static int Event_VBlank(struct M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
     static void BindKernelModules(std::vector<std::pair<unsigned int, PSXFUNCTION>> &table = ModuleTable_Kernel);
-    static void BindUserModules(PSX_ModuleTables & tables, const char *basename);
+    static void BindUserModules(PSX_ModuleTables & tables);
 
     static void __cdecl CommandR3000(struct M2_EmuR3000 *cpu, int cmd, unsigned int **args);
     static void __cdecl CommandPSX(struct M2_EmuPSX *psx, int cmd, unsigned int **args);
@@ -59,14 +59,15 @@ private:
 #endif
 
 public:
-    static inline std::map<unsigned, PSXFUNCTION> ModuleHandlers = {};
+    static inline std::map<unsigned, PSXFUNCTION> KernelHandlers = {};
+    static inline std::map<std::pair<unsigned, unsigned>, PSXFUNCTION> UserHandlers = {};
 
     static inline unsigned int VideoMode = 0;
     static inline M2_EmuPSX *Emulator = nullptr;
 
 private:
 
-    static std::map<unsigned, PSXFUNCTION> KernelHandlers;
+    static std::map<unsigned, PSXFUNCTION> VectorHandlers;
     static std::map<unsigned, PSXFUNCTION> EventHandlers;
     static std::map<unsigned, const char *> Libraries;
 

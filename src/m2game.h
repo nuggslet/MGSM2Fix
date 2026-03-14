@@ -29,7 +29,7 @@ public:
 	virtual void SQOnInitSystemFirst() {}
 	virtual void SQOnInitSystemLast() {}
 
-	virtual std::pair<std::any, const char *> EPIModuleHook() { return {}; }
+	virtual std::any EPIModuleHook() { return {}; }
 
 	virtual void EPIOnLoadImage(void *image, unsigned int size) {}
 	virtual bool EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args) { return true; }

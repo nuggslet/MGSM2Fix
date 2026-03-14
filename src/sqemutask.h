@@ -24,9 +24,15 @@ public:
 		return SQEmuTask().Invoke<void>(__func__, width, offset, value);
 	}
 
+#ifndef _WIN64
 	static void EntryCdRomPatch(SQInteger offset, Sqrat::Array<Q> & data) {
 		return SQEmuTask().Invoke<void>(__func__, offset, data);
 	}
+#else
+	static void EntryCdRomPatch(SQInteger offset, SQBool highp, Sqrat::Array<Q> & data) {
+		return SQEmuTask().Invoke<void>(__func__, offset, highp, data);
+	}
+#endif
 	static void ReleaseCdRomPatch() {
 		return SQEmuTask().Invoke<void>(__func__);
 	}

@@ -56,8 +56,9 @@ public:
     static void SetReturnHook(const char *name, SQFUNCTION<Q> func);
     static void SetLoadScriptHook(const char *name, SQFUNCTION<Q> func);
     static void SetNativeCallHook(const char *name, SQFUNCTION<Q> func);
-    static void SetPatchFileFilter(std::string file);
-    static void SetPatchDataFilter(std::vector<unsigned char> data);
+    static void SetPatchFileBlacklist(std::string file);
+    static void SetPatchDataBlacklist(std::vector<unsigned char> data);
+    static void SetTextureWhitelist(unsigned int data);
 
     static bool IsCdRomShellOpen()
     {
@@ -124,14 +125,18 @@ private:
     static SQInteger SQNative_setRamValue(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_setupCdRom(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v);
+    static SQInteger SQNative_releaseCdRomPatch(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_setCdRomShellOpen(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_setLogFilename(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_setDotmatrix(HSQUIRRELVM<Q> v);
+    static SQInteger SQNative_entryTexturePatch(HSQUIRRELVM<Q> v);
+    static SQInteger SQNative_releaseTexturePatch(HSQUIRRELVM<Q> v);
 
 private:
     static inline HSQREMOTEDBG<Q> DBG = nullptr;
-    static inline std::vector<std::string> FileFilter = {};
-    static inline std::vector<std::vector<unsigned char>> DataFilter = {};
+    static inline std::vector<std::string> FileBlacklist = {};
+    static inline std::vector<std::vector<unsigned char>> DataBlacklist = {};
+    static inline std::vector<unsigned int> TextureWhitelist = {};
     static inline unsigned int ThreadCount           = 0;
     static inline unsigned int InitializeFinishCount = 0;
     static inline unsigned int ScreenWidth  = 0;

@@ -91,6 +91,8 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Patches"], "DisableRAM", bPatchesDisableRAM);
     inipp::get_value(ini.sections["Patches"], "DisableCDROM", bPatchesDisableCDROM);
 
+    inipp::get_value(ini.sections["Patches"], "DisableFont", bPatchesDisableFont);
+
     inipp::get_value(ini.sections["Patches"], "RemoveUnderpants", bPatchesRemoveUnderpants);
     inipp::get_value(ini.sections["Patches"], "EnableMosaic", bPatchesEnableMosaic);
     inipp::get_value(ini.sections["Patches"], "RestoreGhosts", bPatchesRestoreGhosts);
@@ -153,6 +155,7 @@ void M2Config::Load()
     spdlog::info("[Config] bLauncherStartGame: {}", bLauncherStartGame);
     spdlog::info("[Config] bPatchesDisableRAM: {}", bPatchesDisableRAM);
     spdlog::info("[Config] bPatchesDisableCDROM: {}", bPatchesDisableCDROM);
+    spdlog::info("[Config] bPatchesDisableFont: {}", bPatchesDisableFont);
     spdlog::info("[Config] bPatchesRemoveUnderpants: {}", bPatchesRemoveUnderpants);
     spdlog::info("[Config] bPatchesEnableMosaic: {}", bPatchesEnableMosaic);
     spdlog::info("[Config] bPatchesRestoreGhosts: {}", bPatchesRestoreGhosts);

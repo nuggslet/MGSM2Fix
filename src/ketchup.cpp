@@ -15,7 +15,11 @@ bool Ketchup<Q>::ApplyBlock(HSQUIRRELVM<Q> v,
 	for (size_t i = 0; i < size; i++) {
 		block.SetValue(i, data[i]);
 	}
+#ifndef _WIN64
 	SQEmuTask<Q>::EntryCdRomPatch(static_cast<SQInteger>(offset), block);
+#else
+	SQEmuTask<Q>::EntryCdRomPatch(static_cast<SQInteger>(offset), false, block);
+#endif
 	spdlog::info("[SQ] [Ketchup] CD-ROM write 0x{:08x} with {} bytes.", offset, size);
 
 	// If tray is open this isn't a cold boot, so we can skip this.

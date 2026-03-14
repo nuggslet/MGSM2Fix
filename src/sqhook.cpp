@@ -49,10 +49,13 @@ template <Squirk Q>
 std::vector<std::pair<const SQChar *, SQFUNCTION<Q>>> SQHook<Q>::NativeTable = {
     {"setRamValue",                             SQNative_setRamValue},
     {"entryCdRomPatch",                         SQNative_entryCdRomPatch},
+    {"releaseCdRomPatch",                       SQNative_releaseCdRomPatch},
     {"setCdRomShellOpen",                       SQNative_setCdRomShellOpen},
     {"setupCdRom",                              SQNative_setupCdRom},
     {"setLogFilename",                          SQNative_setLogFilename},
     {"setDotmatrix",                            SQNative_setDotmatrix},
+    {"entryTexturePatch",                       SQNative_entryTexturePatch},
+    {"releaseTexturePatch",                     SQNative_releaseTexturePatch},
 };
 
 template <Squirk Q>
@@ -247,15 +250,21 @@ void SQHook<Q>::SetNativeCallHook(const char *name, SQFUNCTION<Q> func)
 }
 
 template <Squirk Q>
-void SQHook<Q>::SetPatchFileFilter(std::string file)
+void SQHook<Q>::SetPatchFileBlacklist(std::string file)
 {
-    FileFilter.push_back(file);
+    FileBlacklist.push_back(file);
 }
 
 template <Squirk Q>
-void SQHook<Q>::SetPatchDataFilter(std::vector<unsigned char> data)
+void SQHook<Q>::SetPatchDataBlacklist(std::vector<unsigned char> data)
 {
-    DataFilter.push_back(data);
+    DataBlacklist.push_back(data);
+}
+
+template <Squirk Q>
+void SQHook<Q>::SetTextureWhitelist(unsigned int id)
+{
+    TextureWhitelist.push_back(id);
 }
 
 template <Squirk Q>
@@ -456,6 +465,8 @@ SQInteger SQHook<Q>::SQNative_setDotmatrix(HSQUIRRELVM<Q> v)
 template <Squirk Q>
 SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
 {
+    SQInteger ret = 0;
+
     unsigned width = SQHelper<Q>::GetObject(2).Cast<unsigned>();
     unsigned offset = SQHelper<Q>::GetObject(3).Cast<unsigned>();
     unsigned value = SQHelper<Q>::GetObject(4).Cast<unsigned>();
@@ -466,36 +477,41 @@ SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
     static unsigned address = 0;
     static unsigned length = 0;
     static unsigned index = 0;
-    for (int i = 0; i < patches.Length(); ++i) {
-        Sqrat::Table<Q> _patch = *patches.GetValue<Sqrat::Table<Q>>(i);
-        unsigned addr = _patch["offset"].Cast<unsigned>() & 0xFFFFFF;
-        if (_patch.HasKey("data")) {
-            Sqrat::Array<Q> data = _patch["data"].Cast<Sqrat::Array<Q>>();
-            length = data.Length();
-        } else {
-            Sqrat::Object<Q> _binary = _patch["binary"].Cast<Sqrat::Object<Q>>();
-            SQBinary<Q> binary = _binary.GetObject();
-            length = binary.Size();
+
+    if (address == 0) {
+        for (int i = 0; i < patches.Length(); ++i) {
+            Sqrat::Table<Q> _patch = *patches.GetValue<Sqrat::Table<Q>>(i);
+            unsigned addr = _patch["offset"].Cast<unsigned>() & 0xFFFFFF;
+            if (addr != offset) continue;
+            if (_patch.HasKey("data")) {
+                Sqrat::Array<Q> data = _patch["data"].Cast<Sqrat::Array<Q>>();
+                length = data.Length();
+            }
+            else {
+                Sqrat::Object<Q> _binary = _patch["binary"].Cast<Sqrat::Object<Q>>();
+                SQBinary<Q> binary = _binary.GetObject();
+                length = binary.Size();
+            }
+            address = addr;
+            break;
         }
-        if (addr != offset) continue;
-        address = addr;
-        break;
     }
-    if (address == 0) return 0;
+    if (address == 0) return ret;
 
     if (M2Config::bPatchesDisableRAM && address != 0x200000) {
         if (index == 0) {
             spdlog::info("[SQ] [Patch] filtering RAM patch offset 0x{:x} with size 0x{:x}.", address, length);
         }
-        if (++index == length) {
-            address = 0;
-            length = 0;
-            index = 0;
-        }
-        return 1;
+        ret = 1;
     }
 
-    return 0;
+    if (length != 0 && ++index == length) {
+        address = 0;
+        length = 0;
+        index = 0;
+    }
+
+    return ret;
 }
 
 template <Squirk Q>
@@ -525,7 +541,7 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
         return 1;
     }
 
-    for (auto &filter : FileFilter)
+    for (auto &filter : FileBlacklist)
     {
         if (file.empty()) break;
         if (file.starts_with(filter)) {
@@ -533,7 +549,7 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
             return 1;
         }
     }
-    for (auto &filter : DataFilter)
+    for (auto &filter : DataBlacklist)
     {
         if (buffer.empty()) break;
         if (filter == buffer) {
@@ -543,6 +559,35 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
     }
 
     return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQNative_releaseCdRomPatch(HSQUIRRELVM<Q> v)
+{
+    spdlog::info("[SQ] [Patch] CD-ROM patch released.");
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQNative_releaseTexturePatch(HSQUIRRELVM<Q> v)
+{
+    spdlog::info("[SQ] [Patch] Texture patch released.");
+    return 0;
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQNative_entryTexturePatch(HSQUIRRELVM<Q> v)
+{
+    unsigned id = SQHelper<Q>::GetObject(2).Cast<unsigned>();
+
+    if (TextureWhitelist.empty()) return 0;
+    for (auto &filter : TextureWhitelist)
+    {
+        if (filter == id) return 0;
+    }
+
+    spdlog::info("[SQ] [Patch] filtering texture patch ID 0x{:x}.", id);
+    return 1;
 }
 
 template <Squirk Q>
