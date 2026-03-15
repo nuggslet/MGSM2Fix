@@ -435,7 +435,7 @@ SQInteger SQHook<Q>::_SQ_init_emulator_get_arch_sub_info(HSQUIRRELVM<Q> v)
 template <Squirk Q>
 SQInteger SQHook<Q>::SQReturn_init_system_last(HSQUIRRELVM<Q> v)
 {
-    if (M2Config::bAnalogMode) {
+    if (M2Config::bAnalog.has_value() && M2Config::bAnalog.value()) {
         HookFunction(v, _SC("_init_emulator_get_arch_sub_info"), _SQ_init_emulator_get_arch_sub_info);
     }
 

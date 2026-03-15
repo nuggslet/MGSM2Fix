@@ -97,9 +97,9 @@ void MGS1::SQOnUpdateGadgets()
         }
     }
 
-#ifndef _WIN64
-    if (M2Config::bAnalogMode) AnalogLoop();
-#endif
+    if (M2Config::bAnalog.has_value() && M2Config::bAnalog.value()) {
+        AnalogLoop();
+    }
 }
 
 void MGS1::EPIOnLoadImage(void *image, unsigned int size)

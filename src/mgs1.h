@@ -5,8 +5,8 @@
 #include "m2config.h"
 
 #include "psx.h"
-#ifndef _WIN64
 #include "analog.h"
+#ifndef _WIN64
 #include "d3d11.h"
 #endif
 
@@ -38,11 +38,9 @@ public:
 #ifndef _WIN64
         static D3D11 d3d11;
         D3D11::LoadInstance(&d3d11);
-
-        if (M2Config::bAnalogMode) {
-            Analog::LoadInstance();
-        }
 #endif
+
+        Analog::LoadInstance();
 
         SQHook<Squirk::Standard>::SetReturnHook("set_playside_mgs", SQReturn_set_playside_mgs);
 
@@ -151,9 +149,7 @@ public:
 
     static SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM<Squirk::Standard> v);
 
-#ifndef _WIN64
     static void AnalogLoop();
-#endif
 
 private:
     uintptr_t MGS1_GlobalsPTR = 0;

@@ -83,7 +83,18 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Internal Resolution"], "Widescreen", bInternalWidescreen);
     inipp::get_value(ini.sections["Internal Resolution"], "Borderless", bInternalBorderless);
 
-    inipp::get_value(ini.sections["Input"], "Analog", bAnalogMode);
+    {
+        bool _bAnalog;
+        if (inipp::get_value(ini.sections["Input"], "Analog", _bAnalog))
+            bAnalog = _bAnalog;
+    }
+    {
+        bool _bSwapSticks;
+        if (inipp::get_value(ini.sections["Input"], "SwapSticks", _bSwapSticks))
+            bSwapSticks = _bSwapSticks;
+    }
+
+    inipp::get_value(ini.sections["Input"], "RemoveDeadzone", bRemoveDeadzone);
 
     inipp::get_value(ini.sections["Launcher"], "SkipNotice", bLauncherSkipNotice);
     inipp::get_value(ini.sections["Launcher"], "StartGame", bLauncherStartGame);
@@ -150,7 +161,9 @@ void M2Config::Load()
     spdlog::info("[Config] iInternalHeight: {}", iInternalHeight);
     spdlog::info("[Config] bInternalWidescreen: {}", bInternalWidescreen);
     spdlog::info("[Config] bInternalBorderless: {}", bInternalBorderless);
-    spdlog::info("[Config] bAnalogMode: {}", bAnalogMode);
+    if (bAnalog)     spdlog::info("[Config] bAnalog: {}", *bAnalog);
+    if (bSwapSticks) spdlog::info("[Config] bSwapSticks: {}", *bSwapSticks);
+    spdlog::info("[Config] bRemoveDeadzone: {}", bRemoveDeadzone);
     spdlog::info("[Config] bLauncherSkipNotice: {}", bLauncherSkipNotice);
     spdlog::info("[Config] bLauncherStartGame: {}", bLauncherStartGame);
     spdlog::info("[Config] bPatchesDisableRAM: {}", bPatchesDisableRAM);
