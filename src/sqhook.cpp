@@ -2,6 +2,7 @@
 #include "sqhook.h"
 
 #include "sqbinary.h"
+#include "sqresource.h"
 #include "sqemutask.h"
 #include "sqglobals.h"
 #include "sqhelper.h"
@@ -749,6 +750,8 @@ void SQHook<Q>::FixScript(HSQUIRRELVM<Q> v)
 {
     M2FixData<Q> *data = EnsureFixData(v);
     if (data->func.empty()) return;
+
+    SQResource<Q>::GetInstance().Poll();
     
     switch (data->event_type) {
         case 'c':

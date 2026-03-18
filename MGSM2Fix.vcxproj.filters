@@ -731,6 +731,9 @@
     <ClInclude Include="src\patriots.hpp">
       <Filter>M2Fix</Filter>
     </ClInclude>
+    <ClInclude Include="src\sqresource.h">
+      <Filter>Bindings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGSM2Fix.rc" />

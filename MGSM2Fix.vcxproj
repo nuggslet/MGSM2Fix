@@ -219,6 +219,7 @@
     <ClInclude Include="src\sqrat\include\sqrat\sqratTypes.h" />
     <ClInclude Include="src\sqrat\include\sqrat\sqratUtil.h" />
     <ClInclude Include="src\sqrat\include\sqrat\sqratVM.h" />
+    <ClInclude Include="src\sqresource.h" />
     <ClInclude Include="src\squirrel\include\sqstdaux.h" />
     <ClInclude Include="src\squirrel\include\sqstdblob.h" />
     <ClInclude Include="src\squirrel\include\sqstdio.h" />
