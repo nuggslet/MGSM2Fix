@@ -24,12 +24,12 @@ public:
 
 	static std::string GetExecutable(std::string version = SQSystemData<Q>::SettingETC::GetVersion())
 	{
-		return SQTitleProf()["m2epi"]["version"][version.c_str()]["rom"].Cast<std::string>();
+		return SQTitleProf()["m2epi"]["version"][version]["rom"].Cast<std::string>();
 	}
 
 	static unsigned GetDisks(std::string version = SQSystemData<Q>::SettingETC::GetVersion())
 	{
-		auto obj = SQTitleProf()["m2epi"]["version"][version.c_str()]["disk"];
+		auto obj = SQTitleProf()["m2epi"]["version"][version]["disk"];
 		if (obj.IsNull()) return 0;
 		switch (obj.GetType()) {
 			case OT_STRING: return 1;
@@ -41,7 +41,7 @@ public:
 		unsigned id = SQGlobals<Q>::GetDisk(),
 		std::string version = SQSystemData<Q>::SettingETC::GetVersion()
 	) {
-		auto obj = SQTitleProf()["m2epi"]["version"][version.c_str()]["disk"];
+		auto obj = SQTitleProf()["m2epi"]["version"][version]["disk"];
 		auto disks = GetDisks(version);
 		if (id >= disks) return {};
 		if (disks > 1) obj = obj[id];
@@ -53,8 +53,8 @@ public:
 		std::string version = SQSystemData<Q>::SettingETC::GetVersion()
 	) {
 		auto obj = SQTitleProf()["memory_define"];
-		if (GetVersions() > 1) obj = obj[version.c_str()];
-		obj = obj[name.c_str()];
+		if (GetVersions() > 1) obj = obj[version];
+		obj = obj[name];
 		if (obj.GetType() != OT_INTEGER) obj = obj[disk];
 		return obj.Cast<unsigned>();
 	}

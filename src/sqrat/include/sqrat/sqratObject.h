@@ -245,6 +245,12 @@ public:
 #endif
     }
 
+#ifdef _SQ_M2
+    Object<Q> GetSlot(const std::basic_string_view<SQChar> slot) const {
+        return GetSlot(slot.data());
+    }
+#endif
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Attempts to get the value of an index from the object
     ///
