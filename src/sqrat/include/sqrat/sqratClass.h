@@ -201,10 +201,10 @@ public:
         ClassData<C, Q>* cd = ClassType<C, Q>::getClassData(this->vm);
 
         // Add the getter
-        BindAccessor(name, &var, sizeof(var), &sqDefaultGet<C, V>, cd->getTable);
+        BindAccessor(name, &var, sizeof(var), &sqDefaultGet<Q, C, V>, cd->getTable);
 
         // Add the setter
-        BindAccessor(name, &var, sizeof(var), &sqDefaultSet<C, V>, cd->setTable);
+        BindAccessor(name, &var, sizeof(var), &sqDefaultSet<Q, C, V>, cd->setTable);
 
         return *this;
     }
@@ -229,7 +229,7 @@ public:
         ClassData<C, Q>* cd = ClassType<C, Q>::getClassData(this->vm);
 
         // Add the getter
-        BindAccessor(name, &var, sizeof(var), &sqDefaultGet<C, V>, cd->getTable);
+        BindAccessor(name, &var, sizeof(var), &sqDefaultGet<Q, C, V>, cd->getTable);
 
         return *this;
     }
@@ -254,10 +254,10 @@ public:
         ClassData<C, Q>* cd = ClassType<C, Q>::getClassData(this->vm);
 
         // Add the getter
-        BindAccessor(name, &var, sizeof(var), &sqStaticGet<C, V>, cd->getTable);
+        BindAccessor(name, &var, sizeof(var), &sqStaticGet<Q, C, V>, cd->getTable);
 
         // Add the setter
-        BindAccessor(name, &var, sizeof(var), &sqStaticSet<C, V>, cd->setTable);
+        BindAccessor(name, &var, sizeof(var), &sqStaticSet<Q, C, V>, cd->setTable);
 
         return *this;
     }
