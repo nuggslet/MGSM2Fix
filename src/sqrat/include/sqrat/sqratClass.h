@@ -284,12 +284,12 @@ public:
 
         if(getMethod != NULL) {
             // Add the getter
-            BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberOverloadedFunc(getMethod), cd->getTable);
+            BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberOverloadedFunc<Q>(getMethod), cd->getTable);
         }
 
         if(setMethod != NULL) {
             // Add the setter
-            BindAccessor(name, &setMethod, sizeof(setMethod), SqMemberOverloadedFunc(setMethod), cd->setTable);
+            BindAccessor(name, &setMethod, sizeof(setMethod), SqMemberOverloadedFunc<Q>(setMethod), cd->setTable);
         }
 
         return *this;
@@ -317,12 +317,12 @@ public:
 
         if(getMethod != NULL) {
             // Add the getter
-            BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberGlobalOverloadedFunc(getMethod), cd->getTable);
+            BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberGlobalOverloadedFunc<Q>(getMethod), cd->getTable);
         }
 
         if(setMethod != NULL) {
             // Add the setter
-            BindAccessor(name, &setMethod, sizeof(setMethod), SqMemberGlobalOverloadedFunc(setMethod), cd->setTable);
+            BindAccessor(name, &setMethod, sizeof(setMethod), SqMemberGlobalOverloadedFunc<Q>(setMethod), cd->setTable);
         }
 
         return *this;
@@ -345,7 +345,7 @@ public:
     template<class F>
     Class& Prop(const SQChar* name, F getMethod) {
         // Add the getter
-        BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberOverloadedFunc(getMethod), ClassType<C, Q>::getClassData(this->vm)->getTable);
+        BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberOverloadedFunc<Q>(getMethod), ClassType<C, Q>::getClassData(this->vm)->getTable);
 
         return *this;
     }
@@ -367,7 +367,7 @@ public:
     template<class F>
     Class& GlobalProp(const SQChar* name, F getMethod) {
         // Add the getter
-        BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberGlobalOverloadedFunc(getMethod), ClassType<C, Q>::getClassData(this->vm)->getTable);
+        BindAccessor(name, &getMethod, sizeof(getMethod), SqMemberGlobalOverloadedFunc<Q>(getMethod), ClassType<C, Q>::getClassData(this->vm)->getTable);
 
         return *this;
     }
@@ -385,7 +385,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& Func(const SQChar* name, F method) {
-        this->BindFunc(name, &method, sizeof(method), SqMemberFunc(method));
+        this->BindFunc(name, &method, sizeof(method), SqMemberFunc<Q>(method));
         return *this;
     }
 
@@ -406,7 +406,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& Overload(const SQChar* name, F method) {
-        this->BindOverload(name, &method, sizeof(method), SqMemberOverloadedFunc(method), SqOverloadFunc(method), SqGetArgCount(method));
+        this->BindOverload(name, &method, sizeof(method), SqMemberOverloadedFunc<Q>(method), SqOverloadFunc<Q>(method), SqGetArgCount(method));
         return *this;
     }
 
@@ -423,7 +423,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& GlobalFunc(const SQChar* name, F method) {
-        this->BindFunc(name, &method, sizeof(method), SqMemberGlobalFunc(method));
+        this->BindFunc(name, &method, sizeof(method), SqMemberGlobalFunc<Q>(method));
         return *this;
     }
 
@@ -461,7 +461,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& GlobalOverload(const SQChar* name, F method) {
-        this->BindOverload(name, &method, sizeof(method), SqMemberGlobalOverloadedFunc(method), SqOverloadFunc(method), SqGetArgCount(method) - 1);
+        this->BindOverload(name, &method, sizeof(method), SqMemberGlobalOverloadedFunc<Q>(method), SqOverloadFunc<Q>(method), SqGetArgCount(method) - 1);
         return *this;
     }
 
@@ -482,7 +482,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& StaticOverload(const SQChar* name, F method) {
-        this->BindOverload(name, &method, sizeof(method), SqGlobalOverloadedFunc(method), SqOverloadFunc(method), SqGetArgCount(method));
+        this->BindOverload(name, &method, sizeof(method), SqGlobalOverloadedFunc<Q>(method), SqOverloadFunc<Q>(method), SqGetArgCount(method));
         return *this;
     }
 
@@ -662,7 +662,7 @@ protected:
 
     // constructor binding
     Class& BindConstructor(SQFUNCTION<Q> method, SQInteger nParams, const SQChar *name = 0) {
-        SQFUNCTION<Q> overload = SqOverloadFunc(method);
+        SQFUNCTION<Q> overload = SqOverloadFunc<Q>(method);
         bool alternative_global = false;
         if (name == 0)
             name = _SC("constructor");

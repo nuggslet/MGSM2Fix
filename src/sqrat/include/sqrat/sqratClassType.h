@@ -40,7 +40,7 @@ namespace Sqrat
 
 // The copy function for a class
 template <Squirk Q>
-using COPYFUNC = SQInteger(*)(HSQUIRRELVM<Q>, const SQChar *, ...);
+using COPYFUNC = SQInteger(*)(HSQUIRRELVM<Q>, SQInteger, const void*);
 
 // Every Squirrel class instance made by Sqrat has its type tag set to a AbstractStaticClassData object that is unique per C++ class
 template <Squirk Q>

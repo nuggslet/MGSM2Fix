@@ -39,12 +39,12 @@ namespace Sqrat {
 //
 // Squirrel Global Functions
 //
-template <class R, Squirk Q>
+template <Squirk Q, class R>
 class SqGlobal {
 public:
 
     // Arg Count 0
-    template <bool overloaded /*= false*/>
+    template <Squirk Q, bool overloaded /*= false*/>
     static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -70,7 +70,7 @@ public:
     }
 
     // Arg Count 1
-    template <class A1, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -102,7 +102,7 @@ public:
     }
 
     // Arg Count 2
-    template <class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -136,7 +136,7 @@ public:
     }
 
     // Arg Count 3
-    template <class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -172,7 +172,7 @@ public:
     }
 
     // Arg Count 4
-    template <class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -210,7 +210,7 @@ public:
     }
 
     // Arg Count 5
-    template <class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -250,7 +250,7 @@ public:
     }
 
     // Arg Count 6
-    template <class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -292,7 +292,7 @@ public:
     }
 
     // Arg Count 7
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -336,7 +336,7 @@ public:
     }
 
     // Arg Count 8
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -382,7 +382,7 @@ public:
     }
 
     // Arg Count 9
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -430,7 +430,7 @@ public:
     }
 
     // Arg Count 10
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -480,7 +480,7 @@ public:
     }
 
     // Arg Count 11
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -532,7 +532,7 @@ public:
     }
 
     // Arg Count 12
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -586,7 +586,7 @@ public:
     }
 
     // Arg Count 13
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -642,7 +642,7 @@ public:
     }
 
     // Arg Count 14
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -705,12 +705,12 @@ public:
 // reference return specialization
 //
 
-template <class R, Squirk Q>
-class SqGlobal<R&, Q> {
+template <Squirk Q, class R>
+class SqGlobal<Q, R&> {
 public:
 
     // Arg Count 0
-    template <bool overloaded /*= false*/>
+    template <Squirk Q, bool overloaded /*= false*/>
     static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -736,7 +736,7 @@ public:
     }
 
     // Arg Count 1
-    template <class A1, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -768,7 +768,7 @@ public:
     }
 
     // Arg Count 2
-    template <class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -802,7 +802,7 @@ public:
     }
 
     // Arg Count 3
-    template <class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -838,7 +838,7 @@ public:
     }
 
     // Arg Count 4
-    template <class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -876,7 +876,7 @@ public:
     }
 
     // Arg Count 5
-    template <class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -916,7 +916,7 @@ public:
     }
 
     // Arg Count 6
-    template <class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -958,7 +958,7 @@ public:
     }
 
     // Arg Count 7
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1002,7 +1002,7 @@ public:
     }
 
     // Arg Count 8
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1048,7 +1048,7 @@ public:
     }
 
     // Arg Count 9
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1096,7 +1096,7 @@ public:
     }
 
     // Arg Count 10
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1146,7 +1146,7 @@ public:
     }
 
     // Arg Count 11
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1198,7 +1198,7 @@ public:
     }
 
     // Arg Count 12
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1252,7 +1252,7 @@ public:
     }
 
     // Arg Count 13
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1308,7 +1308,7 @@ public:
     }
 
     // Arg Count 14
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1372,11 +1372,11 @@ public:
 //
 
 template <Squirk Q>
-class SqGlobal<void, Q> {
+class SqGlobal<Q, void> {
 public:
 
     // Arg Count 0
-    template <bool overloaded /*= false*/>
+    template <Squirk Q, bool overloaded /*= false*/>
     static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1401,7 +1401,7 @@ public:
     }
 
     // Arg Count 1
-    template <class A1, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1432,7 +1432,7 @@ public:
     }
 
     // Arg Count 2
-    template <class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1465,7 +1465,7 @@ public:
     }
 
     // Arg Count 3
-    template <class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, class A3, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1500,7 +1500,7 @@ public:
     }
 
     // Arg Count 4
-    template <class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, class A3, class A4, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1537,7 +1537,7 @@ public:
     }
 
     // Arg Count 5
-    template <class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1576,7 +1576,7 @@ public:
     }
 
     // Arg Count 6
-    template <class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1617,7 +1617,7 @@ public:
     }
 
     // Arg Count 7
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/, Squirk Q>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1660,7 +1660,7 @@ public:
     }
 
     // Arg Count 8
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1705,7 +1705,7 @@ public:
     }
 
     // Arg Count 9
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1752,7 +1752,7 @@ public:
     }
 
     // Arg Count 10
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1801,7 +1801,7 @@ public:
     }
 
     // Arg Count 11
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1852,7 +1852,7 @@ public:
     }
 
     // Arg Count 12
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1905,7 +1905,7 @@ public:
     }
 
     // Arg Count 13
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1960,7 +1960,7 @@ public:
     }
 
     // Arg Count 14
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
+    template <Squirk Q, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, SQInteger startIdx, bool overloaded /*= false*/>
     static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -2023,183 +2023,183 @@ public:
 //
 
 // Arg Count 0
-template <class R, Squirk Q>
+template <Squirk Q, class R>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)()) {
-    return &SqGlobal<R, Q>::template Func0<false>;
+    return &SqGlobal<Q, R>::template Func0<false>;
 }
 
 // Arg Count 0
-template <class R, Squirk Q>
+template <Squirk Q, class R>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)()) {
-    return &SqGlobal<R&, Q>::template Func0<false>;
+    return &SqGlobal<Q, R&>::template Func0<false>;
 }
 
 // Arg Count 1
-template <class R, class A1, Squirk Q>
+template <Squirk Q, class R, class A1>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1)) {
-    return &SqGlobal<R, Q>::template Func1<A1, 2, false>;
+    return &SqGlobal<Q, R>::template Func1<A1, 2, false>;
 }
 
 // Arg Count 1
-template <class R, class A1, Squirk Q>
+template <Squirk Q, class R, class A1>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1)) {
-    return &SqGlobal<R&, Q>::template Func1<A1, 2, false>;
+    return &SqGlobal<Q, R&>::template Func1<A1, 2, false>;
 }
 
 // Arg Count 2
-template <class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class R, class A1, class A2>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2)) {
-    return &SqGlobal<R, Q>::template Func2<A1, A2, 2, false>;
+    return &SqGlobal<Q, R>::template Func2<A1, A2, 2, false>;
 }
 
 // Arg Count 2
-template <class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class R, class A1, class A2>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2)) {
-    return &SqGlobal<R&, Q>::template Func2<A1, A2, 2, false>;
+    return &SqGlobal<Q, R&>::template Func2<A1, A2, 2, false>;
 }
 
 // Arg Count 3
-template <class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3)) {
-    return &SqGlobal<R, Q>::template Func3<A1, A2, A3, 2, false>;
+    return &SqGlobal<Q, R>::template Func3<A1, A2, A3, 2, false>;
 }
 
 // Arg Count 3
-template <class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3)) {
-    return &SqGlobal<R&, Q>::template Func3<A1, A2, A3, 2, false>;
+    return &SqGlobal<Q, R&>::template Func3<A1, A2, A3, 2, false>;
 }
 
 // Arg Count 4
-template <class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4)) {
-    return &SqGlobal<R, Q>::template Func4<A1, A2, A3, A4, 2, false>;
+    return &SqGlobal<Q, R>::template Func4<A1, A2, A3, A4, 2, false>;
 }
 
 // Arg Count 4
-template <class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4)) {
-    return &SqGlobal<R&, Q>::template Func4<A1, A2, A3, A4, 2, false>;
+    return &SqGlobal<Q, R&>::template Func4<A1, A2, A3, A4, 2, false>;
 }
 
 // Arg Count 5
-template <class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqGlobal<R, Q>::template Func5<A1, A2, A3, A4, A5, 2, false>;
+    return &SqGlobal<Q, R>::template Func5<A1, A2, A3, A4, A5, 2, false>;
 }
 
 // Arg Count 5
-template <class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqGlobal<R&, Q>::template Func5<A1, A2, A3, A4, A5, 2, false>;
+    return &SqGlobal<Q, R&>::template Func5<A1, A2, A3, A4, A5, 2, false>;
 }
 
 // Arg Count 6
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqGlobal<R, Q>::template Func6<A1, A2, A3, A4, A5, A6, 2, false>;
+    return &SqGlobal<Q, R>::template Func6<A1, A2, A3, A4, A5, A6, 2, false>;
 }
 
 // Arg Count 6
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqGlobal<R&, Q>::template Func6<A1, A2, A3, A4, A5, A6, 2, false>;
+    return &SqGlobal<Q, R&>::template Func6<A1, A2, A3, A4, A5, A6, 2, false>;
 }
 
 // Arg Count 7
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqGlobal<R, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, 2, false>;
+    return &SqGlobal<Q, R>::template Func7<A1, A2, A3, A4, A5, A6, A7, 2, false>;
 }
 
 // Arg Count 7
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqGlobal<R&, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, 2, false>;
+    return &SqGlobal<Q, R&>::template Func7<A1, A2, A3, A4, A5, A6, A7, 2, false>;
 }
 
 // Arg Count 8
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqGlobal<R, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 2, false>;
+    return &SqGlobal<Q, R>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 2, false>;
 }
 
 // Arg Count 8
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqGlobal<R&, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 2, false>;
+    return &SqGlobal<Q, R&>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 2, false>;
 }
 
 // Arg Count 9
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqGlobal<R, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 2, false>;
+    return &SqGlobal<Q, R>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 2, false>;
 }
 
 // Arg Count 9
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqGlobal<R&, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 2, false>;
+    return &SqGlobal<Q, R&>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 2, false>;
 }
 
 // Arg Count 10
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqGlobal<R, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 2, false>;
+    return &SqGlobal<Q, R>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 2, false>;
 }
 
 // Arg Count 10
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqGlobal<R&, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 2, false>;
+    return &SqGlobal<Q, R&>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 2, false>;
 }
 
 // Arg Count 11
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqGlobal<R, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 2, false>;
+    return &SqGlobal<Q, R>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 2, false>;
 }
 
 // Arg Count 11
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqGlobal<R&, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 2, false>;
+    return &SqGlobal<Q, R&>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 2, false>;
 }
 
 // Arg Count 12
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqGlobal<R, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 2, false>;
+    return &SqGlobal<Q, R>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 2, false>;
 }
 
 // Arg Count 12
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqGlobal<R&, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 2, false>;
+    return &SqGlobal<Q, R&>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 2, false>;
 }
 
 // Arg Count 13
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqGlobal<R, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 2, false>;
+    return &SqGlobal<Q, R>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 2, false>;
 }
 
 // Arg Count 13
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqGlobal<R&, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 2, false>;
+    return &SqGlobal<Q, R&>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 2, false>;
 }
 
 // Arg Count 14
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 SQFUNCTION<Q> SqGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqGlobal<R, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 2, false>;
+    return &SqGlobal<Q, R>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 2, false>;
 }
 
 // Arg Count 14
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqGlobal<R&, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 2, false>;
+    return &SqGlobal<Q, R&>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 2, false>;
 }
 
 
@@ -2208,171 +2208,171 @@ SQFUNCTION<Q> SqGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9,
 //
 
 // Arg Count 1
-template <class R, class A1, Squirk Q>
+template <Squirk Q, class R, class A1>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1)) {
-    return &SqGlobal<R, Q>::template Func1<A1, 1, false>;
+    return &SqGlobal<Q, R>::template Func1<A1, 1, false>;
 }
 
 // Arg Count 1
-template <class R, class A1, Squirk Q>
+template <Squirk Q, class R, class A1>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1)) {
-    return &SqGlobal<R&, Q>::template Func1<A1, 1, false>;
+    return &SqGlobal<Q, R&>::template Func1<A1, 1, false>;
 }
 
 // Arg Count 2
-template <class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class R, class A1, class A2>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2)) {
-    return &SqGlobal<R, Q>::template Func2<A1, A2, 1, false>;
+    return &SqGlobal<Q, R>::template Func2<A1, A2, 1, false>;
 }
 
 // Arg Count 2
-template <class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class R, class A1, class A2>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2)) {
-    return &SqGlobal<R&, Q>::template Func2<A1, A2, 1, false>;
+    return &SqGlobal<Q, R&>::template Func2<A1, A2, 1, false>;
 }
 
 // Arg Count 3
-template <class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3)) {
-    return &SqGlobal<R, Q>::template Func3<A1, A2, A3, 1, false>;
+    return &SqGlobal<Q, R>::template Func3<A1, A2, A3, 1, false>;
 }
 
 // Arg Count 3
-template <class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3)) {
-    return &SqGlobal<R&, Q>::template Func3<A1, A2, A3, 1, false>;
+    return &SqGlobal<Q, R&>::template Func3<A1, A2, A3, 1, false>;
 }
 
 // Arg Count 4
-template <class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4)) {
-    return &SqGlobal<R, Q>::template Func4<A1, A2, A3, A4, 1, false>;
+    return &SqGlobal<Q, R>::template Func4<A1, A2, A3, A4, 1, false>;
 }
 
 // Arg Count 4
-template <class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4)) {
-    return &SqGlobal<R&, Q>::template Func4<A1, A2, A3, A4, 1, false>;
+    return &SqGlobal<Q, R&>::template Func4<A1, A2, A3, A4, 1, false>;
 }
 
 // Arg Count 5
-template <class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqGlobal<R, Q>::template Func5<A1, A2, A3, A4, A5, 1, false>;
+    return &SqGlobal<Q, R>::template Func5<A1, A2, A3, A4, A5, 1, false>;
 }
 
 // Arg Count 5
-template <class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqGlobal<R&, Q>::template Func5<A1, A2, A3, A4, A5, 1, false>;
+    return &SqGlobal<Q, R&>::template Func5<A1, A2, A3, A4, A5, 1, false>;
 }
 
 // Arg Count 6
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqGlobal<R, Q>::template Func6<A1, A2, A3, A4, A5, A6, 1, false>;
+    return &SqGlobal<Q, R>::template Func6<A1, A2, A3, A4, A5, A6, 1, false>;
 }
 
 // Arg Count 6
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqGlobal<R&, Q>::template Func6<A1, A2, A3, A4, A5, A6, 1, false>;
+    return &SqGlobal<Q, R&>::template Func6<A1, A2, A3, A4, A5, A6, 1, false>;
 }
 
 // Arg Count 7
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqGlobal<R, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, 1, false>;
+    return &SqGlobal<Q, R>::template Func7<A1, A2, A3, A4, A5, A6, A7, 1, false>;
 }
 
 // Arg Count 7
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqGlobal<R&, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, 1, false>;
+    return &SqGlobal<Q, R&>::template Func7<A1, A2, A3, A4, A5, A6, A7, 1, false>;
 }
 
 // Arg Count 8
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqGlobal<R, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 1, false>;
+    return &SqGlobal<Q, R>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 1, false>;
 }
 
 // Arg Count 8
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqGlobal<R&, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 1, false>;
+    return &SqGlobal<Q, R&>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, 1, false>;
 }
 
 // Arg Count 9
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqGlobal<R, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 1, false>;
+    return &SqGlobal<Q, R>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 1, false>;
 }
 
 // Arg Count 9
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqGlobal<R&, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 1, false>;
+    return &SqGlobal<Q, R&>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, 1, false>;
 }
 
 // Arg Count 10
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqGlobal<R, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 1, false>;
+    return &SqGlobal<Q, R>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 1, false>;
 }
 
 // Arg Count 10
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqGlobal<R&, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 1, false>;
+    return &SqGlobal<Q, R&>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, 1, false>;
 }
 
 // Arg Count 11
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqGlobal<R, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 1, false>;
+    return &SqGlobal<Q, R>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 1, false>;
 }
 
 // Arg Count 11
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqGlobal<R&, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 1, false>;
+    return &SqGlobal<Q, R&>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 1, false>;
 }
 
 // Arg Count 12
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqGlobal<R, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 1, false>;
+    return &SqGlobal<Q, R>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 1, false>;
 }
 
 // Arg Count 12
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqGlobal<R&, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 1, false>;
+    return &SqGlobal<Q, R&>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, 1, false>;
 }
 
 // Arg Count 13
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqGlobal<R, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 1, false>;
+    return &SqGlobal<Q, R>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 1, false>;
 }
 
 // Arg Count 13
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqGlobal<R&, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 1, false>;
+    return &SqGlobal<Q, R&>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, 1, false>;
 }
 
 // Arg Count 14
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 SQFUNCTION<Q> SqMemberGlobalFunc(R (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqGlobal<R, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 1, false>;
+    return &SqGlobal<Q, R>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 1, false>;
 }
 
 // Arg Count 14
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 SQFUNCTION<Q> SqMemberGlobalFunc(R& (* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqGlobal<R&, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 1, false>;
+    return &SqGlobal<Q, R&>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 1, false>;
 }
 
 /// @endcond

@@ -40,12 +40,12 @@ namespace Sqrat {
 // Squirrel Global Functions
 //
 
-template <class C, class R, Squirk Q>
+template <Squirk Q, class C, class R>
 class SqMember {
 public:
 
     // Arg Count 0
-    template <bool overloaded /*= false*/, Squirk Q>
+    template <bool overloaded /*= false*/>
     static SQInteger Func0(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -84,7 +84,7 @@ public:
         return 1;
     }
 
-    template <bool overloaded /*= false*/, Squirk Q>
+    template <bool overloaded /*= false*/>
     static SQInteger Func0C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -123,7 +123,7 @@ public:
     }
 
     // Arg Count 1
-    template <class A1, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, bool overloaded /*= false*/>
     static SQInteger Func1(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -167,7 +167,7 @@ public:
         return 1;
     }
 
-    template <class A1, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, bool overloaded /*= false*/>
     static SQInteger Func1C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -212,7 +212,7 @@ public:
     }
 
     // Arg Count 2
-    template <class A1, class A2, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, bool overloaded /*= false*/>
     static SQInteger Func2(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -258,7 +258,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, bool overloaded /*= false*/>
     static SQInteger Func2C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -305,7 +305,7 @@ public:
     }
 
     // Arg Count 3
-    template <class A1, class A2, class A3, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, bool overloaded /*= false*/>
     static SQInteger Func3(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -353,7 +353,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, bool overloaded /*= false*/>
     static SQInteger Func3C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -402,7 +402,7 @@ public:
     }
 
     // Arg Count 4
-    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
     static SQInteger Func4(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -452,7 +452,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, bool overloaded /*= false*/>
     static SQInteger Func4C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -503,7 +503,7 @@ public:
     }
 
     // Arg Count 5
-    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
     static SQInteger Func5(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -555,7 +555,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, bool overloaded /*= false*/>
     static SQInteger Func5C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -608,7 +608,7 @@ public:
     }
 
     // Arg Count 6
-    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
     static SQInteger Func6(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -662,7 +662,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, bool overloaded /*= false*/>
     static SQInteger Func6C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -717,7 +717,7 @@ public:
     }
 
     // Arg Count 7
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
     static SQInteger Func7(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -773,7 +773,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, bool overloaded /*= false*/>
     static SQInteger Func7C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -830,7 +830,7 @@ public:
     }
 
     // Arg Count 8
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
     static SQInteger Func8(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -888,7 +888,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, bool overloaded /*= false*/>
     static SQInteger Func8C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -947,7 +947,7 @@ public:
     }
 
     // Arg Count 9
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
     static SQInteger Func9(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1007,7 +1007,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, bool overloaded /*= false*/>
     static SQInteger Func9C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1069,7 +1069,7 @@ public:
 
 
     // Arg Count 10
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded /*= false*/>
     static SQInteger Func10(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1131,7 +1131,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded  /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, bool overloaded  /*= false*/>
     static SQInteger Func10C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1195,7 +1195,7 @@ public:
 
 
     // Arg Count 11
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
     static SQInteger Func11(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1259,7 +1259,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, bool overloaded /*= false*/>
     static SQInteger Func11C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1325,7 +1325,7 @@ public:
 
 
     // Arg Count 12
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
     static SQInteger Func12(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1391,7 +1391,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, bool overloaded /*= false*/>
     static SQInteger Func12C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1458,7 +1458,7 @@ public:
     }
 
     // Arg Count 13
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
     static SQInteger Func13(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1526,7 +1526,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, bool overloaded /*= false*/>
     static SQInteger Func13C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1595,7 +1595,7 @@ public:
     }
 
     // Arg Count 14
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
     static SQInteger Func14(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1665,7 +1665,7 @@ public:
         return 1;
     }
 
-    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/, Squirk Q>
+    template <class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, bool overloaded /*= false*/>
     static SQInteger Func14C(HSQUIRRELVM<Q> vm) {
 
 #if !defined (SCRAT_NO_ERROR_CHECKING)
@@ -1741,8 +1741,8 @@ public:
 // reference return specialization
 //
 
-template <class C, class R, Squirk Q>
-class SqMember<C, R&, Q> {
+template <Squirk Q, class C, class R>
+class SqMember<Q, R&, C> {
 public:
 
     // Arg Count 0
@@ -3442,8 +3442,8 @@ public:
 // void return specialization
 //
 
-template <class C, Squirk Q>
-class SqMember<C, void, Q> {
+template <Squirk Q, class C>
+class SqMember<Q, void, C> {
 public:
 
     // Arg Count 0
@@ -5111,316 +5111,316 @@ public:
 //
 
 // Arg Count 0
-template <class C, class R, Squirk Q>
+template <Squirk Q, class C, class R>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)()) {
-    return &SqMember<C, R, Q>::template Func0<false>;
+    return &SqMember<Q, C, R>::template Func0<false>;
 }
 
-template <class C, class R, Squirk Q>
+template <Squirk Q, class C, class R>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)() const) {
-    return &SqMember<C, R, Q>::template Func0C<false>;
+    return &SqMember<Q, C, R>::template Func0C<false>;
 }
 
-template <class C, class R, Squirk Q>
+template <Squirk Q, class C, class R>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)()) {
-    return &SqMember<C, R&, Q>::template Func0<false>;
+    return &SqMember<Q, C, R&>::template Func0<false>;
 }
 
-template <class C, class R, Squirk Q>
+template <Squirk Q, class C, class R>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)() const) {
-    return &SqMember<C, R&, Q>::template Func0C<false>;
+    return &SqMember<Q, C, R&>::template Func0C<false>;
 }
 
 // Arg Count 1
-template <class C, class R, class A1, Squirk Q>
+template <Squirk Q, class C, class R, class A1>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1)) {
-    return &SqMember<C, R, Q>::template Func1<A1, false>;
+    return &SqMember<Q, C, R>::template Func1<A1, false>;
 }
 
-template <class C, class R, class A1, Squirk Q>
+template <Squirk Q, class C, class R, class A1>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1) const) {
-    return &SqMember<C, R, Q>::template Func1C<A1, false>;
+    return &SqMember<Q, C, R>::template Func1C<A1, false>;
 }
 
-template <class C, class R, class A1, Squirk Q>
+template <Squirk Q, class C, class R, class A1>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1)) {
-    return &SqMember<C, R&, Q>::template Func1<A1, false>;
+    return &SqMember<Q, C, R&>::template Func1<A1, false>;
 }
 
-template <class C, class R, class A1, Squirk Q>
+template <Squirk Q, class C, class R, class A1>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1) const) {
-    return &SqMember<C, R&, Q>::template Func1C<A1, false>;
+    return &SqMember<Q, C, R&>::template Func1C<A1, false>;
 }
 
 // Arg Count 2
-template <class C, class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2)) {
-    return &SqMember<C, R, Q>::template Func2<A1, A2, false>;
+    return &SqMember<Q, C, R>::template Func2<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2) const) {
-    return &SqMember<C, R, Q>::template Func2C<A1, A2, false>;
+    return &SqMember<Q, C, R>::template Func2C<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2)) {
-    return &SqMember<C, R&, Q>::template Func2<A1, A2, false>;
+    return &SqMember<Q, C, R&>::template Func2<A1, A2, false>;
 }
 
-template <class C, class R, class A1, class A2, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2) const) {
-    return &SqMember<C, R&, Q>::template Func2C<A1, A2, false>;
+    return &SqMember<Q, C, R&>::template Func2C<A1, A2, false>;
 }
 
 // Arg Count 3
-template <class C, class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3)) {
-    return &SqMember<C, R, Q>::template Func3<A1, A2, A3, false>;
+    return &SqMember<Q, C, R>::template Func3<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3) const) {
-    return &SqMember<C, R, Q>::template Func3C<A1, A2, A3, false>;
+    return &SqMember<Q, C, R>::template Func3C<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3)) {
-    return &SqMember<C, R&, Q>::template Func3<A1, A2, A3, false>;
+    return &SqMember<Q, C, R&>::template Func3<A1, A2, A3, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3) const) {
-    return &SqMember<C, R&, Q>::template Func3C<A1, A2, A3, false>;
+    return &SqMember<Q, C, R&>::template Func3C<A1, A2, A3, false>;
 }
 
 // Arg Count 4
-template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4)) {
-    return &SqMember<C, R, Q>::template Func4<A1, A2, A3, A4, false>;
+    return &SqMember<Q, C, R>::template Func4<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4) const) {
-    return &SqMember<C, R, Q>::template Func4C<A1, A2, A3, A4, false>;
+    return &SqMember<Q, C, R>::template Func4C<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4)) {
-    return &SqMember<C, R&, Q>::template Func4<A1, A2, A3, A4, false>;
+    return &SqMember<Q, C, R&>::template Func4<A1, A2, A3, A4, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4) const) {
-    return &SqMember<C, R&, Q>::template Func4C<A1, A2, A3, A4, false>;
+    return &SqMember<Q, C, R&>::template Func4C<A1, A2, A3, A4, false>;
 }
 
 // Arg Count 5
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqMember<C, R, Q>::template Func5<A1, A2, A3, A4, A5, false>;
+    return &SqMember<Q, C, R>::template Func5<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5) const) {
-    return &SqMember<C, R, Q>::template Func5C<A1, A2, A3, A4, A5, false>;
+    return &SqMember<Q, C, R>::template Func5C<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5)) {
-    return &SqMember<C, R&, Q>::template Func5<A1, A2, A3, A4, A5, false>;
+    return &SqMember<Q, C, R&>::template Func5<A1, A2, A3, A4, A5, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5>
 inline SQFUNCTION<Q> SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5) const) {
-    return &SqMember<C, R&, Q>::template Func5C<A1, A2, A3, A4, A5, false>;
+    return &SqMember<Q, C, R&>::template Func5C<A1, A2, A3, A4, A5, false>;
 }
 
 // Arg Count 6
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqMember<C, R, Q>::template Func6<A1, A2, A3, A4, A5, A6, false>;
+    return &SqMember<Q, C, R>::template Func6<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
-    return &SqMember<C, R, Q>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
+    return &SqMember<Q, C, R>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6)) {
-    return &SqMember<C, R&, Q>::template Func6<A1, A2, A3, A4, A5, A6, false>;
+    return &SqMember<Q, C, R&>::template Func6<A1, A2, A3, A4, A5, A6, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6) const) {
-    return &SqMember<C, R&, Q>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
+    return &SqMember<Q, C, R&>::template Func6C<A1, A2, A3, A4, A5, A6, false>;
 }
 
 // Arg Count 7
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqMember<C, R, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
+    return &SqMember<Q, C, R>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
-    return &SqMember<C, R, Q>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
+    return &SqMember<Q, C, R>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7)) {
-    return &SqMember<C, R&, Q>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
+    return &SqMember<Q, C, R&>::template Func7<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7) const) {
-    return &SqMember<C, R&, Q>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
+    return &SqMember<Q, C, R&>::template Func7C<A1, A2, A3, A4, A5, A6, A7, false>;
 }
 
 // Arg Count 8
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqMember<C, R, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+    return &SqMember<Q, C, R>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
-    return &SqMember<C, R, Q>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+    return &SqMember<Q, C, R>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8)) {
-    return &SqMember<C, R&, Q>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+    return &SqMember<Q, C, R&>::template Func8<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8) const) {
-    return &SqMember<C, R&, Q>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
+    return &SqMember<Q, C, R&>::template Func8C<A1, A2, A3, A4, A5, A6, A7, A8, false>;
 }
 
 // Arg Count 9
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqMember<C, R, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+    return &SqMember<Q, C, R>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
-    return &SqMember<C, R, Q>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+    return &SqMember<Q, C, R>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 inline SQFUNCTION<Q> SqMemberFunc(R&(C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9)) {
-    return &SqMember<C, R&, Q>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+    return &SqMember<Q, C, R&>::template Func9<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9) const) {
-    return &SqMember<C, R&, Q>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
+    return &SqMember<Q, C, R&>::template Func9C<A1, A2, A3, A4, A5, A6, A7, A8, A9, false>;
 }
 
 // Arg Count 10
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqMember<C, R, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+    return &SqMember<Q, C, R>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
-    return &SqMember<C, R, Q>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+    return &SqMember<Q, C, R>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)) {
-    return &SqMember<C, R&, Q>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+    return &SqMember<Q, C, R&>::template Func10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) const) {
-    return &SqMember<C, R&, Q>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
+    return &SqMember<Q, C, R&>::template Func10C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, false>;
 }
 
 // Arg Count 11
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqMember<C, R, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+    return &SqMember<Q, C, R>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
-    return &SqMember<C, R, Q>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+    return &SqMember<Q, C, R>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11)) {
-    return &SqMember<C, R&, Q>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+    return &SqMember<Q, C, R&>::template Func11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11) const) {
-    return &SqMember<C, R&, Q>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
+    return &SqMember<Q, C, R&>::template Func11C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, false>;
 }
 
 // Arg Count 12
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqMember<C, R, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+    return &SqMember<Q, C, R>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
-    return &SqMember<C, R, Q>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+    return &SqMember<Q, C, R>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12)) {
-    return &SqMember<C, R&, Q>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+    return &SqMember<Q, C, R&>::template Func12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12) const) {
-    return &SqMember<C, R&, Q>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
+    return &SqMember<Q, C, R&>::template Func12C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, false>;
 }
 
 // Arg Count 13
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqMember<C, R, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+    return &SqMember<Q, C, R>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
-    return &SqMember<C, R, Q>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+    return &SqMember<Q, C, R>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13)) {
-    return &SqMember<C, R&, Q>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+    return &SqMember<Q, C, R&>::template Func13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13) const) {
-    return &SqMember<C, R&, Q>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
+    return &SqMember<Q, C, R&>::template Func13C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, false>;
 }
 
 // Arg Count 14
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqMember<C, R, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+    return &SqMember<Q, C, R>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 inline SQFUNCTION<Q> SqMemberFunc(R (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
-    return &SqMember<C, R, Q>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+    return &SqMember<Q, C, R>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14)) {
-    return &SqMember<C, R&, Q>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+    return &SqMember<Q, C, R&>::template Func14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
-template <class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14, Squirk Q>
+template <Squirk Q, class C, class R, class A1, class A2, class A3, class A4, class A5, class A6, class A7, class A8, class A9, class A10, class A11, class A12, class A13, class A14>
 inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14) const) {
-    return &SqMember<C, R&, Q>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
+    return &SqMember<Q, C, R&>::template Func14C<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, false>;
 }
 
 
@@ -5428,7 +5428,7 @@ inline SQFUNCTION<Q> SqMemberFunc(R& (C::* /*method*/)(A1, A2, A3, A4, A5, A6, A
 // Variable Get
 //
 
-template <class C, class V, Squirk Q>
+template <Squirk Q, class C, class V>
 inline SQInteger sqDefaultGet(HSQUIRRELVM<Q> vm) {
     C* ptr;
     SQTRY()
@@ -5451,7 +5451,7 @@ inline SQInteger sqDefaultGet(HSQUIRRELVM<Q> vm) {
     return 1;
 }
 
-template <class C, class V, Squirk Q>
+template <Squirk Q, class C, class V>
 inline SQInteger sqStaticGet(HSQUIRRELVM<Q> vm) {
     typedef V *M;
     M* memberPtr = NULL;
@@ -5501,7 +5501,7 @@ inline SQInteger sqVarGet(HSQUIRRELVM<Q> vm) {
 // Variable Set
 //
 
-template <class C, class V, Squirk Q>
+template <Squirk Q, class C, class V>
 inline SQInteger sqDefaultSet(HSQUIRRELVM<Q> vm) {
     C* ptr;
     SQTRY()
@@ -5535,7 +5535,7 @@ inline SQInteger sqDefaultSet(HSQUIRRELVM<Q> vm) {
     return 0;
 }
 
-template <class C, class V, Squirk Q>
+template <Squirk Q, class C, class V>
 inline SQInteger sqStaticSet(HSQUIRRELVM<Q> vm) {
     typedef V *M;
     M* memberPtr = NULL;
