@@ -1,4 +1,4 @@
-# M2Install.yaml: install manifest for M2Fix development.
+# M2Install.yml: install manifest for M2Fix development.
 # This is nuggs's personal manifest, so it isn't immediately useful to anyone else, but it's here to serve as an example.
 x64:
   - F:\Steam\steamapps\common\MGS1\MGSM2Fix.asi
@@ -13,4 +13,6 @@ x86:
   - F:\Steam\steamapps\common\Darius Cozmic Collection Arcade\MGSM2Fix.asi
   - F:\Steam\steamapps\common\G-Darius HD\MGSM2Fix.asi
   - F:\Steam\steamapps\common\Operation Night Strikers\MGSM2Fix.asi
+  - I:\Steam\steamapps\common\NAMCO MUSEUM ARCHIVES Vol 1\MGSM2Fix.asi
+  - I:\Steam\steamapps\common\NAMCO MUSEUM ARCHIVES Vol 2\MGSM2Fix.asi
   - E:\Epic Games\CastlevaniaAnniversaXJ2A3\MGSM2Fix.asi

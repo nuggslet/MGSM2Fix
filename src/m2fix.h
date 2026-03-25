@@ -29,6 +29,8 @@ enum class M2FixGame
     Darius101,
     Gradius,
     NightStrikers,
+    NMA1,
+    NMA2,
 };
 
 struct M2FixInfo
@@ -371,6 +373,8 @@ private:
         { M2FixGame::Darius101,          { 1640160, "GDarius",                        "", M2Game::GetInstance() } },
         { M2FixGame::Gradius,            { 2897590, "GRADIUSORIGINCOLLECTION",        "", M2Game::GetInstance() } },
         { M2FixGame::NightStrikers,      { 3099790, "OPERATIONNIGHTSTRIKERS",         "", M2Game::GetInstance() } },
+        { M2FixGame::NMA1,               { 1250250, "NAMCOMUSEUMARC1",                "", M2Game::GetInstance() } },
+        { M2FixGame::NMA2,               { 1254620, "NAMCOMUSEUMARC2",                "", M2Game::GetInstance() } },
     };
 
     static inline M2FixInfo *m_kGame;

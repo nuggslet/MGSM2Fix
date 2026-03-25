@@ -1068,6 +1068,8 @@ void SQHook<Q>::Load()
         case M2FixGame::Darius:
         case M2FixGame::Darius101:
         case M2FixGame::NightStrikers:
+        case M2FixGame::NMA1:
+        case M2FixGame::NMA2:
         {
             _sq_vm_realloc = reinterpret_cast<decltype(_sq_vm_realloc)>(
                 M2Hook::GetInstance().Scan(
@@ -1128,6 +1130,8 @@ void SQHook<Q>::Load()
         case M2FixGame::DraculaAdvance:
         case M2FixGame::Darius:
         case M2FixGame::Darius101:
+        case M2FixGame::NMA1:
+        case M2FixGame::NMA2:
         {
             bool ret = false;
 

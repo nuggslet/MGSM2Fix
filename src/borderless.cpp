@@ -24,6 +24,8 @@ void Borderless::Load()
         case M2FixGame::DraculaAdvance:
         case M2FixGame::Darius:
         case M2FixGame::Darius101:
+        case M2FixGame::NMA1:
+        case M2FixGame::NMA2:
         {
             bool ret = false;
 
