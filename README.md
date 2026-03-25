@@ -16,6 +16,7 @@ This is a fix that adds custom resolutions, mod support and more to Metal Gear S
 - G-Darius HD
 - Gradius Origins
 - Operation Night Strikers
+- Namco Museum Archives
 
 See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other games in the MGS Master Collection.
 
