@@ -183,7 +183,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_EU = {
-        {0x800196FC, MGS1_main},
+        {0x80099C18, MGS1_main},
         {0x80047D6C, MGS1_font},
         {0x800498E0, MGS1_font},
         {0x800499A8, MGS1_font},
@@ -195,7 +195,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_US = {
-        {0x800196F4, MGS1_main},
+        {0x800999B0, MGS1_main},
         {0x80047C68, MGS1_font},
         {0x800497DC, MGS1_font},
         {0x800498A4, MGS1_font},
@@ -207,7 +207,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VR_JP = {
-        {0x80016630, MGS1_main},
+        {0x80096BD0, MGS1_main},
         {0x80044C88, MGS1_font},
         {0x80046664, MGS1_font},
         {0x8004670C, MGS1_font},
@@ -231,7 +231,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_ES = {
-        {0x8001682C, MGS1_main},
+        {0x8009A4DC, MGS1_main},
         {0x800D322C, MGS1_s03a_disable_mosaic},
         {0x800D9D80, MGS1_s03d_disable_mosaic},
         {0x80045D18, MGS1_font},
@@ -245,7 +245,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_DE = {
-        {0x800167C8, MGS1_main},
+        {0x8009A870, MGS1_main},
         {0x800D3618, MGS1_s03a_disable_mosaic},
         {0x800DA16C, MGS1_s03d_disable_mosaic},
         {0x80045CAC, MGS1_font},
@@ -259,7 +259,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_IT = {
-        {0x80016764, MGS1_main},
+        {0x8009A404, MGS1_main},
         {0x800D31A8, MGS1_s03a_disable_mosaic},
         {0x800D9CFC, MGS1_s03d_disable_mosaic},
         {0x80045C48, MGS1_font},
@@ -273,7 +273,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_FR = {
-        {0x80016890, MGS1_main},
+        {0x8009A91C, MGS1_main},
         {0x800D36D0, MGS1_s03a_disable_mosaic},
         {0x800DA224, MGS1_s03d_disable_mosaic},
         {0x80045D58, MGS1_font},
@@ -287,7 +287,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_UK = {
-        {0x800165F4, MGS1_main},
+        {0x8009A3A4, MGS1_main},
         {0x800D3118, MGS1_s03a_disable_mosaic},
         {0x800D9C6C, MGS1_s03d_disable_mosaic},
         {0x80045ABC, MGS1_font},
@@ -301,7 +301,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_US = {
-        {0x80016D48, MGS1_main},
+        {0x8009BA50, MGS1_main},
         {0x800D4AC8, MGS1_s03a_disable_mosaic},
         {0x800DB61C, MGS1_s03d_disable_mosaic},
         {0x800471D0, MGS1_font},
@@ -315,7 +315,7 @@ private:
     };
 
     const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_JP = {
-        {0x80016818, MGS1_main},
+        {0x80099CC4, MGS1_main},
         {0x80045978, MGS1_font},
         {0x80047304, MGS1_font},
         {0x800473A0, MGS1_font},
@@ -326,18 +326,73 @@ private:
         {0x800476A0, MGS1_font},
     };
 
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_SM_R3000 = {
+        {0x80099C18, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_VRM_R3000 = {
+        {0x800999B0, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_Integral_Disc1_R3000 = {
+        {0x80098F14, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_Integral_Disc3_R3000 = {
+        {0x80096BD0, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_ES_Disc1_R3000 = {
+        {0x8009A4DC, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_DE_Disc1_R3000 = {
+        {0x8009A870, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_IT_Disc1_R3000 = {
+        {0x8009A404, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_FR_Disc1_R3000 = {
+        {0x8009A91C, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_EN_Disc1_R3000 = {
+        {0x8009A3A4, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_US_Disc1_R3000 = {
+        {0x8009BA50, MGS1_main},
+    };
+
+    const std::vector<std::pair<unsigned int, PSXFUNCTION>> MGS1_ModuleTable_JP_Disc1_R3000 = {
+        {0x80099CC4, MGS1_main},
+    };
+
     const PSX_ModuleTables MGS1_ModuleTables { {
-        { "mgs_r3000_vr_eu", &MGS1_ModuleTable_VR_EU },
-        { "mgs_r3000_vr_us", &MGS1_ModuleTable_VR_US },
-        { "mgs_r3000_vr_jp", &MGS1_ModuleTable_VR_JP },
-        { "mgs_r3000_int",   &MGS1_ModuleTable_Integral },
-        { "mgs_r3000_es",    &MGS1_ModuleTable_ES },
-        { "mgs_r3000_de",    &MGS1_ModuleTable_DE },
-        { "mgs_r3000_it",    &MGS1_ModuleTable_IT },
-        { "mgs_r3000_fr",    &MGS1_ModuleTable_FR },
-        { "mgs_r3000_uk",    &MGS1_ModuleTable_UK },
-        { "mgs_r3000_us",    &MGS1_ModuleTable_US },
-        { "mgs_r3000_jp",    &MGS1_ModuleTable_JP },
+        { "mgs_r3000_vr_eu",          &MGS1_ModuleTable_VR_EU },
+        { "mgs_r3000_vr_us",          &MGS1_ModuleTable_VR_US },
+        { "mgs_r3000_vr_jp",          &MGS1_ModuleTable_VR_JP },
+        { "mgs_r3000_int",            &MGS1_ModuleTable_Integral },
+        { "mgs_r3000_es",             &MGS1_ModuleTable_ES },
+        { "mgs_r3000_de",             &MGS1_ModuleTable_DE },
+        { "mgs_r3000_it",             &MGS1_ModuleTable_IT },
+        { "mgs_r3000_fr",             &MGS1_ModuleTable_FR },
+        { "mgs_r3000_uk",             &MGS1_ModuleTable_UK },
+        { "mgs_r3000_us",             &MGS1_ModuleTable_US },
+        { "mgs_r3000_jp",             &MGS1_ModuleTable_JP },
+        { "mgs_sm_r3000",             &MGS1_ModuleTable_SM_R3000 },
+        { "mgs_vrm_r3000",            &MGS1_ModuleTable_VRM_R3000 },
+        { "mgs_integral_disc1_r3000", &MGS1_ModuleTable_Integral_Disc1_R3000 },
+        { "mgs_integral_disc3_r3000", &MGS1_ModuleTable_Integral_Disc3_R3000 },
+        { "mgs_es_disc1_r3000",       &MGS1_ModuleTable_ES_Disc1_R3000 },
+        { "mgs_de_disc1_r3000",       &MGS1_ModuleTable_DE_Disc1_R3000 },
+        { "mgs_it_disc1_r3000",       &MGS1_ModuleTable_IT_Disc1_R3000 },
+        { "mgs_fr_disc1_r3000",       &MGS1_ModuleTable_FR_Disc1_R3000 },
+        { "mgs_en_disc1_r3000",       &MGS1_ModuleTable_EN_Disc1_R3000 },
+        { "mgs_us_disc1_r3000",       &MGS1_ModuleTable_US_Disc1_R3000 },
+        { "mgs_jp_disc1_r3000",       &MGS1_ModuleTable_JP_Disc1_R3000 },
         },
         std::bind([](const char *x, const char *y) {
                 return strcmp(x, y) < 0;

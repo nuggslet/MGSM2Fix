@@ -6,18 +6,11 @@
 
 int MGS1::MGS1_main(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
-    static unsigned accelerator = 0;
+    PSX::main(cpu);
+    unsigned int ra = cpu->Reg[31];
+    spdlog::info("[MGS 1] __main: 0x{:08x} -> 0x{:08x}.", address, ra);
 
-    if (accelerator != cpu->Accelerator) {
-        PSX::main(cpu);
-        unsigned int ra = cpu->Reg[31];
-        spdlog::info("[MGS 1] __main: 0x{:08x} -> 0x{:08x}.", address, ra);
-        accelerator = cpu->Accelerator;
-    }
-
-    PSXFUNCTION main = PSX::UserHandlers[address];
-    if (!main) main = PSX::UserHandlers[address |  0x80000000];
-    if (!main) main = PSX::UserHandlers[address & ~0x80000000];
+    PSXFUNCTION main = PSX::UserHandler(cpu, address);
     return main(cpu, cycle, address);
 }
 
@@ -29,7 +22,7 @@ int MGS1::MGS1_s03a_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int add
         oneshot = true;
     }
     if (!M2Config::bPatchesEnableMosaic) {
-        PSXFUNCTION s03a_disable_mosaic = PSX::UserHandlers[address];
+        PSXFUNCTION s03a_disable_mosaic = PSX::UserHandler(cpu, address);
         return s03a_disable_mosaic(cpu, cycle, address);
     }
 
@@ -44,7 +37,7 @@ int MGS1::MGS1_s03d_disable_mosaic(M2_EmuR3000 *cpu, int cycle, unsigned int add
         oneshot = true;
     }
     if (!M2Config::bPatchesEnableMosaic) {
-        PSXFUNCTION s03d_disable_mosaic = PSX::UserHandlers[address];
+        PSXFUNCTION s03d_disable_mosaic = PSX::UserHandler(cpu, address);
         return s03d_disable_mosaic(cpu, cycle, address);
     }
 
@@ -59,7 +52,7 @@ int MGS1::MGS1_font(M2_EmuR3000 *cpu, int cycle, unsigned int address)
         oneshot = true;
     }
     if (!M2Config::bPatchesDisableFont) {
-        PSXFUNCTION font = PSX::UserHandlers[address];
+        PSXFUNCTION font = PSX::UserHandler(cpu, address);
         return font(cpu, cycle, address);
     }
 

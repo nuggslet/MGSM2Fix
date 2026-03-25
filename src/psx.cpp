@@ -44,6 +44,13 @@ std::map<std::string, PSX::R3000_InstructionRecord> PSX::R3000_InstructionRecord
     {"NOP",     {0x00000000, -1}},
 };
 
+PSXFUNCTION PSX::UserHandler(M2_EmuR3000 *cpu, unsigned int address)
+{
+    PSXFUNCTION    function = PSX::UserHandlers[std::make_pair(cpu->Accelerator, address)];
+    if (!function) function = PSX::UserHandlers[std::make_pair(cpu->Accelerator, address |  0x80000000)];
+    if (!function) function = PSX::UserHandlers[std::make_pair(cpu->Accelerator, address & ~0x80000000)];
+    return function;
+}
 
 M2_EmuPSX_Module *PSX::LoadSystemModule(M2_EmuPSX_Module *mod)
 {
@@ -277,7 +284,7 @@ void PSX::BindUserModules(PSX_ModuleTables & tables)
         for (auto & func : *table) {
             for (int i = 0; i < user->count; i++) {
                 if (user->table[i].address != func.first) continue;
-                UserHandlers[user->table[i].address] = user->table[i].handler;
+                UserHandlers[std::make_pair(user->id, user->table[i].address)] = user->table[i].handler;
                 user->table[i].handler = func.second;
                 break;
             }

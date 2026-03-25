@@ -23,6 +23,8 @@ public:
     virtual void UpdateScreenGeometry(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int) override;
     virtual void UpdateGraphicsSettings(bool) override;
 
+    static PSXFUNCTION UserHandler(M2_EmuR3000 *cpu, unsigned int address);
+
     static void main(struct M2_EmuR3000 *cpu);
 
 private:
@@ -60,7 +62,7 @@ private:
 
 public:
     static inline std::map<unsigned, PSXFUNCTION> KernelHandlers = {};
-    static inline std::map<unsigned, PSXFUNCTION> UserHandlers = {};
+    static inline std::map<std::pair<unsigned, unsigned>, PSXFUNCTION> UserHandlers = {};
 
     static inline unsigned int VideoMode = 0;
     static inline M2_EmuPSX *Emulator = nullptr;
