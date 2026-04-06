@@ -1032,6 +1032,8 @@ SQInteger SQHook<Q>::Hook(HSQUIRRELVM<Q> v)
 
 void SQUtils::Print(const char *fmt, ...)
 {
+    static std::string str = {};
+
     va_list va;
     va_start(va, fmt);
     std::vector<char> buf(_vscprintf(fmt, va) + 1, 0);
@@ -1039,17 +1041,37 @@ void SQUtils::Print(const char *fmt, ...)
     vsprintf(data, fmt, va);
     va_end(va);
 
-    data[strcspn(data, "\r\n")] = 0;
-    if (strlen(data) == 0) return;
+    size_t substr = strcspn(data, "\r\n");
+    data[substr] = 0;
+    while (data[0] == ' ') {
+        ++data;
+    }
+    str += data;
+    if (substr == 0) {
+        return;
+    }
 
-    std::string str(data);
+    if (str.length() == 0) {
+        return;
+    }
+
+    const std::regex sqdebug(R"(\[\d+\]:)");
+    std::smatch sqmatch = {};
+    if (std::regex_search(str, sqmatch, sqdebug) && sqmatch.suffix().length() <= 0) {
+        str += ' ';
+        return;
+    }
+
     const std::set<char> chars{ ' ', '\t', '\r', '\n' };
     int count = std::ranges::count_if(str, [chars](char c) {
         return chars.contains(c);
     });
-    if (count == str.length()) return;
+    if (count == str.length()) {
+        return;
+    }
 
-    spdlog::info("[SQ] [scprintf] {}", data);
+    spdlog::info("[SQ] [scprintf] {}", str);
+    str = {};
 }
 
 template <Squirk Q>

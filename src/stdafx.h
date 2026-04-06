@@ -34,6 +34,7 @@ using namespace StdExt;
 #include <set>
 #include <unordered_set>
 #include <mutex>
+#include <regex>
 
 #undef Yield
 #undef GetObject
