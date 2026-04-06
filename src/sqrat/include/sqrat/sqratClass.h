@@ -440,7 +440,11 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class F>
     Class& StaticFunc(const SQChar* name, F method) {
+#ifdef _SQ_M2
+        this->BindFunc(name, &method, sizeof(method), SqGlobalFunc(method), true);
+#else
         this->BindFunc(name, &method, sizeof(method), SqGlobalFunc(method));
+#endif
         return *this;
     }
 
@@ -499,15 +503,31 @@ public:
     /// stack and all arguments will be after that index in the order they were given to the function.
     ///
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef _SQ_M2
+    Class& SquirrelFunc(const SQChar* name, SQFUNCTION<Q> func, bool staticFunc = false) {
+#else
     Class& SquirrelFunc(const SQChar* name, SQFUNCTION<Q> func) {
+#endif
         sq_pushobject(this->vm, ClassType<C, Q>::getClassData(this->vm)->classObj);
         sq_pushstring(this->vm, name, -1);
         sq_newclosure(this->vm, func, 0);
+#ifdef _SQ_M2
+        sq_newslot(this->vm, -3, staticFunc);
+#else
         sq_newslot(this->vm, -3, false);
+#endif
         sq_pop(this->vm, 1); // pop table
 
         return *this;
     }
+
+#ifdef _SQ_M2
+    template<class F>
+    Class& VarArgFunc(const SQChar* name, F method) {
+        this->BindFunc(name, &method, sizeof(method), SqVarArgMemberFunc<Q>(method));
+        return *this;
+    }
+#endif
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Gets a Function from a name in the Class

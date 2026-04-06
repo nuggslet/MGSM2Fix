@@ -5592,6 +5592,29 @@ inline SQInteger sqVarSet(HSQUIRRELVM<Q> vm) {
     return 0;
 }
 
+#ifdef _SQ_M2
+// SQFUNCTION style method
+template <Squirk Q, class C>
+class SqVarArgMember {
+public:
+    static SQRESULT Func(HSQUIRRELVM<Q> vm) {
+        typedef SQRESULT(C::*M)(HSQUIRRELVM<Q>);
+        M* methodPtr;
+        sq_getuserdata(vm, -1, (SQUserPointer*)&methodPtr, NULL);
+        M method = *methodPtr;
+        sq_pop(vm, 1);
+        C* ptr = Var<C*, Q>(vm, 1).value;
+        return (ptr->*method)(vm);
+    }
+};
+
+// SQFUNCTION style method
+template <Squirk Q, class C>
+inline SQFUNCTION<Q> SqVarArgMemberFunc(SQRESULT(C::*method)(HSQUIRRELVM<Q>)) {
+    return &SqVarArgMember<Q, C>::Func;
+};
+#endif
+
 /// @endcond
 
 }

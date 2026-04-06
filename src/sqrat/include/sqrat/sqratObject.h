@@ -106,6 +106,38 @@ public:
         sq_addref(vm, &obj);
     }
 
+#ifdef _SQ_M2
+    Object(unsigned value, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        sq_pushinteger(vm, value);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+    }
+
+    Object(int value, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        sq_pushinteger(vm, value);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+    }
+
+    Object(float value, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        sq_pushfloat(vm, value);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+    }
+
+    Object(bool value, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        sq_pushbool(vm, value);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+    }
+
+    Object(const std::basic_string_view<SQChar> value, HSQUIRRELVM<Q> v = DefaultVM<Q>::Get()) : vm(v), release(true) {
+        sq_pushstring(vm, value.data(), -1);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+    }
+#endif
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Destructor
     ///

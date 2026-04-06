@@ -199,9 +199,6 @@ public:
         sq_pop(this->vm, 2);
         return element.value;
         SQCATCH(this->vm) {
-#if defined (SCRAT_USE_EXCEPTIONS)
-            SQUNUSED(this->e); // avoid "unreferenced local variable" warning
-#endif
             sq_pop(this->vm, 2);
             SQRETHROW(this->vm);
         }
@@ -277,9 +274,6 @@ public:
             sq_pop(this->vm, 2);
             array[i] = element.value;
             SQCATCH(this->vm) {
-#if defined (SCRAT_USE_EXCEPTIONS)
-                SQUNUSED(this->e); // avoid "unreferenced local variable" warning
-#endif
                 sq_pop(this->vm, 4);
                 SQRETHROW(this->vm);
             }
