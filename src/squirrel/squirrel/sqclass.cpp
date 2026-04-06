@@ -172,6 +172,12 @@ SQInstance<Q>::SQInstance(SQSharedState<Q> *ss, SQInstance<Q> *i, SQInteger mems
 template <Squirk Q>
 void SQInstance<Q>::Finalize()
 {
+#ifdef _SQ_M2
+	// call release hook before remove class
+	this->_uiRef++;
+	if (_hook) { _hook(_userpointer, 0); _hook = NULL; }
+	this->_uiRef--;
+#endif
 	SQUnsignedInteger nvalues = _class->_defaultvalues.size();
 	__ObjRelease(_class);
 	for(SQUnsignedInteger i = 0; i < nvalues; i++) {
@@ -189,7 +195,11 @@ SQInstance<Q>::~SQInstance()
 template <Squirk Q>
 bool SQInstance<Q>::GetMetaMethod(SQVM<Q> *v,SQMetaMethod mm,SQObjectPtr<Q> &res)
 {
+#ifdef _SQ_M2
+	if(_class && obj_type(_class->_metamethods[mm]) != OT_NULL) {
+#else
 	if(obj_type(_class->_metamethods[mm]) != OT_NULL) {
+#endif
 		res = _class->_metamethods[mm];
 		return true;
 	}

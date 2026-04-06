@@ -139,6 +139,9 @@ void SQSharedState<Q>::Init()
 	newmetamethod(MM_TOSTRING);
 	newmetamethod(MM_NEWMEMBER);
 	newmetamethod(MM_INHERITED);
+#ifdef _SQ_M2
+	newmetamethod(MM_EXIST);
+#endif
 
 	_constructoridx = SQString<Q>::Create(this,_SC("constructor"));
 	_registry = SQTable<Q>::Create(this,0);
@@ -162,6 +165,20 @@ void SQSharedState<Q>::Init()
 template <Squirk Q>
 SQSharedState<Q>::~SQSharedState()
 {
+#ifdef _SQ_M2
+#ifndef NO_GARBAGE_COLLECTOR
+	SQCollectable<Q> *t = _gc_chain;
+	SQCollectable<Q> *nx = NULL;
+	while(t) {
+		t->_uiRef++;
+		t->Finalize();
+		nx = t->_next;
+		if (--t->_uiRef == 0)
+			t->Release();
+		t=nx;
+	}
+#endif
+#endif
 	_constructoridx = _null_<Q>;
 	_table(_registry)->Finalize();
 	_table(_consts)->Finalize();
@@ -187,6 +204,7 @@ SQSharedState<Q>::~SQSharedState()
 	_weakref_default_delegate = _null_<Q>;
 	_refs_table.Finalize();
 #ifndef NO_GARBAGE_COLLECTOR
+#ifndef _SQ_M2
 	SQCollectable<Q> *t = _gc_chain;
 	SQCollectable<Q> *nx = NULL;
 	while(t) {
@@ -197,6 +215,7 @@ SQSharedState<Q>::~SQSharedState()
 			t->Release();
 		t=nx;
 	}
+#endif
 	assert(_gc_chain==NULL); //just to proove a theory
 	while(_gc_chain){
 		_gc_chain->_uiRef++;
@@ -539,6 +558,7 @@ SQString<Q> *StringTable<Q>::Add(const SQChar *news,SQInteger len)
 	memcpy(t->_val,news,rsl(len));
 	t->_val[len] = _SC('\0');
 	t->_len = len;
+	//t->_m2_unknown = 0;
 	t->_hash = ::_hashstr(news,len);
 	t->_next = _strings[h];
 	_strings[h] = t;

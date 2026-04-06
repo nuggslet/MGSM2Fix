@@ -196,6 +196,10 @@ bool SQVM<Q>::ObjCmp(const SQObjectPtr<Q> &o1,const SQObjectPtr<Q> &o2,SQInteger
 			_RET_SUCCEED(scstrcmp(_stringval(o1),_stringval(o2)));
 		case OT_INTEGER:
 			_RET_SUCCEED(_integer(o1)-_integer(o2));
+#ifdef _SQ_M2
+		case OT_LONG:
+			_RET_SUCCEED((_long(o1)<_long(o2))?-1:1);
+#endif
 		case OT_FLOAT:
 			_RET_SUCCEED((_float(o1)<_float(o2))?-1:1);
 		case OT_TABLE:
@@ -215,6 +219,52 @@ bool SQVM<Q>::ObjCmp(const SQObjectPtr<Q> &o1,const SQObjectPtr<Q> &o2,SQInteger
 	}
 	else{
 		if(sq_isnumeric(o1) && sq_isnumeric(o2)){
+#ifdef _SQ_M2
+			switch (obj_type(o1)) {
+			  case OT_INTEGER:
+				switch (obj_type(o2)) {
+				  case OT_LONG:
+					if( _integer(o1)==_long(o2) ) { _RET_SUCCEED(0); }
+					else if( _integer(o1)<_long(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				  case OT_FLOAT:
+					if( _integer(o1)==_float(o2) ) { _RET_SUCCEED(0); }
+					else if( _integer(o1)<_float(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				}
+				break;
+			  case OT_LONG:
+				switch (obj_type(o2)) {
+				  case OT_INTEGER:
+					if( _long(o1)==_integer(o2) ) { _RET_SUCCEED(0); }
+					else if( _long(o1)<_integer(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				  case OT_FLOAT:
+					if( _long(o1)==_float(o2) ) { _RET_SUCCEED(0); }
+					else if( _long(o1)<_float(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				}
+				break;
+			  case OT_FLOAT:
+				switch (obj_type(o2)) {
+				  case OT_INTEGER:
+					if( _float(o1)==_integer(o2) ) { _RET_SUCCEED(0); }
+					else if( _float(o1)<_integer(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				  case OT_LONG:
+					if( _float(o1)==_long(o2) ) { _RET_SUCCEED(0); }
+					else if( _float(o1)<_long(o2) ) { _RET_SUCCEED(-1); }
+					_RET_SUCCEED(1);
+					break;
+				}
+				break;
+			}
+#else
 			if((obj_type(o1)==OT_INTEGER) && (obj_type(o2)==OT_FLOAT)) { 
 				if( _integer(o1)==_float(o2) ) { _RET_SUCCEED(0); }
 				else if( _integer(o1)<_float(o2) ) { _RET_SUCCEED(-1); }
@@ -225,6 +275,7 @@ bool SQVM<Q>::ObjCmp(const SQObjectPtr<Q> &o1,const SQObjectPtr<Q> &o2,SQInteger
 				else if( _float(o1)<_integer(o2) ) { _RET_SUCCEED(-1); }
 				_RET_SUCCEED(1);
 			}
+#endif
 		}
 		else if(obj_type(o1)==OT_NULL) {_RET_SUCCEED(-1);}
 		else if(obj_type(o2)==OT_NULL) {_RET_SUCCEED(1);}
@@ -265,6 +316,15 @@ void SQVM<Q>::ToString(const SQObjectPtr<Q> &o,SQObjectPtr<Q> &res)
 	case OT_INTEGER:
 		scsprintf(_sp(rsl(NUMBER_MAX_CHAR+1)),_SC("%d"),_integer(o));
 		break;
+#ifdef _SQ_M2
+	case OT_LONG:
+#if !defined(_SQ64) && defined(SQLONG_32BIT)
+		scsprintf(_sp(rsl(NUMBER_MAX_CHAR+1)),_SC("%ld"),_long(o));
+#else
+		scsprintf(_sp(rsl(NUMBER_MAX_CHAR+1)),_SC("%lld"),_long(o));
+#endif
+		break;
+#endif
 	case OT_BOOL:
 		scsprintf(_sp(rsl(6)),_integer(o)?_SC("true"):_SC("false"));
 		break;
@@ -922,11 +982,20 @@ common_call:
 			case _OP_PINC: {SQObjectPtr<Q> o(sarg3); _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, true));} continue;
 			case _OP_PINCL:	{SQObjectPtr<Q> o(sarg3); _GUARD(PLOCAL_INC('+',TARGET, STK(arg1), o));} continue;
 			case _OP_CMP:	_GUARD(CMP_OP((CmpOP)arg3,STK(arg2),STK(arg1),TARGET))	continue;
+#ifdef _SQ_M2
+			case _OP_EXISTS: TARGET = Exist(STK(arg1), STK(arg2))?_true_<Q>:_false_<Q>;continue;
+#else
 			case _OP_EXISTS: TARGET = Get(STK(arg1), STK(arg2), temp_reg, true,false)?_true_<Q>:_false_<Q>;continue;
+#endif
 			case _OP_INSTANCEOF: 
+#ifdef _SQ_M2
+				if (obj_type(STK(arg1)) != OT_CLASS || obj_type(STK(arg2)) != OT_INSTANCE) TARGET = _false_<Q>;
+				else TARGET = _instance(STK(arg2))->InstanceOf(_class(STK(arg1)))?_true_<Q>:_false_<Q>;
+#else
 				if(obj_type(STK(arg1)) != OT_CLASS || obj_type(STK(arg2)) != OT_INSTANCE)
 				{Raise_Error(_SC("cannot apply instanceof between a %s and a %s"),GetTypeName(STK(arg1)),GetTypeName(STK(arg2))); SQ_THROW();}
 				TARGET = _instance(STK(arg2))->InstanceOf(_class(STK(arg1)))?_true_<Q>:_false_<Q>;
+#endif
 				continue;
 			case _OP_AND: 
 				if(IsFalse(STK(arg2))) {
@@ -979,6 +1048,14 @@ common_call:
                 continue;
 			case _OP_FOREACH:{ int tojump;
 				_GUARD(FOREACH_OP(STK(arg0),STK(arg2),STK(arg2+1),STK(arg2+2),arg2,sarg1,tojump));
+#ifdef _SQ_M2
+				if (sarg1 == tojump) { // XXX stack clear code
+					SQInteger n = _stackbase + (arg2+3);
+					while (n < _top) {
+						_stack._vals[n++].Null();
+					}
+				}
+#endif
 				ci->_ip += tojump; }
 				continue;
 			case _OP_POSTFOREACH:
@@ -1182,6 +1259,72 @@ bool SQVM<Q>::CallNative(SQNativeClosure<Q> *nclosure,SQInteger nargs,SQInteger 
 	POP_CALLINFO(this);
 	return true;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+bool SQVM<Q>::Exist(const SQObjectPtr<Q> &self,const SQObjectPtr<Q> &key)
+{
+	switch(obj_type(self)){
+	case OT_TABLE:
+		if(_table(self)->Exist(key))return true;
+		break;
+	case OT_ARRAY:
+		if(sq_isnumeric(key)){
+			return _array(self)->Exist(tointeger(key));
+		}
+		break;
+	case OT_INSTANCE:
+		if(_instance(self)->Exist(key)) return true;
+		break;
+	default:break; //shut up compiler
+	}
+	if(FallBackExist(self,key)) return true;
+	return false;
+}
+
+template <Squirk Q>
+bool SQVM<Q>::FallBackExist(const SQObjectPtr<Q> &self,const SQObjectPtr<Q> &key)
+{
+	switch(obj_type(self)){
+	case OT_CLASS: 
+		return _class(self)->Exist(key);
+	case OT_TABLE:
+	case OT_USERDATA:
+        //delegation
+		if(_delegable(self)->_delegate) {
+			if(Exist(SQObjectPtr(_delegable(self)->_delegate),key))
+				return true;	
+			Push(self);Push(key);
+			SQObjectPtr<Q> t;
+			if(CallMetaMethod(_delegable(self),MT_EXIST,2,t)) {
+				return true;
+			}
+		}
+		return false;
+		break;
+	case OT_STRING:
+		if(sq_isnumeric(key)){
+			SQInteger n=tointeger(key);
+			if(abs((int)n)<_string(self)->_len){
+				return true;
+			}
+		}
+		break;
+	case OT_INSTANCE:
+		{
+			Push(self);Push(key);
+			SQObjectPtr<Q> t;
+			if(CallMetaMethod(_delegable(self),MT_EXIST,2,t)) {
+				return true;
+			}
+		}
+		break;
+	default:
+		return false;
+	}
+	return false;
+}
+#endif
 
 template <Squirk Q>
 bool SQVM<Q>::Get(const SQObjectPtr<Q> &self,const SQObjectPtr<Q> &key,SQObjectPtr<Q> &dest,bool raw, bool fetchroot)

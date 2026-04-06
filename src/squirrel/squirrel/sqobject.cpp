@@ -27,16 +27,25 @@ const SQChar *IdType2Name(SQObjectType type)
 	case _RT_CLOSURE:
 	case _RT_NATIVECLOSURE:
 		return _SC("function");
+#ifdef _SQ_M2
+	case _RT_USERDATA:return _SC("userdata");
+	case _RT_USERPOINTER:return _SC("userpointer");
+#else
 	case _RT_USERDATA:
 	case _RT_USERPOINTER:
 		return _SC("userdata");
+#endif
 	case _RT_THREAD: return _SC("thread");
 	case _RT_FUNCPROTO: return _SC("function");
 	case _RT_CLASS: return _SC("class");
 	case _RT_INSTANCE: return _SC("instance");
 	case _RT_WEAKREF: return _SC("weakref");
 	default:
+#ifdef _SQ_M2
+		return _SC("");
+#else
 		return NULL;
+#endif
 	}
 }
 

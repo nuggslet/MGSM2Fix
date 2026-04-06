@@ -18,6 +18,10 @@
 #define TERMINATE_BUFFER() {_longstr.push_back(_SC('\0'));}
 #define ADD_KEYWORD(key,id) _keywords->NewSlot( SQString<Q>::Create(ss, _SC(#key)) ,SQInteger(id))
 
+#ifdef _SQ_M2
+#define iskanji1(c) (((((c) ^ 0x20) - 0xa1) & 0xff) < 0x3c)
+#endif
+
 template <Squirk Q>
 SQLexer<Q>::SQLexer(){}
 template <Squirk Q>
@@ -71,6 +75,12 @@ void SQLexer<Q>::Init(SQSharedState<Q> *ss, SQLEXREADFUNC rg, SQUserPointer up,C
 	ADD_KEYWORD(static,TK_STATIC);
 	ADD_KEYWORD(enum,TK_ENUM);
 	ADD_KEYWORD(const,TK_CONST);
+
+#ifdef _SQ_M2
+#if !defined(_UNICODE) && defined(USESJIS)
+	iskanji = false;
+#endif
+#endif
 
 	_readf = rg;
 	_up = up;
@@ -130,6 +140,16 @@ SQInteger SQLexer<Q>::Lex()
 {
 	_lasttokenline = _currentline;
 	while(CUR_CHAR != SQUIRREL_EOB) {
+#ifdef _SQ_M2
+#if !defined(_UNICODE) && defined(USESJIS)
+		if (iskanji) {
+			SQInteger c = CUR_CHAR;
+			NEXT();
+			RETURN_TOKEN(c);
+		}
+		iskanji = false;
+#endif
+#endif
 		switch(CUR_CHAR){
 		case _SC('\t'): case _SC('\r'): case _SC(' '): NEXT(); continue;
 		case _SC('\n'):
@@ -261,6 +281,11 @@ SQInteger SQLexer<Q>::Lex()
 				else {
 					SQInteger c = CUR_CHAR;
 					if (sciscntrl((int)c)) Error(_SC("unexpected character(control)"));
+#ifdef _SQ_M2
+#if !defined(_UNICODE) && defined(USESJIS)
+					iskanji = iskanji1(c);
+#endif
+#endif
 					NEXT();
 					RETURN_TOKEN(c);  
 				}
@@ -338,6 +363,14 @@ SQInteger SQLexer<Q>::ReadString(SQInteger ndelim,bool verbatim)
 				}
 				break;
 			default:
+#ifdef _SQ_M2
+#if !defined(_UNICODE) && defined(USESJIS)
+				if (iskanji1((int)CUR_CHAR)) {
+					APPEND_CHAR(CUR_CHAR);
+					NEXT();
+				}
+#endif
+#endif
 				APPEND_CHAR(CUR_CHAR);
 				NEXT();
 			}

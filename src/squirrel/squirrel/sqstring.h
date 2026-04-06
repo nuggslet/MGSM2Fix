@@ -24,10 +24,6 @@ public:
 	SQString<Q> *_next; //chain for the string table
 	SQInteger _len;
 
-#if defined(_SQ_M2) && defined(_WIN64)
-	SQInteger _m2_unknown;
-#endif
-
 	SQHash _hash;
 	SQChar _val[1];
 };

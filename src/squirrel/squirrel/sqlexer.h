@@ -41,6 +41,11 @@ public:
 	sqvector<SQChar> _longstr;
 	CompilerErrorFunc _errfunc;
 	void *_errtarget;
+#ifdef _SQ_M2
+#if !defined(_UNICODE) && defined(USESJIS)
+	bool iskanji;
+#endif
+#endif
 };
 
 template SQLexer<Squirk::Standard>;

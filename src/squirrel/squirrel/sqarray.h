@@ -23,6 +23,12 @@ public:
 	void Finalize(){
 		_values.resize(0);
 	}
+#ifdef _SQ_M2
+	bool Exist(const SQInteger nidx)
+	{
+		return nidx >= 0 && nidx < (SQInteger)_values.size();
+	}
+#endif
 	bool Get(const SQInteger nidx,SQObjectPtr<Q> &val)
 	{
 		if(nidx>=0 && nidx<(SQInteger)_values.size()){

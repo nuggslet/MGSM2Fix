@@ -74,6 +74,9 @@ public:
 		}while((n = n->next));
 		return NULL;
 	}
+#ifdef _SQ_M2
+	bool Exist(const SQObjectPtr<Q> &key);
+#endif
 	bool Get(const SQObjectPtr<Q> &key,SQObjectPtr<Q> &val);
 	void Remove(const SQObjectPtr<Q> &key);
 	bool Set(const SQObjectPtr<Q> &key, const SQObjectPtr<Q> &val);

@@ -81,8 +81,23 @@ void DumpLiteral(SQObjectPtr<Q> &o)
 		case OT_STRING:	scprintf(_SC("\"%s\""),_stringval(o));break;
 		case OT_FLOAT: scprintf(_SC("{%f}"),_float(o));break;
 		case OT_INTEGER: scprintf(_SC("{%d}"),_integer(o));break;
+#ifdef _SQ_M2
+#if !defined(_SQ64) && defined(SQLONG_32BIT)
+		case OT_LONG: scprintf(_SC("{%ld}"),_long(o));break;
+#else
+		case OT_LONG: scprintf(_SC("{%lld}"),_long(o));break;
+#endif
+#endif
 		case OT_BOOL: scprintf(_SC("%s"),_integer(o)?_SC("true"):_SC("false"));break;
+#ifdef _SQ_M2
+#if defined(_SQ64) || !defined(SQLONG_32BIT) || defined(SQUSEDOUBLE)
+		default: scprintf(_SC("(%s %llx)"),GetTypeName(o),_rawval(o));break; break; //shut up compiler
+#else
+		default: scprintf(_SC("(%s %lx)"),GetTypeName(o),_rawval(o));break; break; //shut up compiler
+#endif
+#else
 		default: scprintf(_SC("(%s %p)"),GetTypeName(o),_rawval(o));break; break; //shut up compiler
+#endif
 	}
 }
 
@@ -118,8 +133,15 @@ void SQFuncState<Q>::Dump(SQFunctionProto<Q> *func)
 {
 	SQUnsignedInteger n=0,i;
 	SQInteger si;
+#ifdef _SQ_M2
+	SQObject<Q> obj = {};
+#endif
 	scprintf(_SC("SQInstruction sizeof %d\n"),sizeof(SQInstruction));
+#ifdef _SQ_M2
+	scprintf(_SC("SQObject sizeof %ld, _type sizeof %ld, _unVal sizeof %ld\n"),sizeof(obj), sizeof(obj._type), sizeof(obj._unVal));
+#else
 	scprintf(_SC("SQObject sizeof %d\n"),sizeof(SQObject<Q>));
+#endif
 	scprintf(_SC("--------------------------------------------------------------------\n"));
 	scprintf(_SC("*****FUNCTION [%s]\n"),obj_type(func->_name)==OT_STRING?_stringval(func->_name):_SC("unknown"));
 	scprintf(_SC("-----LITERALS\n"));

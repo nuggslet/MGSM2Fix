@@ -30,7 +30,12 @@ enum SQMetaMethod{
 	MT_TOSTRING=15,
 	MT_NEWMEMBER=16,
 	MT_INHERITED=17,
+#ifdef _SQ_M2
+	MT_EXIST=18,
+	MT_LAST = 19
+#else
 	MT_LAST = 18
+#endif
 };
 
 #define MM_ADD		_SC("_add")
@@ -51,6 +56,9 @@ enum SQMetaMethod{
 #define MM_TOSTRING	_SC("_tostring")
 #define MM_NEWMEMBER _SC("_newmember")
 #define MM_INHERITED _SC("_inherited")
+#ifdef _SQ_M2
+#define MM_EXIST     _SC("_exist")
+#endif
 
 #define MINPOWER2 4
 
@@ -108,6 +116,9 @@ struct SQObjectPtr;
 #define raw_type(obj) _RAW_TYPE((obj)._type)
 
 #define _integer(obj) ((obj)._unVal.nInteger)
+#ifdef _SQ_M2
+#define _long(obj) ((obj)._unVal.nLong)
+#endif
 #define _float(obj) ((obj)._unVal.fFloat)
 #define _string(obj) ((obj)._unVal.pString)
 #define _table(obj) ((obj)._unVal.pTable)
@@ -129,8 +140,14 @@ struct SQObjectPtr;
 #define _stringval(obj) (obj)._unVal.pString->_val
 #define _userdataval(obj) (obj)._unVal.pUserData->_val
 
+#ifdef _SQ_M2
+#define tofloat(num) ((obj_type(num)==OT_INTEGER)?(SQFloat)_integer(num):((obj_type(num)==OT_LONG)?(SQFloat)_long(num):_float(num)))
+#define tointeger(num) ((obj_type(num)==OT_FLOAT)?(SQInteger)_float(num):_integer(num))
+#define tolong(num) ((obj_type(num)==OT_FLOAT)?(SQLong)_float(num):_long(num))
+#else
 #define tofloat(num) ((obj_type(num)==OT_INTEGER)?(SQFloat)_integer(num):_float(num))
 #define tointeger(num) ((obj_type(num)==OT_FLOAT)?(SQInteger)_float(num):_integer(num))
+#endif
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -259,6 +276,14 @@ struct SQObjectPtr : public SQObject<Q>
 		this->_type=OT_INTEGER;
 		this->_unVal.nInteger=nInteger;
 	}
+#ifdef _SQ_M2
+	SQObjectPtr(SQLong nLong)
+	{
+		SQ_OBJECT_RAWINIT()
+		this->_type=OT_LONG;
+		this->_unVal.nLong=nLong;
+	}
+#endif
 	SQObjectPtr(SQFloat fFloat)
 	{
 		SQ_OBJECT_RAWINIT()
@@ -294,13 +319,32 @@ struct SQObjectPtr : public SQObject<Q>
 	inline SQObjectPtr<Q>& operator=(SQInteger i)
 	{ 
 		__Release(this->_type,this->_unVal);
+#ifdef _SQ_M2
+#if defined(_SQ64)
+		this->_unVal.raw = 0;
+#endif
+#endif
 		this->_unVal.nInteger = i;
 		this->_type = OT_INTEGER;
 		return *this;
 	}
+#ifdef _SQ_M2
+	inline SQObjectPtr& operator=(SQLong i)
+	{ 
+		__Release(this->_type,this->_unVal);
+		this->_unVal.nLong = i;
+		this->_type = OT_LONG;
+		return *this;
+	}
+#endif
 	inline SQObjectPtr<Q>& operator=(SQFloat f)
 	{ 
 		__Release(this->_type,this->_unVal);
+#ifdef _SQ_M2
+#if defined(_SQ64)
+		this->_unVal.raw = 0;
+#endif
+#endif
 		this->_unVal.fFloat = f;
 		this->_type = OT_FLOAT;
 		return *this;

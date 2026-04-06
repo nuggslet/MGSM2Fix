@@ -107,6 +107,10 @@ public:
 
 	void CallDebugHook(SQInteger type,SQInteger forcedline=0);
 	void CallErrorHandler(SQObjectPtr<Q> &e);
+#ifdef _SQ_M2
+	bool Exist(const SQObjectPtr<Q> &self, const SQObjectPtr<Q> &key);
+	bool FallBackExist(const SQObjectPtr<Q> &self, const SQObjectPtr<Q> &key);
+#endif
 	bool Get(const SQObjectPtr<Q> &self, const SQObjectPtr<Q> &key, SQObjectPtr<Q> &dest, bool raw, bool fetchroot);
 	bool FallBackGet(const SQObjectPtr<Q> &self,const SQObjectPtr<Q> &key,SQObjectPtr<Q> &dest,bool raw);
 	bool Set(const SQObjectPtr<Q> &self, const SQObjectPtr<Q> &key, const SQObjectPtr<Q> &val, bool fetchroot);

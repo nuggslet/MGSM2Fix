@@ -41,6 +41,11 @@ public:
 	}
 	~SQClass();
 	bool NewSlot(SQSharedState<Q> *ss, const SQObjectPtr<Q> &key,const SQObjectPtr<Q> &val,bool bstatic);
+#ifdef _SQ_M2
+	bool Exist(const SQObjectPtr<Q> &key) {
+		return _members->Exist(key);
+	}
+#endif
 	bool Get(const SQObjectPtr<Q> &key,SQObjectPtr<Q> &val) {
 		if(_members->Get(key,val)) {
 			if(_isfield(val)) {
@@ -110,8 +115,20 @@ public:
 		return newinst;
 	}
 	~SQInstance();
+#ifdef _SQ_M2
+	bool Exist(const SQObjectPtr<Q> &key) {
+		if (_class && _class->_members->Exist(key)) {
+			return true;
+		}
+		return false;
+	}
+#endif
 	bool Get(const SQObjectPtr<Q> &key,SQObjectPtr<Q> &val)  {
+#ifdef _SQ_M2
+		if(_class && _class->_members->Get(key,val)) {
+#else
 		if(_class->_members->Get(key,val)) {
+#endif
 			if(_isfield(val)) {
 				SQObjectPtr<Q> &o = _values[_member_idx(val)];
 				val = _realval(o);
@@ -125,7 +142,11 @@ public:
 	}
 	bool Set(const SQObjectPtr<Q> &key,const SQObjectPtr<Q> &val) {
 		SQObjectPtr<Q> idx;
+#ifdef _SQ_M2
+		if(_class && _class->_members->Get(key,idx) && _isfield(idx)) {
+#else
 		if(_class->_members->Get(key,idx) && _isfield(idx)) {
+#endif
             _values[_member_idx(idx)] = val;
 			return true;
 		}
@@ -133,7 +154,11 @@ public:
 	}
 	void Release() {
 		SQDelegable<Q>::_uiRef++;
+#ifdef _SQ_M2
+		if (_hook) { _hook(_userpointer,0); _hook=NULL; }
+#else
 		if (_hook) { _hook(_userpointer,0);}
+#endif
 		SQDelegable<Q>::_uiRef--;
 		if(SQDelegable<Q>::_uiRef > 0) return;
 		SQInteger size = _memsize;

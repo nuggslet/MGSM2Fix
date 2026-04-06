@@ -92,6 +92,16 @@ SQString<Q> *SQVM<Q>::PrintObjVal(const SQObject<Q> &o)
 		scsprintf(_sp(rsl(NUMBER_MAX_CHAR+1)), _SC("%d"), _integer(o));
 		return SQString<Q>::Create(_ss(this), _spval);
 		break;
+#ifdef _SQ_M2
+	case OT_LONG:
+#if !defined(_SQ64) && defined(SQLONG_32BIT)
+		scsprintf(_sp(rsl(NUMBER_MAX_CHAR + 1)), _SC("%ld"), _long(o));
+#else
+		scsprintf(_sp(rsl(NUMBER_MAX_CHAR + 1)), _SC("%lld"), _long(o));
+#endif
+		return SQString<Q>::Create(_ss(this), _spval);
+		break;
+#endif
 	case OT_FLOAT:
 		scsprintf(_sp(rsl(NUMBER_MAX_CHAR+1)), _SC("%.14g"), _float(o));
 		return SQString<Q>::Create(_ss(this), _spval);

@@ -85,6 +85,17 @@ SQTable<Q> *SQTable<Q>::Clone()
 	return nt;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+bool SQTable<Q>::Exist(const SQObjectPtr<Q> &key)
+{
+	if (obj_type(key) == OT_NULL)
+		return false;
+	_HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+	return n != 0;
+}
+#endif
+
 template <Squirk Q>
 bool SQTable<Q>::Get(const SQObjectPtr<Q> &key,SQObjectPtr<Q> &val)
 {

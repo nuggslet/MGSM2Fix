@@ -60,11 +60,13 @@ class SQUtils { public: static void Print(const char *fmt, ...); };
 
 #ifdef _WIN64
 	typedef int SQInteger;
+	typedef long long SQLong;
 	typedef int SQInt32; /*must be 32 bits(also on 64bits processors)*/
 	typedef unsigned int SQUnsignedInteger;
 	typedef unsigned long long SQHash; /*should be the same size of a pointer*/
 #else
 	typedef int SQInteger;
+	typedef long SQLong;
 	typedef int SQInt32; /*must be 32 bits(also on 64bits processors)*/
 	typedef unsigned int SQUnsignedInteger;
 	typedef unsigned int SQHash; /*should be the same size of a pointer*/
@@ -240,6 +242,9 @@ typedef char SQChar;
 #define _RT_CLASS			0x00004000
 #define _RT_INSTANCE		0x00008000
 #define _RT_WEAKREF			0x00010000
+#ifdef _SQ_M2
+#define _RT_LONG            0x00020000
+#endif
 
 typedef enum tagSQObjectType{
 	OT_NULL =			(_RT_NULL|SQOBJECT_CANBEFALSE),
@@ -258,7 +263,12 @@ typedef enum tagSQObjectType{
 	OT_FUNCPROTO =		(_RT_FUNCPROTO|SQOBJECT_REF_COUNTED), //internal usage only
 	OT_CLASS =			(_RT_CLASS|SQOBJECT_REF_COUNTED),
 	OT_INSTANCE =		(_RT_INSTANCE|SQOBJECT_REF_COUNTED|SQOBJECT_DELEGABLE),
+#ifdef _SQ_M2
+	OT_WEAKREF =        (_RT_WEAKREF|SQOBJECT_REF_COUNTED),
+	OT_LONG =           (_RT_LONG|SQOBJECT_NUMERIC|SQOBJECT_CANBEFALSE)
+#else
 	OT_WEAKREF =		(_RT_WEAKREF|SQOBJECT_REF_COUNTED)
+#endif
 }SQObjectType;
 
 #define ISREFCOUNTED(t) (t&SQOBJECT_REF_COUNTED)
@@ -277,6 +287,9 @@ union tagSQObjectValue
 	struct SQString<Q> *pString;
 	struct SQUserData<Q> *pUserData;
 	SQInteger nInteger;
+#ifdef _SQ_M2
+	SQLong nLong;
+#endif
 	SQFloat fFloat;
 	SQUserPointer pUserPointer;
 	struct SQFunctionProto<Q> *pFunctionProto;
@@ -400,6 +413,9 @@ template <Squirk Q> SQUIRREL_API SQRESULT sq_bindenv(HSQUIRRELVM<Q> v, SQInteger
 template <Squirk Q> SQUIRREL_API void sq_pushstring(HSQUIRRELVM<Q> v, const SQChar *s, SQInteger len);
 template <Squirk Q> SQUIRREL_API void sq_pushfloat(HSQUIRRELVM<Q> v, SQFloat f);
 template <Squirk Q> SQUIRREL_API void sq_pushinteger(HSQUIRRELVM<Q> v, SQInteger n);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API void sq_pushlong(HSQUIRRELVM<Q> v, SQLong f);
+#endif
 template <Squirk Q> SQUIRREL_API void sq_pushbool(HSQUIRRELVM<Q> v, SQBool b);
 template <Squirk Q> SQUIRREL_API void sq_pushuserpointer(HSQUIRRELVM<Q> v, SQUserPointer p);
 template <Squirk Q> SQUIRREL_API void sq_pushnull(HSQUIRRELVM<Q> v);
@@ -411,6 +427,9 @@ template <Squirk Q> SQUIRREL_API void sq_tostring(HSQUIRRELVM<Q> v, SQInteger id
 template <Squirk Q> SQUIRREL_API void sq_tobool(HSQUIRRELVM<Q> v, SQInteger idx, SQBool *b);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getstring(HSQUIRRELVM<Q> v, SQInteger idx, const SQChar **c);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getinteger(HSQUIRRELVM<Q> v, SQInteger idx, SQInteger *i);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_getlong(HSQUIRRELVM<Q> v, SQInteger idx, SQLong *i);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getfloat(HSQUIRRELVM<Q> v, SQInteger idx, SQFloat *f);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getbool(HSQUIRRELVM<Q> v, SQInteger idx, SQBool *b);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getthread(HSQUIRRELVM<Q> v, SQInteger idx, HSQUIRRELVM<Q> *thread);
@@ -447,6 +466,9 @@ template <Squirk Q> SQUIRREL_API SQRESULT sq_newslot(HSQUIRRELVM<Q> v, SQInteger
 template <Squirk Q> SQUIRREL_API SQRESULT sq_deleteslot(HSQUIRRELVM<Q> v, SQInteger idx, SQBool pushval);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_set(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_get(HSQUIRRELVM<Q> v, SQInteger idx);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQBool sq_exists(HSQUIRRELVM<Q> v, SQInteger idx);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_rawget(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_rawset(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_rawdeleteslot(HSQUIRRELVM<Q> v, SQInteger idx, SQBool pushval);
@@ -482,6 +504,7 @@ template <Squirk Q> SQUIRREL_API void sq_resetobject(HSQOBJECT<Q> *po);
 template <Squirk Q> SQUIRREL_API const SQChar *sq_objtostring(HSQOBJECT<Q> *o);
 template <Squirk Q> SQUIRREL_API SQBool sq_objtobool(HSQOBJECT<Q> *o);
 template <Squirk Q> SQUIRREL_API SQInteger sq_objtointeger(HSQOBJECT<Q> *o);
+template <Squirk Q> SQUIRREL_API SQLong sq_objtolong(HSQOBJECT<Q> *o);
 template <Squirk Q> SQUIRREL_API SQFloat sq_objtofloat(HSQOBJECT<Q> *o);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getobjtypetag(HSQOBJECT<Q> *o, SQUserPointer * typetag);
 

@@ -947,6 +947,21 @@ SQRESULT sq_rawget(HSQUIRRELVM<Q> v,SQInteger idx)
 	return sq_throwerror(v,_SC("the index doesn't exist"));
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+SQBool sq_exists(HSQUIRRELVM<Q> v,SQInteger idx)
+{
+	SQObjectPtr<Q> &self=stack_get(v,idx);
+	if(v->Get(self,v->GetUp(-1),v->GetUp(-1),true,false)) {
+		v->Pop(1);
+		return SQTrue;
+	} else {
+		v->Pop(1);
+		return SQFalse;
+	}
+}
+#endif
+
 template <Squirk Q>
 SQRESULT sq_getstackobj(HSQUIRRELVM<Q> v,SQInteger idx,HSQOBJECT<Q> *po)
 {
@@ -1539,6 +1554,9 @@ template SQRESULT sq_newslot<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, 
 template SQRESULT sq_deleteslot<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_get<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQBool sq_exists<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
+#endif
 template SQRESULT sq_rawget<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_rawset<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_rawdeleteslot<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQBool pushval);
@@ -1674,6 +1692,9 @@ template SQRESULT sq_newslot<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObjec
 template SQRESULT sq_deleteslot<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_get<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQBool sq_exists<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
+#endif
 template SQRESULT sq_rawget<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_rawset<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_rawdeleteslot<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQBool pushval);
@@ -1809,6 +1830,9 @@ template SQRESULT sq_newslot<Squirk::StandardShared>(HSQUIRRELVM<Squirk::Standar
 template SQRESULT sq_deleteslot<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_get<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQBool sq_exists<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
+#endif
 template SQRESULT sq_rawget<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_rawset<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_rawdeleteslot<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQBool pushval);
@@ -1944,6 +1968,9 @@ template SQRESULT sq_newslot<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::Alig
 template SQRESULT sq_deleteslot<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_get<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQBool sq_exists<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
+#endif
 template SQRESULT sq_rawget<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_rawset<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_rawdeleteslot<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQBool pushval);
