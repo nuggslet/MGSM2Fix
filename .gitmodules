@@ -13,3 +13,6 @@
 [submodule "src/safetyhook"]
 	path = src/safetyhook
 	url = https://github.com/cursey/safetyhook
+[submodule "src/json"]
+	path = src/json
+	url = https://github.com/nlohmann/json

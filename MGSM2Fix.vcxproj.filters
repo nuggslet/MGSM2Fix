@@ -734,6 +734,12 @@
     <ClInclude Include="src\sqresource.h">
       <Filter>Bindings</Filter>
     </ClInclude>
+    <ClInclude Include="src\json\include\nlohmann\json.hpp">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="src\json\include\nlohmann\json_fwd.hpp">
+      <Filter>json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGSM2Fix.rc" />
@@ -786,6 +792,9 @@
     </Filter>
     <Filter Include="ImGui">
       <UniqueIdentifier>{26395ea7-01bf-424f-ba0d-3d2fb566f94d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{7dd8ae31-00c5-415c-a994-12ce54d704f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

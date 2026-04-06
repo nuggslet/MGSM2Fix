@@ -62,3 +62,5 @@ using namespace StdExt;
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/sinks/wincolor_sink.h"
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
