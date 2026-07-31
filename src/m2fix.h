@@ -11,6 +11,9 @@
 
 #include "config.h"
 #include "borderless.h"
+#include "d3d11.h"
+#include "d3d9.h"
+#include "color_correction.hpp"
 
 #include "patriots.hpp"
 #include "versionchecker.h"
@@ -113,6 +116,14 @@ public:
 
             EPI::LoadInstance();
             SQHook<>::LoadInstance();
+
+            static D3D11 d3d11;
+            D3D11::LoadInstance(&d3d11);
+
+            static D3D9 d3d9;
+            D3D9::LoadInstance(&d3d9);
+
+            ColorCorrection::Setup();
 
             if (M2Config::bExternalEnabled) Config::LoadInstance();
             if (M2Config::bExternalBorderless) Borderless::LoadInstance();

@@ -96,6 +96,9 @@
     <ClCompile Include="src\d3d11.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="src\d3d9.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
     <ClCompile Include="src\epi.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -191,6 +194,9 @@
     </ClCompile>
     <ClCompile Include="src\patriots.cpp">
       <Filter>M2Fix</Filter>
+    </ClCompile>
+    <ClCompile Include="src\color_correction.cpp">
+      <Filter>Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -345,6 +351,9 @@
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="src\d3d11.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3d9.h">
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="src\epi.h">
@@ -739,6 +748,9 @@
     </ClInclude>
     <ClInclude Include="src\json\include\nlohmann\json_fwd.hpp">
       <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="src\color_correction.hpp">
+      <Filter>Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

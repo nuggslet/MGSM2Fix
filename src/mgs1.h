@@ -6,9 +6,6 @@
 
 #include "psx.h"
 #include "analog.h"
-#ifndef _WIN64
-#include "d3d11.h"
-#endif
 
 #include "sqemutask.h"
 #include "sqtitleprof.h"
@@ -34,11 +31,6 @@ public:
     virtual void Load() override
     {
         DisableWindowsFullscreenOptimization();
-
-#ifndef _WIN64
-        static D3D11 d3d11;
-        D3D11::LoadInstance(&d3d11);
-#endif
 
         Analog::LoadInstance();
 

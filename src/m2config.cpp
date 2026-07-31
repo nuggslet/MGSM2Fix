@@ -83,6 +83,8 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Internal Resolution"], "Widescreen", bInternalWidescreen);
     inipp::get_value(ini.sections["Internal Resolution"], "Borderless", bInternalBorderless);
 
+    inipp::get_value(ini.sections["CRT Gamma Correction"], "Enabled", bColorCorrectionEnabled);
+
     {
         bool _bAnalog;
         if (inipp::get_value(ini.sections["Input"], "Analog", _bAnalog))
@@ -161,6 +163,7 @@ void M2Config::Load()
     spdlog::info("[Config] iInternalHeight: {}", iInternalHeight);
     spdlog::info("[Config] bInternalWidescreen: {}", bInternalWidescreen);
     spdlog::info("[Config] bInternalBorderless: {}", bInternalBorderless);
+    spdlog::info("[Config] bColorCorrectionEnabled: {}", bColorCorrectionEnabled);
     if (bAnalog)     spdlog::info("[Config] bAnalog: {}", *bAnalog);
     if (bSwapSticks) spdlog::info("[Config] bSwapSticks: {}", *bSwapSticks);
     spdlog::info("[Config] bRemoveDeadzone: {}", bRemoveDeadzone);
