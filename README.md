@@ -5,18 +5,18 @@
 This is a fix that adds custom resolutions, mod support and more to Metal Gear Solid & Metal Gear / Snake's Revenge within the MGS Master Collection, and many more M2ENGAGE titles.<br />
 
 ## Games Supported
-- Metal Gear Solid
-- Metal Gear / Snake's Revenge (Vol.1 Bonus Content)
-- Contra Anniversary Collection
-- Castlevania Anniversary Collection
-- Castlevania Advance Collection
-- Castlevania Dominus Collection
-- Ray’z Arcade Chronology
-- Darius Cozmic Collection Arcade
-- G-Darius HD
-- Gradius Origins
-- Operation Night Strikers
-- Namco Museum Archives
+- [Metal Gear Solid](https://store.steampowered.com/app/2131630/METAL_GEAR_SOLID__Master_Collection_Version/)
+- [Metal Gear / Snake's Revenge (Vol.1 Bonus Content)](https://store.steampowered.com/app/2306740/METAL_GEAR_SOLID_MASTER_COLLECTION_Vol1_BONUS_CONTENT/)
+- [Contra Anniversary Collection](https://store.steampowered.com/app/1018020/Contra_Anniversary_Collection/)
+- Castlevania Anniversary Collection: [Steam](https://store.steampowered.com/app/1018010/Castlevania_Anniversary_Collection/) / [Epic Games](https://store.epicgames.com/p/castlevania-anniversary-collection-a61f94)
+- [Castlevania Advance Collection](https://store.steampowered.com/app/1552550/Castlevania_Advance_Collection/)
+- [Castlevania Dominus Collection](https://store.steampowered.com/app/2369900/Castlevania_Dominus_Collection/)
+- [Ray’z Arcade Chronology](https://store.steampowered.com/app/2478020/Rayz_Arcade_Chronology/)
+- [Darius Cozmic Collection Arcade](https://store.steampowered.com/app/1638330/Darius_Cozmic_Collection_Arcade/)
+- [G-Darius HD](https://store.steampowered.com/app/1640160/GDarius_HD/)
+- [Gradius Origins](https://store.steampowered.com/app/2897590/GRADIUS_ORIGINS/)
+- [Operation Night Strikers](https://store.steampowered.com/app/3099790/Operation_Night_Strikers/)
+- Namco Museum Archives: [(Vol. 1)](https://store.steampowered.com/app/1250250/NAMCO_MUSEUM_ARCHIVES_Vol_1/) / [(Vol. 2)](https://store.steampowered.com/app/1254620/NAMCO_MUSEUM_ARCHIVES_Vol_2/)
 
 See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other games in the MGS Master Collection.
 
