@@ -7,6 +7,8 @@ This is a fix that adds custom resolutions, mod support and more to Metal Gear S
 ## Games Supported
 - [Metal Gear Solid](https://store.steampowered.com/app/2131630/METAL_GEAR_SOLID__Master_Collection_Version/)
 - [Metal Gear / Snake's Revenge (Vol.1 Bonus Content)](https://store.steampowered.com/app/2306740/METAL_GEAR_SOLID_MASTER_COLLECTION_Vol1_BONUS_CONTENT/)
+- [Metal Gear Solid 4 (Metal Gear Solid flashback)](https://store.steampowered.com/app/2492670/METAL_GEAR_SOLID_4_Guns_of_the_Patriots__Master_Collection_Version/)
+- [Metal Gear Solid: Ghost Babel (Vol.2 Bonus Content)](https://store.steampowered.com/app/3036720/METAL_GEAR_SOLID_MASTER_COLLECTION_Vol2_BONUS_CONTENT/)
 - [Contra Anniversary Collection](https://store.steampowered.com/app/1018020/Contra_Anniversary_Collection/)
 - Castlevania Anniversary Collection: [Steam](https://store.steampowered.com/app/1018010/Castlevania_Anniversary_Collection/) / [Epic Games](https://store.epicgames.com/p/castlevania-anniversary-collection-a61f94)
 - [Castlevania Advance Collection](https://store.steampowered.com/app/1552550/Castlevania_Advance_Collection/)
@@ -27,6 +29,7 @@ See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other game
 - Corrects the monitor going to sleep during long periods with no input (e.g. during cutscenes).
 - Control over Master Collection game patches.
 - ~~Analog input (MGS 1).~~ - Fixed by Konami officially via patch 1.5.0 on 13th March 2024.
+- Deadzone removal (MGS 1).
 - Launcher skip (MGS 1, boots last launched game version).
 - Skip intro logos.
 - Modding support (MGS 1, via Ketchup - see below).

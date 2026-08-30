@@ -20,6 +20,8 @@ enum class M2FixGame
     Unknown,
     MGS1,
     MGSR,
+    MGS1in4,
+    MGSGB,
     Contra,
     Dracula,
     DraculaAdvance,
@@ -37,6 +39,7 @@ struct M2FixInfo
 {
     int id;
     std::string_view classname;
+    std::string_view module;
     std::string_view title;
     M2Game & game;
 };
@@ -269,19 +272,35 @@ public:
         );
         for (auto & [type, info] : M2Fix::GetInstance().m_kGames)
         {
-            if (_classname == 0) break;
-            std::string_view classname = M2Hook::ReadUntilTabOrCRLF(_classname);
+            std::string module = hook.ModuleName();
+            if (!info.module.empty() && module != info.module) {
+                continue;
+            }
 
+            if (_classname == 0)
+            {
+                if (!info.classname.empty()) break;
+
+                m_eGame = type;
+                m_kGame = &info;
+
+                spdlog::info("Detected game: {} (Steam app {}).", info.title, info.id);
+                return true;
+            }
+
+            std::string_view classname = M2Hook::ReadUntilTabOrCRLF(_classname);
             if (info.classname == classname)
             {
                 m_eGame = type;
                 m_kGame = &info;
 
-                m_kGame->title = M2Hook::ReadUntilTabOrCRLF(
-                    M2Hook::GetInstance().Scan(
-                        "43 41 50 54 49 4F 4E 20 3D 20",
-                        0xA
-                    )); // `CAPTION = `
+                if (m_kGame->title.empty()) {
+                    m_kGame->title = M2Hook::ReadUntilTabOrCRLF(
+                        M2Hook::GetInstance().Scan(
+                            "43 41 50 54 49 4F 4E 20 3D 20",
+                            0xA
+                        )); // `CAPTION = `
+                }
 
                 const std::string_view path = M2Hook::ReadUntilTabOrCRLF(
                     M2Hook::GetInstance().Scan(
@@ -362,19 +381,21 @@ private:
     static constexpr std::string_view m_sConfigFile = FIX_NAME ".ini";
 
     std::multimap<M2FixGame, M2FixInfo> m_kGames = {
-        { M2FixGame::MGS1,               { 2131630, "MGS1",                           "", MGS1::GetInstance()   } },
-        { M2FixGame::MGSR,               { 2306740, "MGSBC",                          "", M2Game::GetInstance() } },
-        { M2FixGame::Contra,             { 1018020, "CONTRACOLLECTION",               "", M2Game::GetInstance() } },
-        { M2FixGame::Dracula,            { 1018010, "CASTLEVANIACOLLECTION",          "", M2Game::GetInstance() } },
-        { M2FixGame::DraculaAdvance,     { 1552550, "CASTLEVANIAADVANCECOLLECTION",   "", M2Game::GetInstance() } },
-        { M2FixGame::DraculaDominus,     { 2369900, "CASTLEVANIADOMINUSCOLLECTION",   "", M2Game::GetInstance() } },
-        { M2FixGame::Ray,                { 2478020, "RAC",                            "", M2Game::GetInstance() } },
-        { M2FixGame::Darius,             { 1638330, "DariusCozmicCollection",         "", M2Game::GetInstance() } },
-        { M2FixGame::Darius101,          { 1640160, "GDarius",                        "", M2Game::GetInstance() } },
-        { M2FixGame::Gradius,            { 2897590, "GRADIUSORIGINCOLLECTION",        "", M2Game::GetInstance() } },
-        { M2FixGame::NightStrikers,      { 3099790, "OPERATIONNIGHTSTRIKERS",         "", M2Game::GetInstance() } },
-        { M2FixGame::NMA1,               { 1250250, "NAMCOMUSEUMARC1",                "", M2Game::GetInstance() } },
-        { M2FixGame::NMA2,               { 1254620, "NAMCOMUSEUMARC2",                "", M2Game::GetInstance() } },
+        { M2FixGame::MGS1,               { 2131630, "MGS1",                         "METAL GEAR SOLID.exe",      "",                   MGS1::GetInstance()    } },
+        { M2FixGame::MGS1in4,            { 2492670, "",                             "mgs1.exe",                  "METAL GEAR SOLID 4", MGS1in4::GetInstance() } },
+        { M2FixGame::MGSR,               { 2306740, "MGSBC",                        "MGS MC1 Bonus Content.exe", "",                   M2Game::GetInstance()  } },
+        { M2FixGame::MGSGB,              { 3036720, "MGSBC",                        "MGS MC2 Bonus Content.exe", "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Contra,             { 1018020, "CONTRACOLLECTION",             "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Dracula,            { 1018010, "CASTLEVANIACOLLECTION",        "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::DraculaAdvance,     { 1552550, "CASTLEVANIAADVANCECOLLECTION", "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::DraculaDominus,     { 2369900, "CASTLEVANIADOMINUSCOLLECTION", "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Ray,                { 2478020, "RAC",                          "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Darius,             { 1638330, "DariusCozmicCollection",       "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Darius101,          { 1640160, "GDarius",                      "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::Gradius,            { 2897590, "GRADIUSORIGINCOLLECTION",      "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::NightStrikers,      { 3099790, "OPERATIONNIGHTSTRIKERS",       "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::NMA1,               { 1250250, "NAMCOMUSEUMARC1",              "",                          "",                   M2Game::GetInstance()  } },
+        { M2FixGame::NMA2,               { 1254620, "NAMCOMUSEUMARC2",              "",                          "",                   M2Game::GetInstance()  } },
     };
 
     static inline M2FixInfo *m_kGame;

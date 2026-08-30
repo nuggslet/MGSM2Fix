@@ -515,6 +515,31 @@ void PSX::Load()
             break;
         }
 
+        case M2FixGame::MGS1in4:
+        {
+            M2Hook::GetInstance().Hook(
+                "40 57 48 83 EC 20 81 C2 FF 7F FF FF 4D 8B D0 48",
+                0, PSX::CommandPSX, "[PSX] machine_psx_cmd"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "48 83 EC 38 FF CA 4D 8B D8 4C 8B D1 83 FA 0B 0F",
+                0, PSX::CommandR3000, "[PSX] cpu_r3000_cmd"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "48 8B F9 4D 85 C9 74 3B 4C 8B 11 0F 1F 84 00 00",
+                -0xD, PSX::LoadModule, "[PSX] m2epi_load_module"
+            );
+
+            M2Hook::GetInstance().Hook(
+                "40 57 48 83 EC 20 8B FA 3B 51 78 7C 2E 48 8D 05",
+                0, PSX::R3000_Step, "[PSX] r3000_step"
+            );
+
+            break;
+        }
+
         case M2FixGame::Darius101:
         {
             M2Hook::GetInstance().Hook(
@@ -552,6 +577,7 @@ void PSX::Load()
     switch (M2Fix::Game())
     {
         case M2FixGame::MGS1:
+        case M2FixGame::MGS1in4:
         {
 #ifndef _WIN64
             PSX::R3000_Decode = reinterpret_cast<PSXFUNCTION(__fastcall *)(uint32_t)>(
@@ -585,6 +611,16 @@ void PSX::Load()
                     ));
             }
 
+            break;
+        }
+
+        default: break;
+    }
+
+    switch (M2Fix::Game())
+    {
+        case M2FixGame::MGS1:
+        {
 #ifndef _WIN64
             M2Hook::GetInstance().MidHook(
                 "8B D8 8B CA 8B 86 E0 00 00 00 99 03 D8 13 CA 0F",
@@ -611,6 +647,16 @@ void PSX::Load()
                 0, PSX::GPU_SetSmoothing, "[PSX] GPU_SetSmoothing"
             );
 #endif
+
+            break;
+        }
+
+        case M2FixGame::MGS1in4:
+        {
+            M2Hook::GetInstance().MidHook(
+                "48 83 EC 48 F7 81 00 01 00 00 00 00 08 00 75 24",
+                0, PSX::GTE_RotTransPersSX2, "[PSX] GTE_RotTransPersSX2"
+            );
 
             break;
         }

@@ -28,6 +28,7 @@
     <ClCompile Include="src\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\mgs1in4.cpp" />
     <ClCompile Include="src\patriots.cpp" />
     <ClCompile Include="src\safetyhook\src\allocator.cpp" />
     <ClCompile Include="src\safetyhook\src\easy.cpp" />
@@ -101,6 +102,7 @@
     <ClInclude Include="src\m2game.h" />
     <ClInclude Include="src\m2machine.h" />
     <ClInclude Include="src\m2\psx.h" />
+    <ClInclude Include="src\mgs1in4.h" />
     <ClInclude Include="src\patriots.hpp" />
     <ClInclude Include="src\spdlog\include\spdlog\async.h" />
     <ClInclude Include="src\spdlog\include\spdlog\async_logger-inl.h" />

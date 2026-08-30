@@ -18,5 +18,6 @@ public:
 	virtual void Load() override;
 
 private:
-	static void __cdecl Print(const char *fmt, ...);
+	static void __cdecl Print0(const char *fmt, ...);
+	static void __cdecl Print1(const char *fmt, ...);
 };

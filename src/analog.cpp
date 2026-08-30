@@ -86,6 +86,8 @@ void MGS1::AnalogLoop()
 
 void Analog::Load()
 {
+    bool ret = false;
+
     switch (M2Fix::Game())
     {
         case M2FixGame::MGS1:
@@ -113,7 +115,34 @@ void Analog::Load()
                     );
                 }
             }
+#else
+            if (M2Config::bAnalog.has_value() && M2Config::bAnalog.value())
+            {
+                M2Hook::GetInstance().Hook(
+                    "48 C7 45 F0 F3 5A 00 00 41 0F B6 54 09 45 44 0F",
+                    -0x30, Analog_ReadPad, "[Analog] sio_read_pad"
+                );
 
+                M2Hook::GetInstance().Patch(
+                    "88 44 2F 58 83 FE 02 0F 8C 77 FD FF FF 48 8B 5C", 0,
+                    "90 90 90 90",
+                    "[Analog] sio_update_pad"
+                );
+            }
+#endif
+
+            break;
+        }
+
+        default: break;
+    }
+
+    switch (M2Fix::Game())
+    {
+        case M2FixGame::MGS1:
+        case M2FixGame::MGS1in4:
+        {
+#ifndef _WIN64
             if (M2Config::bRemoveDeadzone)
             {
                 M2Hook::GetInstance().Patch(
@@ -129,33 +158,33 @@ void Analog::Load()
                 );
             }
 #else
-            if (M2Config::bAnalog.has_value() && M2Config::bAnalog.value())
-            {
-                M2Hook::GetInstance().Hook(
-                    "48 C7 45 F0 F3 5A 00 00 41 0F B6 54 09 45 44 0F",
-                    -0x30, Analog_ReadPad, "[Analog] sio_read_pad"
-                );
-
-                M2Hook::GetInstance().Patch(
-                    "88 44 2F 58 83 FE 02 0F 8C 77 FD FF FF 48 8B 5C", 0,
-                    "90 90 90 90",
-                    "[Analog] sio_update_pad"
-                );
-            }
-
             if (M2Config::bRemoveDeadzone)
             {
-                M2Hook::GetInstance().Patch(
+                ret = M2Hook::GetInstance().Patch(
                     "41 BB 52 3D 00 00", 0,
                     "41 BB 00 00 00 00",
                     "[Analog] MInputSteam::DeadzoneAxis1"
                 );
+                if (!ret) {
+                    M2Hook::GetInstance().Patch(
+                        "41 BD 52 3D 00 00", 0,
+                        "41 BD 00 00 00 00",
+                        "[Analog] MInputSteam::DeadzoneAxis1"
+                    );
+                }
 
-                M2Hook::GetInstance().Patch(
+                ret = M2Hook::GetInstance().Patch(
                     "41 BB E2 43 00 00", 0,
                     "41 BB 00 00 00 00",
                     "[Analog] MInputSteam::DeadzoneAxis2"
                 );
+                if (!ret) {
+                    M2Hook::GetInstance().Patch(
+                        "41 BD 9A 40 00 00", 0,
+                        "41 BD 00 00 00 00",
+                        "[Analog] MInputSteam::DeadzoneAxis2"
+                    );
+                }
             }
 #endif
 

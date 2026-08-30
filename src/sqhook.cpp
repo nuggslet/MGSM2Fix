@@ -153,6 +153,36 @@ void __fastcall SQHook<Q>::BindFunc(Sqrat::Table<Q> *ctx, uintptr_t _EDX, const 
 }
 
 template <Squirk Q>
+#ifdef _WIN64
+void SQHook<Q>::NewClosure(HSQUIRRELVM<Q> v, SQFUNCTION<Q> func, SQUnsignedInteger nfreevars)
+#else
+void __fastcall SQHook<Q>::NewClosure(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQFUNCTION<Q> func, SQUnsignedInteger nfreevars)
+#endif
+{
+    SQObjectPtr<Q> &key = v->GetUp(-1);
+    const SQChar* name = sq_objtostring(&key);
+
+#ifdef _WIN64
+    M2Hook::GetInstance().Invoke<void>(NewClosure, v, func, nfreevars);
+#else
+    M2Hook::GetInstance().Invoke<void>(NewClosure, v, _EDX, func, nfreevars);
+#endif
+
+    if (!name) return;
+
+    SQObjectPtr<Q> &obj = v->GetUp(-1);
+    if (!sq_isnull(obj)) {
+        sq_pushobject(v, obj);
+        sq_setnativeclosurename(v, -1, name);
+        sq_pop(v, 1);
+    }
+
+    if (M2Config::iNativeLevel >= 1) {
+        spdlog::info("[SQ] sq_newclosure(0x{:x}, 0x{:x}, \"{}\").", fmt::underlying(obj_type(obj)), _rawval(obj), name);
+    }
+}
+
+template <Squirk Q>
 void SQHook<Q>::HookFunction(HSQUIRRELVM<Q> v, const SQChar *func, SQFUNCTION<Q> hook, HSQOBJECT<Q> *obj)
 {
     sq_pushroottable(v);
@@ -1106,6 +1136,7 @@ void SQHook<Q>::Load()
         case M2FixGame::MGS1:
 #endif
         case M2FixGame::MGSR:
+        case M2FixGame::MGSGB:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
         case M2FixGame::Gradius:
@@ -1235,10 +1266,13 @@ void SQHook<Q>::Load()
         }
 #endif
         case M2FixGame::MGSR:
+        case M2FixGame::MGSGB:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
         case M2FixGame::Gradius:
         {
+            bool ret = false;
+
             M2Hook::GetInstance().Hook(
                 "48 C7 81 FC 00 00 00 FF FF FF FF 48 89 B1 E0 00",
                 -0xB3, SQHook<Squirk::StandardShared>::CreateVM, "[SQ-64<StandardShared>] SQVM::SQVM"
@@ -1249,10 +1283,16 @@ void SQHook<Q>::Load()
                 -0x2D0, SQHook<Squirk::StandardShared>::CallNative, "[SQ-64<StandardShared>] SQVM::CallNative"
             );
 
-            M2Hook::GetInstance().Hook(
+            ret = M2Hook::GetInstance().Hook(
                 "44 0F B6 44 24 78 BA FD FF FF FF 49 8B 4E 08 E8",
                 -0x25A, SQHook<Squirk::StandardShared>::BindFunc, "[SQ-64<StandardShared>] Sqrat::BindFunc"
             );
+            if (!ret) {
+                M2Hook::GetInstance().Hook(
+                    "48 8B D8 45 33 FF 44 89 78 30 85 FF 74 7B 8B EF",
+                    -0x2A, SQHook<Squirk::StandardShared>::NewClosure, "[SQ-64<StandardShared>] sq_newclosure"
+                );
+            }
 
             break;
         }

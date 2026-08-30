@@ -1,7 +1,31 @@
 #include "m2fix.h"
 #include "epi.h"
 
-void __cdecl EPI::Print(const char *fmt, ...)
+void __cdecl EPI::Print0(const char *fmt, ...)
+{
+    static std::string buffer;
+
+    va_list va;
+    va_start(va, fmt);
+    std::vector<char> buf(_vscprintf(fmt, va) + 1, 0);
+    char *data = buf.data();
+    vsprintf(data, fmt, va);
+    va_end(va);
+
+    if (data[strcspn(data, "\r\n")] == 0) {
+        buffer += std::string(data);
+        return;
+    }
+
+    data[strcspn(data, "\r\n")] = 0;
+    buffer += std::string(data);
+    if (buffer.length() == 0) return;
+
+    spdlog::info("[EPI] [printf] {}", buffer);
+    buffer.clear();
+}
+
+void __cdecl EPI::Print1(const char *fmt, ...)
 {
     static std::string buffer;
 
@@ -44,7 +68,7 @@ void EPI::Load()
         {
             M2Hook::GetInstance(module).Hook(
                 "8B 4C 24 04 8D 54 24 08 E8 ?? ?? FF FF 85 C0 74",
-                0, Print, "[EPI-32] printf"
+                0, Print0, "[EPI-32] printf"
             );
 
             break;
@@ -64,7 +88,43 @@ void EPI::Load()
                 "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
                 "89 4C 24 20 48 83 EC 28 48 8D 54 24 38 E8 ?? ?? "
                 "?? ?? 48 85 C0 74 08 48 8B C8 E8 ?? ??",
-                0, Print, "[EPI-64] printf"
+                0, Print0, "[EPI-64] printf"
+            );
+
+            break;
+        }
+
+        case M2FixGame::MGS1in4:
+        {
+            M2Hook::GetInstance(module).Hook(
+                "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
+                "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8",
+                0, Print0, "[EPI-64] printf"
+            );
+
+            M2Hook::GetInstance(module).Hook(
+                "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
+                "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8",
+                0x70, Print1, "[EPI-64] printf"
+            );
+
+            break;
+        }
+
+        case M2FixGame::MGSGB:
+        {
+            M2Hook::GetInstance(module).Hook(
+                "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
+                "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8 ?? "
+                "?? ?? ?? 48 8B C8 48 8B D8 E8 ?? ??",
+                0, Print0, "[EPI-64] printf"
+            );
+
+            M2Hook::GetInstance(module).Hook(
+                "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
+                "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8 ?? "
+                "?? ?? ?? 48 8B C8 48 8B D8 E8 ?? ??",
+                0x50, Print1, "[EPI-64] printf"
             );
 
             break;

@@ -192,6 +192,9 @@
     <ClCompile Include="src\patriots.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
+    <ClCompile Include="src\mgs1in4.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -739,6 +742,9 @@
     </ClInclude>
     <ClInclude Include="src\json\include\nlohmann\json_fwd.hpp">
       <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mgs1in4.h">
+      <Filter>Games</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

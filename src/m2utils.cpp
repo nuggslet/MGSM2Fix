@@ -213,6 +213,134 @@ void M2Utils::LogSystemInfo()
     spdlog::info("----------");
 }
 
+void M2Utils::DisableWindowsFullscreenOptimization()
+{
+    if (IsSteamOS()) {
+        return;
+    }
+
+    const std::filesystem::path path = M2Hook::GetInstance().ModuleLocation();
+    assert(path.has_extension() && path.extension() == ".exe" && "ModuleLocation() didn't return a .exe!"); //Just an extra sanity check since we're messing with the registry.
+    std::string sExePath = path.string();
+
+    const bool shouldApply = M2Config::bDisableWindowsFullscreenOptimization;
+    const auto markerFile = EnsureAppData() / "fullscreen_optimization.bin"; // Marker file to track if we're the one who applied the fix, or if the user did it manually.
+    const bool markerExists = std::filesystem::exists(markerFile);
+    const bool shouldRemove = !shouldApply && markerExists; // Only remove if we're the ones who initially applied the compatibility setting.
+    if (!shouldApply && !shouldRemove) {
+        return;
+    }
+    spdlog::info("[Registry] {} fullscreen optimization registry fix for {}.", shouldApply ? "Applying" : "Reverting", path.filename().string());
+    HKEY hKey;
+    const char* subKey = R"(Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers)";
+    LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ | KEY_WRITE, &hKey);
+    if (result != ERROR_SUCCESS) {
+        spdlog::error("[Registry] Failed to open registry key: {}.", subKey);
+        return;
+    }
+
+    // Query existing value
+    DWORD type = 0, dataSize = 0;
+    result = RegQueryValueExA(hKey, sExePath.c_str(), nullptr, &type, nullptr, &dataSize);
+
+    std::string value;
+    if (result == ERROR_SUCCESS && dataSize > 0)
+    {
+        std::vector<char> data(dataSize);
+        if (RegQueryValueExA(hKey, sExePath.c_str(), nullptr, &type, reinterpret_cast<LPBYTE>(data.data()), &dataSize) == ERROR_SUCCESS)
+        {
+            value.assign(data.begin(), data.end());
+            while (!value.empty() && value.back() == '\0')
+                value.pop_back();
+        }
+    }
+
+    bool modified = false;
+
+    if (shouldApply)
+    {
+        if (!value.empty() && value[0] != '~') {
+            value = "~ " + value;
+            modified = true;
+        }
+        if (value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE") == std::string::npos) {
+            if (!value.empty() && value.back() != ' ')
+                value.push_back(' ');
+            value += "DISABLEDXMAXIMIZEDWINDOWEDMODE";
+            modified = true;
+        }
+    }
+    else if (shouldRemove)
+    {
+        size_t pos = value.find("DISABLEDXMAXIMIZEDWINDOWEDMODE");
+        if (pos != std::string::npos)
+        {
+            value.erase(pos, strlen("DISABLEDXMAXIMIZEDWINDOWEDMODE"));
+            while (!value.empty() && value.back() == ' ')
+                value.pop_back();
+            if (value == "~")
+                value.clear();
+            modified = true;
+        }
+    }
+
+    if (modified)
+    {
+        if (value.empty())
+        {
+            if (RegDeleteValueA(hKey, sExePath.c_str()) == ERROR_SUCCESS)
+                spdlog::info("[Registry] Deleted registry entry for {}.", path.filename().string());
+            else
+                spdlog::error("[Registry] Failed to delete registry entry for {}.", path.filename().string());
+        }
+        else
+        {
+            DWORD valueSize = static_cast<DWORD>(value.size() + 1);
+            if (RegSetValueExA(hKey, sExePath.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(value.c_str()), valueSize) == ERROR_SUCCESS)
+                spdlog::info("[Registry] Wrote registry entry for {}: {}.", path.filename().string(), value);
+            else
+                spdlog::error("[Registry] Failed to write registry entry for {}.", path.filename().string());
+        }
+    }
+    else
+    {
+        spdlog::info("[Registry] No registry changes required for {}.", path.filename().string());
+    }
+
+    RegCloseKey(hKey);
+
+    if (shouldApply)
+    {
+        if (!markerExists)
+        {
+            try
+            {
+                std::ofstream out(markerFile, std::ios::trunc);
+                if (out)
+                {
+                    out << "  ...A surveillance camera?!\n";
+                    out << "MGSM2Fix wrote this file to track fullscreen optimization registry state.\n";
+                    out.close();
+                    spdlog::info("[Registry] Created marker file: {}.", markerFile.string());
+                }
+            }
+            catch (const std::exception& e)
+            {
+                spdlog::error("[Registry] Failed to create marker file: {} - {}.", markerFile.string(), e.what());
+            }
+        }
+    }
+    else if (shouldRemove)
+    {
+        std::error_code ec;
+        std::filesystem::remove(markerFile, ec);
+        if (!ec)
+            spdlog::info("[Registry] Removed marker file: {}.", markerFile.string());
+        else
+            spdlog::warn("[Registry] Failed to remove marker file: {}.", markerFile.string());
+    }
+}
+
 // Thanks emoose!
 void * __cdecl M2Utils::memsetWait(void *str, int c, size_t n)
 {

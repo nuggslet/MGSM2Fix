@@ -69,10 +69,12 @@ public:
     static HSQUIRRELVM<Q> CreateVM(HSQUIRRELVM<Q> v, SQSharedState<Q> *ss);
     static bool CallNative(HSQUIRRELVM<Q> v, SQNativeClosure<Q> *nclosure, SQInteger nargs, SQInteger stackbase, SQObjectPtr<Q> &retval, bool &suspend);
     static void BindFunc(Sqrat::Table<Q> *ctx, const SQChar *name, void *method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar);
+    static void NewClosure(HSQUIRRELVM<Q> v, SQFUNCTION<Q> func, SQUnsignedInteger nfreevars);
 #else
     static HSQUIRRELVM<Q> __fastcall CreateVM(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQSharedState<Q> *ss);
     static bool __fastcall CallNative(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQNativeClosure<Q> *nclosure, SQInteger nargs, SQInteger stackbase, SQObjectPtr<Q> &retval, bool &suspend);
     static void __fastcall BindFunc(Sqrat::Table<Q> *ctx, uintptr_t _EDX, const SQChar *name, void *method, size_t methodSize, SQFUNCTION<Q> func, bool staticVar);
+    static void __fastcall NewClosure(HSQUIRRELVM<Q> v, uintptr_t _EDX, SQFUNCTION<Q> func, SQUnsignedInteger nfreevars);
 #endif
 
 private:

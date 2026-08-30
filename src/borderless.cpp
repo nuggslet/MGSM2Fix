@@ -77,6 +77,7 @@ void Borderless::Load()
 #endif
 
         case M2FixGame::MGSR:
+        case M2FixGame::MGSGB:
         case M2FixGame::DraculaDominus:
         case M2FixGame::Ray:
         case M2FixGame::Gradius:
@@ -87,6 +88,19 @@ void Borderless::Load()
                 "BE 00 00 00 90 41 BE 00 00 00 00 90 90 90 90 90 "
                 "90 90 90 90 90 90 90 90 90 90 90 90 90 90 90",
                 "[Borderless-64B] MWin::CreateWindow"
+            );
+
+            break;
+        }
+
+        case M2FixGame::MGS1in4:
+        {
+            M2Hook::GetInstance().Patch(
+                "B8 00 00 CE 02 4C 89 AC 24 10 01 00 00 4C 89 B4 "
+                "24 08 01 00 00 41 BE 00 00 CA 02", 0,
+                "B8 00 00 00 90 4C 89 AC 24 10 01 00 00 4C 89 B4 "
+                "24 08 01 00 00 41 BE 00 00 00 90",
+                "[Borderless-64C] MWin::CreateWindow"
             );
 
             break;

@@ -14,6 +14,8 @@ public:
 
 	static void CompatibilityWarnings();
 
+	static void DisableWindowsFullscreenOptimization();
+
 	static void memsetHook();
 	static void * __cdecl memsetWait(void *str, int c, size_t n);
 	static void memsetRelease();

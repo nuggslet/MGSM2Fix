@@ -2,6 +2,7 @@
 
 #include "m2game.h"
 #include "m2hook.h"
+#include "m2utils.h"
 #include "m2config.h"
 
 #include "psx.h"
@@ -33,7 +34,7 @@ public:
 
     virtual void Load() override
     {
-        DisableWindowsFullscreenOptimization();
+        M2Utils::DisableWindowsFullscreenOptimization();
 
 #ifndef _WIN64
         static D3D11 d3d11;
@@ -159,8 +160,6 @@ private:
 #ifndef _WIN64
     int MGS1_Blank = 0;
 #endif
-
-    static void DisableWindowsFullscreenOptimization();
 
     const std::vector<std::string> MGS1_FileBlacklist_Underpants = {
         "0046a5", "0046a6",

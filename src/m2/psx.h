@@ -17,8 +17,8 @@ typedef struct M2_EmuPSX {
     struct M2_MethodsPSX *Methods;
     void *Components;
     void *Archive;
-    unsigned int *ImageBIOS;
-    unsigned int *ImageDRAM;
+    uintptr_t *ImageBIOS;
+    uintptr_t *ImageDRAM;
     void *MemoryDRAM;
     void *MemoryTCM;
     struct M2_EmuBusPSX *Bus;

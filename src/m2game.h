@@ -40,3 +40,4 @@ public:
 };
 
 #include "mgs1.h"
+#include "mgs1in4.h"

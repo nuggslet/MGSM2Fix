@@ -250,7 +250,18 @@ void Config::Load()
                 "48 33 C4 48 89 44 24 50 48 8B FA 48 8B D9 48 89 "
                 "54 24 48 48 8D 4C 24 28 E8 ?? ?? ?? ?? 48 8B D0 "
                 "48 8B CB E8 ?? ?? ?? ?? 85 C0 78 25 48 98 48 6B",
-                -0x11, GetCfgValue, "[Config-64] MWinResCfg::GetValue"
+                -0x11, GetCfgValue, "[Config-64A] MWinResCfg::GetValue"
+            );
+
+            break;
+        }
+
+        case M2FixGame::MGSGB:
+        {
+            M2Hook::GetInstance().Hook(
+                "48 33 C4 48 89 44 24 50 49 63 F0 48 8B FA 48 8B "
+                "D9 48 89 54 24 48 48 8D 4C 24 28 E8 ?? ??",
+                -0x16, GetCfgValue, "[Config-64B] MWinResCfg::GetValue"
             );
 
             break;
