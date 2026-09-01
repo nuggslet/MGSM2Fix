@@ -26,3 +26,69 @@ void MGS1in4::EPIOnLoadImage(void *image, unsigned int size)
         image, size, "[MGS 4] mgs_loader_stage"
     );
 }
+
+bool MGS1in4::EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args)
+{
+    struct M2_EmuPSX *psx = std::any_cast<M2_EmuPSX *>(machine);
+    struct M2_EmuGPU *gpu = psx->DevGPU;
+    bool ret = true;
+
+    switch (cmd)
+    {
+        case 0x8002: // GET_POSITION
+        {
+            if (!M2Config::bInternalEnabled) {
+                break;
+            }
+
+            unsigned int w =  ((gpu->ScreenRangeW >> 12) & 0xFFF) - (gpu->ScreenRangeW & 0xFFF);
+            unsigned int h = (((gpu->ScreenRangeH >> 10) & 0x3FF) - (gpu->ScreenRangeH & 0x3FF)) << ((gpu->Status >> 22) & 1);
+            unsigned int x = 240 << 1;
+            unsigned int y = std::min(h, x);
+
+            *(args[0]) = (2560 - w) >> 1;
+            *(args[1]) = (M2Config::iInternalHeight * ((x - y) >> 1)) / x;
+            *(args[2]) = (w * M2Config::iInternalHeight) / 240;
+            *(args[3]) = (y * M2Config::iInternalHeight) / 240;
+
+            ret = false;
+            break;
+        }
+
+        case 0x8003: // GET_DIMENSION
+        {
+            if (!M2Config::bInternalEnabled) {
+                break;
+            }
+
+            *(args[0]) = (M2Config::iInternalHeight * 320) / 240;
+            *(args[1]) =  M2Config::iInternalHeight;
+
+            ret = false;
+            break;
+        }
+
+        case 0x8004: // SET_DEVICE
+        {
+            if (!M2Config::bInternalEnabled) {
+                break;
+            }
+
+            unsigned int *res = args[0];
+
+            res[2] = ((M2Config::iInternalHeight * 320) / 240) * 2;
+            res[3] =   M2Config::iInternalHeight * 2;
+            break;
+        }
+
+        case 0x8007: // SET_VIDEO_MODE
+        {
+            PSX::VideoMode = reinterpret_cast<unsigned int>(args[0]);
+            break;
+        }
+
+        default: break;
+    }
+
+    return ret;
+}
