@@ -20,7 +20,9 @@ This is a fix that adds custom resolutions, mod support and more to Metal Gear S
 - [Operation Night Strikers](https://store.steampowered.com/app/3099790/Operation_Night_Strikers/)
 - Namco Museum Archives: [(Vol. 1)](https://store.steampowered.com/app/1250250/NAMCO_MUSEUM_ARCHIVES_Vol_1/) / [(Vol. 2)](https://store.steampowered.com/app/1254620/NAMCO_MUSEUM_ARCHIVES_Vol_2/)
 
-See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other games in the MGS Master Collection.
+See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other games in the MGS Master Collection (Vol. 1).
+
+See ShizCalev's [MGSPatriotFix](https://github.com/ShizCalev/MGSPatriotFix) for the other games in the MGS Master Collection (Vol. 2).
 
 ## Features
 - ~~Upscaled render resolution (MGS 1).~~ Fixed by Konami officially via patch 3.0.0 on 12th February 2026.
@@ -37,7 +39,7 @@ See Lyall's [MGSHDFix](https://github.com/ShizCalev/MGSHDFix) for the other game
 
 ## Installation
 - Grab the latest release of MGSM2Fix from [here](https://github.com/nuggslet/MGSM2Fix/releases) - or the preview release if you're feeling adventurous.
-- Extract the contents of the release into the game folder.<br />(e.g. "**steamapps\common\MGS1**" or "**steamapps\common\MGS Master Collection Bonus Content**" for Steam games).
+- Extract the contents of the release into the game folder.<br />(e.g. "**steamapps\common\MGS1**" or "**steamapps\common\METAL GEAR SOLID 4\MGS1**" for Steam games).
 
 ### Steam Deck/Linux additional instructions
 - Open up the Steam game properties and put `WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%` in the launch options.

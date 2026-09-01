@@ -32,6 +32,7 @@ public:
 
         if (M2Config::bInternalEnabled)
         {
+#ifdef _WIN64
             M2Hook::GetInstance().MidHook(
                 "BA 01 80 00 00 C7 44 24 70 40 01 00 00 48 8B CE C7 "
                 "44 24 74 F0 00 00 00", 0x18,
@@ -62,6 +63,7 @@ public:
                 "49 8B 86 18 01 00 00 F3 0F 11 48 50 F3 0F 11 48", 0,
                 MGS4_ViewSize, "[MGS 4] MGS4::ViewSize"
             );
+#endif
         }
     }
 
@@ -76,6 +78,7 @@ public:
     static int MGS4_main(M2_EmuR3000 *cpu, int cycle, unsigned int address);
 
 private:
+#ifdef _WIN64
     static void MGS4_Draw(safetyhook::Context & ctx) {
         auto *rsp = reinterpret_cast<unsigned int *>(ctx.rsp);
 		rsp[28] = (M2Config::iInternalHeight * 320) / 240;
@@ -108,6 +111,7 @@ private:
         ctx.xmm1.f32[0] *= 240.0f;
         ctx.xmm1.f32[0] /= M2Config::iInternalHeight;
     };
+#endif
 
 private:
     uintptr_t MGS4_GlobalsPTR = 0;

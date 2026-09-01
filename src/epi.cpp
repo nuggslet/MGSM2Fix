@@ -117,14 +117,7 @@ void EPI::Load()
                 "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
                 "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8 ?? "
                 "?? ?? ?? 48 8B C8 48 8B D8 E8 ?? ??",
-                0, Print0, "[EPI-64] printf"
-            );
-
-            M2Hook::GetInstance(module).Hook(
-                "48 89 4C 24 08 48 89 54 24 10 4C 89 44 24 18 4C "
-                "89 4C 24 20 53 48 83 EC 20 48 8D 54 24 38 E8 ?? "
-                "?? ?? ?? 48 8B C8 48 8B D8 E8 ?? ??",
-                0x50, Print1, "[EPI-64] printf"
+                0x50, Print0, "[EPI-64] printf"
             );
 
             break;

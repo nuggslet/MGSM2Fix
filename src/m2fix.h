@@ -12,7 +12,6 @@
 #include "config.h"
 #include "borderless.h"
 
-#include "patriots.hpp"
 #include "versionchecker.h"
 
 enum class M2FixGame
@@ -97,7 +96,6 @@ public:
         M2Fix::CheckModules();
         M2Fix::Logging();
         M2Utils::LogSystemInfo();
-        Patriots::Check();
 
         M2Config::LoadInstance();
         M2Utils::CompatibilityWarnings();

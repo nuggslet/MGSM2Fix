@@ -1,4 +1,5 @@
 #include "m2fix.h"
+#include "patriots.hpp"
 
 DWORD WINAPI ThreadProc(LPVOID lpThreadParameter)
 {
@@ -12,6 +13,7 @@ DWORD WINAPI ThreadProc(LPVOID lpThreadParameter)
 void Main(HINSTANCE hinstDLL)
 {
     M2Utils::memsetHook();
+    Patriots::Check();
 
     HANDLE handle = CreateThread(NULL, 0, ThreadProc, hinstDLL, NULL, 0);
     if (!handle) return;
