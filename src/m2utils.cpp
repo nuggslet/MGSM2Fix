@@ -344,10 +344,10 @@ void M2Utils::DisableWindowsFullscreenOptimization()
 // Thanks emoose!
 void * __cdecl M2Utils::memsetWait(void *str, int c, size_t n)
 {
-    std::lock_guard lock(memsetHookMutex);
-    if (!memsetHookCalled)
+    std::lock_guard lock(startHookMutex);
+    if (!startHookCalled)
     {
-        memsetHookCalled = true;
+        startHookCalled = true;
 
         // Wait for our main thread to finish before we return to the game
         if (!mainThreadFinished)
@@ -360,7 +360,25 @@ void * __cdecl M2Utils::memsetWait(void *str, int c, size_t n)
     return M2Hook::GetInstance().Invoke<void *>(memsetWait, str, c, n);
 }
 
-void M2Utils::memsetRelease()
+void * __cdecl M2Utils::newWait(size_t n)
+{
+    std::lock_guard lock(startHookMutex);
+    if (!startHookCalled)
+    {
+        startHookCalled = true;
+
+        // Wait for our main thread to finish before we return to the game
+        if (!mainThreadFinished)
+        {
+            std::unique_lock finishedLock(mainThreadFinishedMutex);
+            mainThreadFinishedVar.wait(finishedLock, [] { return mainThreadFinished; });
+        }
+    }
+
+    return M2Hook::GetInstance().Invoke<void *>(newWait, n);
+}
+
+void M2Utils::startRelease()
 {
     // Signal any threads which might be waiting for us before continuing
     std::lock_guard lock(mainThreadFinishedMutex);
@@ -368,11 +386,12 @@ void M2Utils::memsetRelease()
     mainThreadFinishedVar.notify_all();
 }
 
-void M2Utils::memsetHook()
+void M2Utils::startHook()
 {
 #ifndef _WIN64
     M2Hook::GetInstance().Hook("8B 4C 24 0C 0F B6 44 24 08 8B D7 8B 7C 24 04 85", 0, memsetWait);
 #else
+    M2Hook::GetInstance().Hook("40 53 48 83 EC 20 48 8B D9 EB 0F 48 8B CB E8 81", 0, newWait);
     M2Hook::GetInstance().Hook("4C 8B D9 0F B6 D2 49 B9 01 01 01 01 01 01 01 01", 0, memsetWait);
 #endif
 }

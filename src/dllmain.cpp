@@ -6,13 +6,13 @@ DWORD WINAPI ThreadProc(LPVOID lpThreadParameter)
     HINSTANCE hinstDLL = reinterpret_cast<HINSTANCE>(lpThreadParameter);
     M2Fix::Main(hinstDLL);
 
-    M2Utils::memsetRelease();
+    M2Utils::startRelease();
     return 1;
 }
 
 void Main(HINSTANCE hinstDLL)
 {
-    M2Utils::memsetHook();
+    M2Utils::startHook();
     Patriots::Check();
 
     HANDLE handle = CreateThread(NULL, 0, ThreadProc, hinstDLL, NULL, 0);

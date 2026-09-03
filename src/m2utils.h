@@ -16,14 +16,15 @@ public:
 
 	static void DisableWindowsFullscreenOptimization();
 
-	static void memsetHook();
+	static void startHook();
 	static void * __cdecl memsetWait(void *str, int c, size_t n);
-	static void memsetRelease();
+	static void * __cdecl newWait(size_t n);
+	static void startRelease();
 
 	static void nullsub();
 
-	static inline std::mutex memsetHookMutex = {};
-	static inline bool memsetHookCalled = false;
+	static inline std::mutex startHookMutex = {};
+	static inline bool startHookCalled = false;
 
 	static inline std::mutex mainThreadFinishedMutex = {};
 	static inline std::condition_variable mainThreadFinishedVar = {};

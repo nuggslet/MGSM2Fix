@@ -30,6 +30,13 @@ public:
 
         Analog::LoadInstance();
 
+#ifdef _WIN64
+        M2Hook::GetInstance().MidHook(
+            "4C 89 7C 24 58 48 89 74 24 50 4C 89 7C 24 48 4C", 0x2B,
+            MGS4_CreateWindow, "[MGS 4] MGS4::CreateWindow"
+        );
+#endif
+
         if (M2Config::bInternalEnabled)
         {
 #ifdef _WIN64
@@ -79,6 +86,10 @@ public:
 
 private:
 #ifdef _WIN64
+    static void MGS4_CreateWindow(safetyhook::Context & ctx) {
+        ctx.r8 = reinterpret_cast<uintptr_t>("METAL GEAR SOLID 4 GUNS OF THE PATRIOTS");
+    };
+
     static void MGS4_Draw(safetyhook::Context & ctx) {
         auto *rsp = reinterpret_cast<unsigned int *>(ctx.rsp);
 		rsp[28] = (M2Config::iInternalHeight * 320) / 240;
