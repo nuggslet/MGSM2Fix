@@ -40,9 +40,9 @@ void Patriots::HDFix()
     MgsGame eGameType = NONE;
 
     static const std::map<MgsGame, GameInfo> kGames = {
-        { MGS2, { "Metal Gear Solid 2",              "METAL GEAR SOLID2.exe", 2131640 } },
-        { MGS3, { "Metal Gear Solid 3",              "METAL GEAR SOLID3.exe", 2131650 } },
-        { MG,   { "Metal Gear / Metal Gear 2 (MSX)", "METAL GEAR.exe",        2131680 } },
+        { MGS2, { "METAL GEAR SOLID 2",              "METAL GEAR SOLID2.exe", 2131640 } },
+        { MGS3, { "METAL GEAR SOLID 3",              "METAL GEAR SOLID3.exe", 2131650 } },
+        { MG,   { "METAL GEAR / METAL GEAR 2 (MSX)", "METAL GEAR.exe",        2131680 } },
     };
 
     if (bIsLauncher)
@@ -158,8 +158,8 @@ void Patriots::PatriotFix()
     MgsGame eGameType = NONE;
 
     static const std::map<MgsGame, GameInfo> kGames = {
-        { MGS4,  { "Metal Gear Solid 4",             "mgs4.exe",                          "MGS4",  2492670 } },
-        { MGSPW, { "Metal Gear Solid: Peace Walker", "METAL GEAR SOLID PEACE WALKER.exe", "mgspw", 2492660 } },
+        { MGS4,  { "METAL GEAR SOLID 4",             "mgs4.exe",                          "MGS4",  2492670 } },
+        { MGSPW, { "METAL GEAR SOLID: PEACE WALKER", "METAL GEAR SOLID PEACE WALKER.exe", "mgspw", 2492660 } },
     };
 
     if (bIsLauncher || bisDatabase)
