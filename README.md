@@ -2,7 +2,7 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z7S6BTK)</br>
 [![MGSM2Fix](https://github.com/nuggslet/MGSM2Fix/actions/workflows/ci.yml/badge.svg)](https://github.com/nuggslet/MGSM2Fix/actions/workflows/ci.yml)[![Github All Releases](https://img.shields.io/github/downloads/nuggslet/MGSM2Fix/total.svg)](https://github.com/nuggslet/MGSM2Fix/releases)
 
-This is a fix that adds custom resolutions, mod support and more to Metal Gear Solid & Metal Gear / Snake's Revenge within the MGS Master Collection, and many more M2ENGAGE titles.<br />
+This is a fix that adds custom resolutions, mod support and more to Metal Gear Solid in the Master Collection, and many more M2ENGAGE titles.<br />
 
 ## Games Supported
 - [Metal Gear Solid](https://store.steampowered.com/app/2131630/METAL_GEAR_SOLID__Master_Collection_Version/)
