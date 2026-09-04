@@ -1,5 +1,6 @@
 #include "mgs1in4.h"
 #include "psx.h"
+#include <psapi.h>
 
 int MGS1in4::MGS4_main(M2_EmuR3000 *cpu, int cycle, unsigned int address)
 {
@@ -16,6 +17,32 @@ void MGS1in4::EPIOnLoadImage(void *image, unsigned int size)
     if (MGS4_LoadImageCount == 0) {
         for (auto & Machine : MachineInstances()) {
             Machine.get().BindModules();
+        }
+
+        ULONG_PTR pbi[6];
+        ULONG size = 0;
+
+        LONG(WINAPI *NtQueryInformationProcess)(
+            HANDLE ProcessHandle,
+            ULONG ProcessInformationClass,
+            PVOID ProcessInformation,
+            ULONG ProcessInformationLength,
+            PULONG ReturnLength
+        );
+
+        *(FARPROC *) &NtQueryInformationProcess = GetProcAddress(LoadLibraryA("NTDLL.DLL"), "NtQueryInformationProcess");
+        if (NtQueryInformationProcess) {
+            if (NtQueryInformationProcess(GetCurrentProcess(), 0, &pbi, sizeof(pbi), &size) >= 0 && size == sizeof(pbi)) {
+				const auto hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pbi[5]);
+                char buffer[MAX_PATH];
+                GetProcessImageFileName(hProcess, buffer, MAX_PATH);
+                std::string name = std::string(buffer);
+				std::filesystem::path path = std::filesystem::path(name);
+                if (_stricmp(path.filename().string().c_str(), "mgs4.exe") == 0) {
+                    TerminateProcess(hProcess, 0);
+                }
+                CloseHandle(hProcess);
+            }
         }
     }
     MGS4_LoadImageCount++;
