@@ -1,18 +1,18 @@
-[submodule "src/imgui"]
-	path = src/imgui
+[submodule "src/extern/imgui"]
+	path = src/extern/imgui
 	url = https://github.com/ocornut/imgui
-[submodule "src/spdlog"]
-	path = src/spdlog
+[submodule "src/extern/spdlog"]
+	path = src/extern/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "src/inipp"]
-	path = src/inipp
+[submodule "src/extern/inipp"]
+	path = src/extern/inipp
 	url = https://github.com/mcmtroffaes/inipp
-[submodule "src/zydis"]
-	path = src/zydis
+[submodule "src/extern/zydis"]
+	path = src/extern/zydis
 	url = https://github.com/zyantific/zydis
-[submodule "src/safetyhook"]
-	path = src/safetyhook
+[submodule "src/extern/safetyhook"]
+	path = src/extern/safetyhook
 	url = https://github.com/cursey/safetyhook
-[submodule "src/json"]
-	path = src/json
+[submodule "src/extern/json"]
+	path = src/extern/json
 	url = https://github.com/nlohmann/json

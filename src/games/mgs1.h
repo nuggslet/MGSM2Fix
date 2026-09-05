@@ -8,7 +8,7 @@
 #include "psx.h"
 #include "analog.h"
 #ifndef _WIN64
-#include "d3d11.h"
+#include "dx11.h"
 #endif
 
 #include "sqemutask.h"
@@ -37,8 +37,8 @@ public:
         M2Utils::DisableWindowsFullscreenOptimization();
 
 #ifndef _WIN64
-        static D3D11 d3d11;
-        D3D11::LoadInstance(&d3d11);
+        static DX11 dx11;
+        DX11::LoadInstance(&dx11);
 #endif
 
         Analog::LoadInstance();

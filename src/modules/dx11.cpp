@@ -1,6 +1,6 @@
 #include "m2fix.h"
 
-#include "d3d11.h"
+#include "dx11.h"
 
 #if defined(M2FIX_USE_IMGUI)
 #include "imgui.h"
@@ -10,14 +10,14 @@
 
 #include "resource.h"
 
-HRESULT WINAPI D3D11::Device::CreateTexture2D(
+HRESULT WINAPI DX11::Device::CreateTexture2D(
     ID3D11Device           *pDevice,
     D3D11_TEXTURE2D_DESC   *pDesc,
     D3D11_SUBRESOURCE_DATA *pInitialData,
     ID3D11Texture2D        **ppTexture2D
 ) {
-    return D3D11::GetInstance().CreateTexture2D(
-        D3D11::Device::CreateTexture2D,
+    return DX11::GetInstance().CreateTexture2D(
+        DX11::Device::CreateTexture2D,
         pDevice,
         pDesc,
         pInitialData,
@@ -25,7 +25,7 @@ HRESULT WINAPI D3D11::Device::CreateTexture2D(
     );
 }
 
-HRESULT WINAPI D3D11::CreateTexture2D(
+HRESULT WINAPI DX11::CreateTexture2D(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device           *pDevice,
         D3D11_TEXTURE2D_DESC   *pDesc,
@@ -145,15 +145,15 @@ HRESULT WINAPI D3D11::CreateTexture2D(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreateVertexShader(
+HRESULT WINAPI DX11::Device::CreateVertexShader(
     ID3D11Device       *pDevice,
     void               *pShaderBytecode,
     SIZE_T             BytecodeLength,
     ID3D11ClassLinkage *pClassLinkage,
     ID3D11VertexShader **ppVertexShader
 ) {
-    return D3D11::GetInstance().CreateVertexShader(
-        D3D11::Device::CreateVertexShader,
+    return DX11::GetInstance().CreateVertexShader(
+        DX11::Device::CreateVertexShader,
         pDevice,
         pShaderBytecode,
         BytecodeLength,
@@ -162,7 +162,7 @@ HRESULT WINAPI D3D11::Device::CreateVertexShader(
     );
 }
 
-HRESULT WINAPI D3D11::CreateVertexShader(
+HRESULT WINAPI DX11::CreateVertexShader(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device       *pDevice,
         void               *pShaderBytecode,
@@ -197,15 +197,15 @@ HRESULT WINAPI D3D11::CreateVertexShader(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreatePixelShader(
+HRESULT WINAPI DX11::Device::CreatePixelShader(
     ID3D11Device       *pDevice,
     void               *pShaderBytecode,
     SIZE_T             BytecodeLength,
     ID3D11ClassLinkage *pClassLinkage,
     ID3D11PixelShader  **ppPixelShader
 ) {
-    return D3D11::GetInstance().CreatePixelShader(
-        D3D11::Device::CreatePixelShader,
+    return DX11::GetInstance().CreatePixelShader(
+        DX11::Device::CreatePixelShader,
         pDevice,
         pShaderBytecode,
         BytecodeLength,
@@ -214,7 +214,7 @@ HRESULT WINAPI D3D11::Device::CreatePixelShader(
     );
 }
 
-HRESULT WINAPI D3D11::CreatePixelShader(
+HRESULT WINAPI DX11::CreatePixelShader(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device       *pDevice,
         void               *pShaderBytecode,
@@ -249,7 +249,7 @@ HRESULT WINAPI D3D11::CreatePixelShader(
     return res;
 }
 
-void WINAPI D3D11::Immediate::UpdateSubresource(
+void WINAPI DX11::Immediate::UpdateSubresource(
     ID3D11DeviceContext *pContext,
     ID3D11Resource      *pDstResource,
     UINT                DstSubresource,
@@ -258,8 +258,8 @@ void WINAPI D3D11::Immediate::UpdateSubresource(
     UINT                SrcRowPitch,
     UINT                SrcDepthPitch
 ) {
-    return D3D11::GetInstance().UpdateSubresource(
-        D3D11::Immediate::UpdateSubresource,
+    return DX11::GetInstance().UpdateSubresource(
+        DX11::Immediate::UpdateSubresource,
         pContext,
         pDstResource,
         DstSubresource,
@@ -270,7 +270,7 @@ void WINAPI D3D11::Immediate::UpdateSubresource(
     );
 }
 
-void WINAPI D3D11::Deferred::UpdateSubresource(
+void WINAPI DX11::Deferred::UpdateSubresource(
     ID3D11DeviceContext *pContext,
     ID3D11Resource      *pDstResource,
     UINT                DstSubresource,
@@ -279,8 +279,8 @@ void WINAPI D3D11::Deferred::UpdateSubresource(
     UINT                SrcRowPitch,
     UINT                SrcDepthPitch
 ) {
-    return D3D11::GetInstance().UpdateSubresource(
-        D3D11::Deferred::UpdateSubresource,
+    return DX11::GetInstance().UpdateSubresource(
+        DX11::Deferred::UpdateSubresource,
         pContext,
         pDstResource,
         DstSubresource,
@@ -291,7 +291,7 @@ void WINAPI D3D11::Deferred::UpdateSubresource(
     );
 }
 
-void WINAPI D3D11::UpdateSubresource(
+void WINAPI DX11::UpdateSubresource(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11Resource      *pDstResource,
@@ -342,7 +342,7 @@ void WINAPI D3D11::UpdateSubresource(
     }
 }
 
-void WINAPI D3D11::Immediate::CopySubresourceRegion(
+void WINAPI DX11::Immediate::CopySubresourceRegion(
     ID3D11DeviceContext *pContext,
     ID3D11Resource      *pDstResource,
     UINT                DstSubresource,
@@ -353,8 +353,8 @@ void WINAPI D3D11::Immediate::CopySubresourceRegion(
     UINT                SrcSubresource,
     D3D11_BOX           *pSrcBox
 ) {
-    return D3D11::GetInstance().CopySubresourceRegion(
-        D3D11::Immediate::CopySubresourceRegion,
+    return DX11::GetInstance().CopySubresourceRegion(
+        DX11::Immediate::CopySubresourceRegion,
         pContext,
         pDstResource,
         DstSubresource,
@@ -367,7 +367,7 @@ void WINAPI D3D11::Immediate::CopySubresourceRegion(
     );
 }
 
-void WINAPI D3D11::Deferred::CopySubresourceRegion(
+void WINAPI DX11::Deferred::CopySubresourceRegion(
     ID3D11DeviceContext *pContext,
     ID3D11Resource      *pDstResource,
     UINT                DstSubresource,
@@ -378,8 +378,8 @@ void WINAPI D3D11::Deferred::CopySubresourceRegion(
     UINT                SrcSubresource,
     D3D11_BOX           *pSrcBox
 ) {
-    return D3D11::GetInstance().CopySubresourceRegion(
-        D3D11::Deferred::CopySubresourceRegion,
+    return DX11::GetInstance().CopySubresourceRegion(
+        DX11::Deferred::CopySubresourceRegion,
         pContext,
         pDstResource,
         DstSubresource,
@@ -392,7 +392,7 @@ void WINAPI D3D11::Deferred::CopySubresourceRegion(
     );
 }
 
-void WINAPI D3D11::CopySubresourceRegion(
+void WINAPI DX11::CopySubresourceRegion(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11Resource      *pDstResource,
@@ -488,14 +488,14 @@ void WINAPI D3D11::CopySubresourceRegion(
     );
 }
 
-HRESULT WINAPI D3D11::Device::CreateRenderTargetView(
+HRESULT WINAPI DX11::Device::CreateRenderTargetView(
     ID3D11Device                  *pDevice,
     ID3D11Resource                *pResource,
     D3D11_RENDER_TARGET_VIEW_DESC *pDesc,
     ID3D11RenderTargetView        **ppRTView
 ) {
-    return D3D11::GetInstance().CreateRenderTargetView(
-        D3D11::Device::CreateRenderTargetView,
+    return DX11::GetInstance().CreateRenderTargetView(
+        DX11::Device::CreateRenderTargetView,
         pDevice,
         pResource,
         pDesc,
@@ -503,7 +503,7 @@ HRESULT WINAPI D3D11::Device::CreateRenderTargetView(
     );
 }
 
-HRESULT WINAPI D3D11::CreateRenderTargetView(
+HRESULT WINAPI DX11::CreateRenderTargetView(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device                  *pDevice,
         ID3D11Resource                *pResource,
@@ -535,14 +535,14 @@ HRESULT WINAPI D3D11::CreateRenderTargetView(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreateShaderResourceView(
+HRESULT WINAPI DX11::Device::CreateShaderResourceView(
     ID3D11Device                    *pDevice,
     ID3D11Resource                  *pResource,
     D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc,
     ID3D11ShaderResourceView        **ppSRView
 ) {
-    return D3D11::GetInstance().CreateShaderResourceView(
-        D3D11::Device::CreateShaderResourceView,
+    return DX11::GetInstance().CreateShaderResourceView(
+        DX11::Device::CreateShaderResourceView,
         pDevice,
         pResource,
         pDesc,
@@ -550,7 +550,7 @@ HRESULT WINAPI D3D11::Device::CreateShaderResourceView(
     );
 }
 
-HRESULT WINAPI D3D11::CreateShaderResourceView(
+HRESULT WINAPI DX11::CreateShaderResourceView(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device                    *pDevice,
         ID3D11Resource                  *pResource,
@@ -629,20 +629,20 @@ HRESULT WINAPI D3D11::CreateShaderResourceView(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreateSamplerState(
+HRESULT WINAPI DX11::Device::CreateSamplerState(
     ID3D11Device       *pDevice,
     D3D11_SAMPLER_DESC *pSamplerDesc,
     ID3D11SamplerState **ppSamplerState
 ) {
-    return D3D11::GetInstance().CreateSamplerState(
-        D3D11::Device::CreateSamplerState,
+    return DX11::GetInstance().CreateSamplerState(
+        DX11::Device::CreateSamplerState,
         pDevice,
         pSamplerDesc,
         ppSamplerState
     );
 }
 
-HRESULT WINAPI D3D11::CreateSamplerState(
+HRESULT WINAPI DX11::CreateSamplerState(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device       *pDevice,
         D3D11_SAMPLER_DESC *pSamplerDesc,
@@ -670,14 +670,14 @@ HRESULT WINAPI D3D11::CreateSamplerState(
     return res;
 }
 
-void WINAPI D3D11::Immediate::VSSetShaderResources(
+void WINAPI DX11::Immediate::VSSetShaderResources(
     ID3D11DeviceContext      *pContext,
     UINT                     StartSlot,
     UINT                     NumViews,
     ID3D11ShaderResourceView **ppShaderResourceViews
 ) {
-    return D3D11::GetInstance().VSSetShaderResources(
-        D3D11::Immediate::VSSetShaderResources,
+    return DX11::GetInstance().VSSetShaderResources(
+        DX11::Immediate::VSSetShaderResources,
         pContext,
         StartSlot,
         NumViews,
@@ -685,14 +685,14 @@ void WINAPI D3D11::Immediate::VSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::Deferred::VSSetShaderResources(
+void WINAPI DX11::Deferred::VSSetShaderResources(
     ID3D11DeviceContext      *pContext,
     UINT                     StartSlot,
     UINT                     NumViews,
     ID3D11ShaderResourceView **ppShaderResourceViews
 ) {
-    return D3D11::GetInstance().VSSetShaderResources(
-        D3D11::Deferred::VSSetShaderResources,
+    return DX11::GetInstance().VSSetShaderResources(
+        DX11::Deferred::VSSetShaderResources,
         pContext,
         StartSlot,
         NumViews,
@@ -700,7 +700,7 @@ void WINAPI D3D11::Deferred::VSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::VSSetShaderResources(
+void WINAPI DX11::VSSetShaderResources(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext      *pContext,
         UINT                     StartSlot,
@@ -738,14 +738,14 @@ void WINAPI D3D11::VSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::Immediate::PSSetShaderResources(
+void WINAPI DX11::Immediate::PSSetShaderResources(
     ID3D11DeviceContext      *pContext,
     UINT                     StartSlot,
     UINT                     NumViews,
     ID3D11ShaderResourceView **ppShaderResourceViews
 ) {
-    return D3D11::GetInstance().PSSetShaderResources(
-        D3D11::Immediate::PSSetShaderResources,
+    return DX11::GetInstance().PSSetShaderResources(
+        DX11::Immediate::PSSetShaderResources,
         pContext,
         StartSlot,
         NumViews,
@@ -753,14 +753,14 @@ void WINAPI D3D11::Immediate::PSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::Deferred::PSSetShaderResources(
+void WINAPI DX11::Deferred::PSSetShaderResources(
     ID3D11DeviceContext      *pContext,
     UINT                     StartSlot,
     UINT                     NumViews,
     ID3D11ShaderResourceView **ppShaderResourceViews
 ) {
-    return D3D11::GetInstance().PSSetShaderResources(
-        D3D11::Deferred::PSSetShaderResources,
+    return DX11::GetInstance().PSSetShaderResources(
+        DX11::Deferred::PSSetShaderResources,
         pContext,
         StartSlot,
         NumViews,
@@ -768,7 +768,7 @@ void WINAPI D3D11::Deferred::PSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::PSSetShaderResources(
+void WINAPI DX11::PSSetShaderResources(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext      *pContext,
         UINT                     StartSlot,
@@ -812,14 +812,14 @@ void WINAPI D3D11::PSSetShaderResources(
     );
 }
 
-void WINAPI D3D11::Immediate::VSSetSamplers(
+void WINAPI DX11::Immediate::VSSetSamplers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumSamplers,
     ID3D11SamplerState  **ppSamplers
 ) {
-    return D3D11::GetInstance().VSSetSamplers(
-        D3D11::Immediate::VSSetSamplers,
+    return DX11::GetInstance().VSSetSamplers(
+        DX11::Immediate::VSSetSamplers,
         pContext,
         StartSlot,
         NumSamplers,
@@ -827,14 +827,14 @@ void WINAPI D3D11::Immediate::VSSetSamplers(
     );
 }
 
-void WINAPI D3D11::Deferred::VSSetSamplers(
+void WINAPI DX11::Deferred::VSSetSamplers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumSamplers,
     ID3D11SamplerState  **ppSamplers
 ) {
-    return D3D11::GetInstance().VSSetSamplers(
-        D3D11::Deferred::VSSetSamplers,
+    return DX11::GetInstance().VSSetSamplers(
+        DX11::Deferred::VSSetSamplers,
         pContext,
         StartSlot,
         NumSamplers,
@@ -842,7 +842,7 @@ void WINAPI D3D11::Deferred::VSSetSamplers(
     );
 }
 
-void WINAPI D3D11::VSSetSamplers(
+void WINAPI DX11::VSSetSamplers(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                StartSlot,
@@ -873,14 +873,14 @@ void WINAPI D3D11::VSSetSamplers(
     );
 }
 
-void WINAPI D3D11::Immediate::PSSetSamplers(
+void WINAPI DX11::Immediate::PSSetSamplers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumSamplers,
     ID3D11SamplerState  **ppSamplers
 ) {
-    return D3D11::GetInstance().PSSetSamplers(
-        D3D11::Immediate::PSSetSamplers,
+    return DX11::GetInstance().PSSetSamplers(
+        DX11::Immediate::PSSetSamplers,
         pContext,
         StartSlot,
         NumSamplers,
@@ -888,14 +888,14 @@ void WINAPI D3D11::Immediate::PSSetSamplers(
     );
 }
 
-void WINAPI D3D11::Deferred::PSSetSamplers(
+void WINAPI DX11::Deferred::PSSetSamplers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumSamplers,
     ID3D11SamplerState  **ppSamplers
 ) {
-    return D3D11::GetInstance().PSSetSamplers(
-        D3D11::Deferred::PSSetSamplers,
+    return DX11::GetInstance().PSSetSamplers(
+        DX11::Deferred::PSSetSamplers,
         pContext,
         StartSlot,
         NumSamplers,
@@ -903,7 +903,7 @@ void WINAPI D3D11::Deferred::PSSetSamplers(
     );
 }
 
-void WINAPI D3D11::PSSetSamplers(
+void WINAPI DX11::PSSetSamplers(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                StartSlot,
@@ -934,33 +934,33 @@ void WINAPI D3D11::PSSetSamplers(
     );
 }
 
-void WINAPI D3D11::Immediate::RSSetViewports(
+void WINAPI DX11::Immediate::RSSetViewports(
     ID3D11DeviceContext *pContext,
     UINT                NumViewports,
     D3D11_VIEWPORT      *pViewports
 ) {
-    return D3D11::GetInstance().RSSetViewports(
-        D3D11::Immediate::RSSetViewports,
+    return DX11::GetInstance().RSSetViewports(
+        DX11::Immediate::RSSetViewports,
         pContext,
         NumViewports,
         pViewports
     );
 }
 
-void WINAPI D3D11::Deferred::RSSetViewports(
+void WINAPI DX11::Deferred::RSSetViewports(
     ID3D11DeviceContext *pContext,
     UINT                NumViewports,
     D3D11_VIEWPORT      *pViewports
 ) {
-    return D3D11::GetInstance().RSSetViewports(
-        D3D11::Deferred::RSSetViewports,
+    return DX11::GetInstance().RSSetViewports(
+        DX11::Deferred::RSSetViewports,
         pContext,
         NumViewports,
         pViewports
     );
 }
 
-void WINAPI D3D11::RSSetViewports(
+void WINAPI DX11::RSSetViewports(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                NumViewports,
@@ -991,33 +991,33 @@ void WINAPI D3D11::RSSetViewports(
     );
 }
 
-void WINAPI D3D11::Immediate::RSSetScissorRects(
+void WINAPI DX11::Immediate::RSSetScissorRects(
     ID3D11DeviceContext *pContext,
     UINT                NumRects,
     D3D11_RECT          *pRects
 ) {
-    return D3D11::GetInstance().RSSetScissorRects(
-        D3D11::Immediate::RSSetScissorRects,
+    return DX11::GetInstance().RSSetScissorRects(
+        DX11::Immediate::RSSetScissorRects,
         pContext,
         NumRects,
         pRects
     );
 }
 
-void WINAPI D3D11::Deferred::RSSetScissorRects(
+void WINAPI DX11::Deferred::RSSetScissorRects(
     ID3D11DeviceContext *pContext,
     UINT                NumRects,
     D3D11_RECT          *pRects
 ) {
-    return D3D11::GetInstance().RSSetScissorRects(
-        D3D11::Deferred::RSSetScissorRects,
+    return DX11::GetInstance().RSSetScissorRects(
+        DX11::Deferred::RSSetScissorRects,
         pContext,
         NumRects,
         pRects
     );
 }
 
-void WINAPI D3D11::RSSetScissorRects(
+void WINAPI DX11::RSSetScissorRects(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                NumRects,
@@ -1048,33 +1048,33 @@ void WINAPI D3D11::RSSetScissorRects(
     );
 }
 
-void WINAPI D3D11::Immediate::ClearRenderTargetView(
+void WINAPI DX11::Immediate::ClearRenderTargetView(
     ID3D11DeviceContext    *pContext,
     ID3D11RenderTargetView *pRenderTargetView,
     FLOAT                  ColorRGBA[4]
 ) {
-    return D3D11::GetInstance().ClearRenderTargetView(
-        D3D11::Immediate::ClearRenderTargetView,
+    return DX11::GetInstance().ClearRenderTargetView(
+        DX11::Immediate::ClearRenderTargetView,
         pContext,
         pRenderTargetView,
         ColorRGBA
     );
 }
 
-void WINAPI D3D11::Deferred::ClearRenderTargetView(
+void WINAPI DX11::Deferred::ClearRenderTargetView(
     ID3D11DeviceContext    *pContext,
     ID3D11RenderTargetView *pRenderTargetView,
     FLOAT                  ColorRGBA[4]
 ) {
-    return D3D11::GetInstance().ClearRenderTargetView(
-        D3D11::Deferred::ClearRenderTargetView,
+    return DX11::GetInstance().ClearRenderTargetView(
+        DX11::Deferred::ClearRenderTargetView,
         pContext,
         pRenderTargetView,
         ColorRGBA
     );
 }
 
-void WINAPI D3D11::ClearRenderTargetView(
+void WINAPI DX11::ClearRenderTargetView(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext    *pContext,
         ID3D11RenderTargetView *pRenderTargetView,
@@ -1102,33 +1102,33 @@ void WINAPI D3D11::ClearRenderTargetView(
     );
 }
 
-void WINAPI D3D11::Immediate::Draw(
+void WINAPI DX11::Immediate::Draw(
     ID3D11DeviceContext *pContext,
     UINT                VertexCount,
     UINT                StartVertexLocation
 ) {
-    return D3D11::GetInstance().Draw(
-        D3D11::Immediate::Draw,
+    return DX11::GetInstance().Draw(
+        DX11::Immediate::Draw,
         pContext,
         VertexCount,
         StartVertexLocation
     );
 }
 
-void WINAPI D3D11::Deferred::Draw(
+void WINAPI DX11::Deferred::Draw(
     ID3D11DeviceContext *pContext,
     UINT                VertexCount,
     UINT                StartVertexLocation
 ) {
-    return D3D11::GetInstance().Draw(
-        D3D11::Deferred::Draw,
+    return DX11::GetInstance().Draw(
+        DX11::Deferred::Draw,
         pContext,
         VertexCount,
         StartVertexLocation
     );
 }
 
-void D3D11::Queue(ID3D11DeviceContext *pContext, std::deque<State> & states, UINT VertexCount, UINT StartVertexLocation)
+void DX11::Queue(ID3D11DeviceContext *pContext, std::deque<State> & states, UINT VertexCount, UINT StartVertexLocation)
 {
     State state = {};
     UINT num = 0;
@@ -1198,7 +1198,7 @@ void D3D11::Queue(ID3D11DeviceContext *pContext, std::deque<State> & states, UIN
     states.push_back(state);
 }
 
-void D3D11::Serve(ID3D11DeviceContext *pContext, std::deque<State> & states)
+void DX11::Serve(ID3D11DeviceContext *pContext, std::deque<State> & states)
 {
     while (!states.empty())
     {
@@ -1288,7 +1288,7 @@ void D3D11::Serve(ID3D11DeviceContext *pContext, std::deque<State> & states)
     }
 }
 
-void WINAPI D3D11::Draw(
+void WINAPI DX11::Draw(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                VertexCount,
@@ -1313,14 +1313,14 @@ void WINAPI D3D11::Draw(
     );
 }
 
-void WINAPI D3D11::Immediate::VSSetShader(
+void WINAPI DX11::Immediate::VSSetShader(
     ID3D11DeviceContext *pContext,
     ID3D11VertexShader  *pVertexShader,
     ID3D11ClassInstance **ppClassInstances,
     UINT                NumClassInstances
 ) {
-    return D3D11::GetInstance().VSSetShader(
-        D3D11::Immediate::VSSetShader,
+    return DX11::GetInstance().VSSetShader(
+        DX11::Immediate::VSSetShader,
         pContext,
         pVertexShader,
         ppClassInstances,
@@ -1328,14 +1328,14 @@ void WINAPI D3D11::Immediate::VSSetShader(
     );
 }
 
-void WINAPI D3D11::Deferred::VSSetShader(
+void WINAPI DX11::Deferred::VSSetShader(
     ID3D11DeviceContext *pContext,
     ID3D11VertexShader  *pVertexShader,
     ID3D11ClassInstance **ppClassInstances,
     UINT                NumClassInstances
 ) {
-    return D3D11::GetInstance().VSSetShader(
-        D3D11::Deferred::VSSetShader,
+    return DX11::GetInstance().VSSetShader(
+        DX11::Deferred::VSSetShader,
         pContext,
         pVertexShader,
         ppClassInstances,
@@ -1343,7 +1343,7 @@ void WINAPI D3D11::Deferred::VSSetShader(
     );
 }
 
-void WINAPI D3D11::VSSetShader(
+void WINAPI DX11::VSSetShader(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11VertexShader  *pVertexShader,
@@ -1370,14 +1370,14 @@ void WINAPI D3D11::VSSetShader(
     );
 }
 
-void WINAPI D3D11::Immediate::PSSetShader(
+void WINAPI DX11::Immediate::PSSetShader(
     ID3D11DeviceContext *pContext,
     ID3D11PixelShader   *pPixelShader,
     ID3D11ClassInstance **ppClassInstances,
     UINT                NumClassInstances
 ) {
-    return D3D11::GetInstance().PSSetShader(
-        D3D11::Immediate::PSSetShader,
+    return DX11::GetInstance().PSSetShader(
+        DX11::Immediate::PSSetShader,
         pContext,
         pPixelShader,
         ppClassInstances,
@@ -1385,14 +1385,14 @@ void WINAPI D3D11::Immediate::PSSetShader(
     );
 }
 
-void WINAPI D3D11::Deferred::PSSetShader(
+void WINAPI DX11::Deferred::PSSetShader(
     ID3D11DeviceContext *pContext,
     ID3D11PixelShader   *pPixelShader,
     ID3D11ClassInstance **ppClassInstances,
     UINT                NumClassInstances
 ) {
-    return D3D11::GetInstance().PSSetShader(
-        D3D11::Deferred::PSSetShader,
+    return DX11::GetInstance().PSSetShader(
+        DX11::Deferred::PSSetShader,
         pContext,
         pPixelShader,
         ppClassInstances,
@@ -1400,7 +1400,7 @@ void WINAPI D3D11::Deferred::PSSetShader(
     );
 }
 
-void WINAPI D3D11::PSSetShader(
+void WINAPI DX11::PSSetShader(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11PixelShader   *pPixelShader,
@@ -1427,29 +1427,29 @@ void WINAPI D3D11::PSSetShader(
     );
 }
 
-void WINAPI D3D11::Immediate::IASetPrimitiveTopology(
+void WINAPI DX11::Immediate::IASetPrimitiveTopology(
     ID3D11DeviceContext      *pContext,
     D3D11_PRIMITIVE_TOPOLOGY Topology
 ) {
-    return D3D11::GetInstance().IASetPrimitiveTopology(
-        D3D11::Immediate::IASetPrimitiveTopology,
+    return DX11::GetInstance().IASetPrimitiveTopology(
+        DX11::Immediate::IASetPrimitiveTopology,
         pContext,
         Topology
     );
 }
 
-void WINAPI D3D11::Deferred::IASetPrimitiveTopology(
+void WINAPI DX11::Deferred::IASetPrimitiveTopology(
     ID3D11DeviceContext      *pContext,
     D3D11_PRIMITIVE_TOPOLOGY Topology
 ) {
-    return D3D11::GetInstance().IASetPrimitiveTopology(
-        D3D11::Deferred::IASetPrimitiveTopology,
+    return DX11::GetInstance().IASetPrimitiveTopology(
+        DX11::Deferred::IASetPrimitiveTopology,
         pContext,
         Topology
     );
 }
 
-void WINAPI D3D11::IASetPrimitiveTopology(
+void WINAPI DX11::IASetPrimitiveTopology(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext      *pContext,
         D3D11_PRIMITIVE_TOPOLOGY Topology
@@ -1470,29 +1470,29 @@ void WINAPI D3D11::IASetPrimitiveTopology(
     );
 }
 
-void WINAPI D3D11::Immediate::IASetInputLayout(
+void WINAPI DX11::Immediate::IASetInputLayout(
     ID3D11DeviceContext *pContext,
     ID3D11InputLayout   *pInputLayout
 ) {
-    return D3D11::GetInstance().IASetInputLayout(
-        D3D11::Immediate::IASetInputLayout,
+    return DX11::GetInstance().IASetInputLayout(
+        DX11::Immediate::IASetInputLayout,
         pContext,
         pInputLayout
     );
 }
 
-void WINAPI D3D11::Deferred::IASetInputLayout(
+void WINAPI DX11::Deferred::IASetInputLayout(
     ID3D11DeviceContext *pContext,
     ID3D11InputLayout   *pInputLayout
 ) {
-    return D3D11::GetInstance().IASetInputLayout(
-        D3D11::Deferred::IASetInputLayout,
+    return DX11::GetInstance().IASetInputLayout(
+        DX11::Deferred::IASetInputLayout,
         pContext,
         pInputLayout
     );
 }
 
-void WINAPI D3D11::IASetInputLayout(
+void WINAPI DX11::IASetInputLayout(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11InputLayout   *pInputLayout
@@ -1513,14 +1513,14 @@ void WINAPI D3D11::IASetInputLayout(
     );
 }
 
-void WINAPI D3D11::Immediate::IASetIndexBuffer(
+void WINAPI DX11::Immediate::IASetIndexBuffer(
     ID3D11DeviceContext *pContext,
     ID3D11Buffer        *pIndexBuffer,
     DXGI_FORMAT         Format,
     UINT                Offset
 ) {
-    return D3D11::GetInstance().IASetIndexBuffer(
-        D3D11::Immediate::IASetIndexBuffer,
+    return DX11::GetInstance().IASetIndexBuffer(
+        DX11::Immediate::IASetIndexBuffer,
         pContext,
         pIndexBuffer,
         Format,
@@ -1528,14 +1528,14 @@ void WINAPI D3D11::Immediate::IASetIndexBuffer(
     );
 }
 
-void WINAPI D3D11::Deferred::IASetIndexBuffer(
+void WINAPI DX11::Deferred::IASetIndexBuffer(
     ID3D11DeviceContext *pContext,
     ID3D11Buffer        *pIndexBuffer,
     DXGI_FORMAT         Format,
     UINT                Offset
 ) {
-    return D3D11::GetInstance().IASetIndexBuffer(
-        D3D11::Deferred::IASetIndexBuffer,
+    return DX11::GetInstance().IASetIndexBuffer(
+        DX11::Deferred::IASetIndexBuffer,
         pContext,
         pIndexBuffer,
         Format,
@@ -1543,7 +1543,7 @@ void WINAPI D3D11::Deferred::IASetIndexBuffer(
     );
 }
 
-void WINAPI D3D11::IASetIndexBuffer(
+void WINAPI DX11::IASetIndexBuffer(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11Buffer        *pIndexBuffer,
@@ -1572,7 +1572,7 @@ void WINAPI D3D11::IASetIndexBuffer(
     );
 }
 
-void WINAPI D3D11::Immediate::IASetVertexBuffers(
+void WINAPI DX11::Immediate::IASetVertexBuffers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumBuffers,
@@ -1580,8 +1580,8 @@ void WINAPI D3D11::Immediate::IASetVertexBuffers(
     UINT                *pStrides,
     UINT                *pOffsets
 ) {
-    return D3D11::GetInstance().IASetVertexBuffers(
-        D3D11::Immediate::IASetVertexBuffers,
+    return DX11::GetInstance().IASetVertexBuffers(
+        DX11::Immediate::IASetVertexBuffers,
         pContext,
         StartSlot,
         NumBuffers,
@@ -1591,7 +1591,7 @@ void WINAPI D3D11::Immediate::IASetVertexBuffers(
     );
 }
 
-void WINAPI D3D11::Deferred::IASetVertexBuffers(
+void WINAPI DX11::Deferred::IASetVertexBuffers(
     ID3D11DeviceContext *pContext,
     UINT                StartSlot,
     UINT                NumBuffers,
@@ -1599,8 +1599,8 @@ void WINAPI D3D11::Deferred::IASetVertexBuffers(
     UINT                *pStrides,
     UINT                *pOffsets
 ) {
-    return D3D11::GetInstance().IASetVertexBuffers(
-        D3D11::Deferred::IASetVertexBuffers,
+    return DX11::GetInstance().IASetVertexBuffers(
+        DX11::Deferred::IASetVertexBuffers,
         pContext,
         StartSlot,
         NumBuffers,
@@ -1610,7 +1610,7 @@ void WINAPI D3D11::Deferred::IASetVertexBuffers(
     );
 }
 
-void WINAPI D3D11::IASetVertexBuffers(
+void WINAPI DX11::IASetVertexBuffers(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                StartSlot,
@@ -1647,14 +1647,14 @@ void WINAPI D3D11::IASetVertexBuffers(
     );
 }
 
-void WINAPI D3D11::Immediate::OMSetRenderTargets(
+void WINAPI DX11::Immediate::OMSetRenderTargets(
     ID3D11DeviceContext    *pContext,
     UINT                   NumViews,
     ID3D11RenderTargetView **ppRenderTargetViews,
     ID3D11DepthStencilView *pDepthStencilView
 ) {
-    return D3D11::GetInstance().OMSetRenderTargets(
-        D3D11::Immediate::OMSetRenderTargets,
+    return DX11::GetInstance().OMSetRenderTargets(
+        DX11::Immediate::OMSetRenderTargets,
         pContext,
         NumViews,
         ppRenderTargetViews,
@@ -1662,14 +1662,14 @@ void WINAPI D3D11::Immediate::OMSetRenderTargets(
     );
 }
 
-void WINAPI D3D11::Deferred::OMSetRenderTargets(
+void WINAPI DX11::Deferred::OMSetRenderTargets(
     ID3D11DeviceContext    *pContext,
     UINT                   NumViews,
     ID3D11RenderTargetView **ppRenderTargetViews,
     ID3D11DepthStencilView *pDepthStencilView
 ) {
-    return D3D11::GetInstance().OMSetRenderTargets(
-        D3D11::Deferred::OMSetRenderTargets,
+    return DX11::GetInstance().OMSetRenderTargets(
+        DX11::Deferred::OMSetRenderTargets,
         pContext,
         NumViews,
         ppRenderTargetViews,
@@ -1677,7 +1677,7 @@ void WINAPI D3D11::Deferred::OMSetRenderTargets(
     );
 }
 
-void WINAPI D3D11::OMSetRenderTargets(
+void WINAPI DX11::OMSetRenderTargets(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext    *pContext,
         UINT                   NumViews,
@@ -1709,7 +1709,7 @@ void WINAPI D3D11::OMSetRenderTargets(
     );
 }
 
-void D3D11::Upscale(ID3D11DeviceContext *pContext)
+void DX11::Upscale(ID3D11DeviceContext *pContext)
 {
     if (!pContext && M2Config::bInternalEnabled) {
         upscalerDisabled = false;
@@ -1720,7 +1720,7 @@ void D3D11::Upscale(ID3D11DeviceContext *pContext)
                 M2Hook::GetInstance(".").ModuleResource(IDR_HLSL1, "HLSL")
         );
         ID3DBlob *upscalerVertexError = nullptr;
-        res = D3D11::D3DCompile(
+        res = DX11::D3DCompile(
             upscalerVertexSource,
             strlen(upscalerVertexSource),
             std::format("{}::VertexUpscaler", M2Fix::FixName()).c_str(),
@@ -1751,7 +1751,7 @@ void D3D11::Upscale(ID3D11DeviceContext *pContext)
             M2Hook::GetInstance(".").ModuleResource(IDR_HLSL2, "HLSL")
         );
         ID3DBlob *upscalerPixelError = nullptr;
-        res = D3D11::D3DCompile(
+        res = DX11::D3DCompile(
             upscalerPixelSource,
             strlen(upscalerPixelSource),
             std::format("{}::PixelUpscaler", M2Fix::FixName()).c_str(),
@@ -1830,15 +1830,15 @@ void D3D11::Upscale(ID3D11DeviceContext *pContext)
     }
 }
 
-void WINAPI D3D11::Immediate::ClearDepthStencilView(
+void WINAPI DX11::Immediate::ClearDepthStencilView(
     ID3D11DeviceContext    *pContext,
     ID3D11DepthStencilView *pDepthStencilView,
     UINT                   ClearFlags,
     FLOAT                  Depth,
     UINT8                  Stencil
 ) {
-    return D3D11::GetInstance().ClearDepthStencilView(
-        D3D11::Immediate::ClearDepthStencilView,
+    return DX11::GetInstance().ClearDepthStencilView(
+        DX11::Immediate::ClearDepthStencilView,
         pContext,
         pDepthStencilView,
         ClearFlags,
@@ -1847,15 +1847,15 @@ void WINAPI D3D11::Immediate::ClearDepthStencilView(
     );
 }
 
-void WINAPI D3D11::Deferred::ClearDepthStencilView(
+void WINAPI DX11::Deferred::ClearDepthStencilView(
     ID3D11DeviceContext    *pContext,
     ID3D11DepthStencilView *pDepthStencilView,
     UINT                   ClearFlags,
     FLOAT                  Depth,
     UINT8                  Stencil
 ) {
-    return D3D11::GetInstance().ClearDepthStencilView(
-        D3D11::Deferred::ClearDepthStencilView,
+    return DX11::GetInstance().ClearDepthStencilView(
+        DX11::Deferred::ClearDepthStencilView,
         pContext,
         pDepthStencilView,
         ClearFlags,
@@ -1864,7 +1864,7 @@ void WINAPI D3D11::Deferred::ClearDepthStencilView(
     );
 }
 
-void WINAPI D3D11::ClearDepthStencilView(
+void WINAPI DX11::ClearDepthStencilView(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext    *pContext,
         ID3D11DepthStencilView *pDepthStencilView,
@@ -1910,33 +1910,33 @@ void WINAPI D3D11::ClearDepthStencilView(
     );
 }
 
-void WINAPI D3D11::Immediate::ExecuteCommandList(
+void WINAPI DX11::Immediate::ExecuteCommandList(
     ID3D11DeviceContext *pContext,
     ID3D11CommandList   *pCommandList,
     BOOL                RestoreContextState
 ) {
-    return D3D11::GetInstance().ExecuteCommandList(
-        D3D11::Immediate::ExecuteCommandList,
+    return DX11::GetInstance().ExecuteCommandList(
+        DX11::Immediate::ExecuteCommandList,
         pContext,
         pCommandList,
         RestoreContextState
     );
 }
 
-void WINAPI D3D11::Deferred::ExecuteCommandList(
+void WINAPI DX11::Deferred::ExecuteCommandList(
     ID3D11DeviceContext *pContext,
     ID3D11CommandList   *pCommandList,
     BOOL                RestoreContextState
 ) {
-    return D3D11::GetInstance().ExecuteCommandList(
-        D3D11::Deferred::ExecuteCommandList,
+    return DX11::GetInstance().ExecuteCommandList(
+        DX11::Deferred::ExecuteCommandList,
         pContext,
         pCommandList,
         RestoreContextState
     );
 }
 
-void WINAPI D3D11::ExecuteCommandList(
+void WINAPI DX11::ExecuteCommandList(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         ID3D11CommandList   *pCommandList,
@@ -1961,14 +1961,14 @@ void WINAPI D3D11::ExecuteCommandList(
     }
 }
 
-void WINAPI D3D11::Immediate::DrawIndexed(
+void WINAPI DX11::Immediate::DrawIndexed(
     ID3D11DeviceContext *pContext,
     UINT                IndexCount,
     UINT                StartIndexLocation,
     INT                 BaseVertexLocation
 ) {
-    return D3D11::GetInstance().DrawIndexed(
-        D3D11::Immediate::DrawIndexed,
+    return DX11::GetInstance().DrawIndexed(
+        DX11::Immediate::DrawIndexed,
         pContext,
         IndexCount,
         StartIndexLocation,
@@ -1976,14 +1976,14 @@ void WINAPI D3D11::Immediate::DrawIndexed(
     );
 }
 
-void WINAPI D3D11::Deferred::DrawIndexed(
+void WINAPI DX11::Deferred::DrawIndexed(
     ID3D11DeviceContext *pContext,
     UINT                IndexCount,
     UINT                StartIndexLocation,
     INT                 BaseVertexLocation
 ) {
-    return D3D11::GetInstance().DrawIndexed(
-        D3D11::Deferred::DrawIndexed,
+    return DX11::GetInstance().DrawIndexed(
+        DX11::Deferred::DrawIndexed,
         pContext,
         IndexCount,
         StartIndexLocation,
@@ -1992,7 +1992,7 @@ void WINAPI D3D11::Deferred::DrawIndexed(
 }
 
 #if defined(M2FIX_USE_IMGUI)
-BOOL WINAPI D3D11::ShowWindow(
+BOOL WINAPI DX11::ShowWindow(
     HWND hWnd,
     int  nCmdShow
 ) {
@@ -2007,7 +2007,7 @@ BOOL WINAPI D3D11::ShowWindow(
 #endif
 
 #if defined(M2FIX_USE_IMGUI)
-void D3D11::Overlay(ID3D11DeviceContext *pContext)
+void DX11::Overlay(ID3D11DeviceContext *pContext)
 {
     if (!pContext && M2Config::bConsole) {
         overlayDisabled = false;
@@ -2113,7 +2113,7 @@ void D3D11::Overlay(ID3D11DeviceContext *pContext)
 }
 #endif
 
-void WINAPI D3D11::DrawIndexed(
+void WINAPI DX11::DrawIndexed(
     void (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         UINT                IndexCount,
@@ -2146,33 +2146,33 @@ void WINAPI D3D11::DrawIndexed(
 #endif
 }
 
-HRESULT WINAPI D3D11::Immediate::FinishCommandList(
+HRESULT WINAPI DX11::Immediate::FinishCommandList(
     ID3D11DeviceContext *pContext,
     BOOL                RestoreDeferredContextState,
     ID3D11CommandList   **ppCommandList
 ) {
-    return D3D11::GetInstance().FinishCommandList(
-        D3D11::Immediate::FinishCommandList,
+    return DX11::GetInstance().FinishCommandList(
+        DX11::Immediate::FinishCommandList,
         pContext,
         RestoreDeferredContextState,
         ppCommandList
     );
 }
 
-HRESULT WINAPI D3D11::Deferred::FinishCommandList(
+HRESULT WINAPI DX11::Deferred::FinishCommandList(
     ID3D11DeviceContext *pContext,
     BOOL                RestoreDeferredContextState,
     ID3D11CommandList   **ppCommandList
 ) {
-    return D3D11::GetInstance().FinishCommandList(
-        D3D11::Deferred::FinishCommandList,
+    return DX11::GetInstance().FinishCommandList(
+        DX11::Deferred::FinishCommandList,
         pContext,
         RestoreDeferredContextState,
         ppCommandList
     );
 }
 
-HRESULT WINAPI D3D11::FinishCommandList(
+HRESULT WINAPI DX11::FinishCommandList(
     HRESULT (WINAPI *pFunction)(
         ID3D11DeviceContext *pContext,
         BOOL                RestoreDeferredContextState,
@@ -2199,20 +2199,20 @@ HRESULT WINAPI D3D11::FinishCommandList(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreateDeferredContext(
+HRESULT WINAPI DX11::Device::CreateDeferredContext(
     ID3D11Device        *pDevice,
     UINT                ContextFlags,
     ID3D11DeviceContext **ppDeferredContext
 ) {
-    return D3D11::GetInstance().CreateDeferredContext(
-        D3D11::Device::CreateDeferredContext,
+    return DX11::GetInstance().CreateDeferredContext(
+        DX11::Device::CreateDeferredContext,
         pDevice,
         ContextFlags,
         ppDeferredContext
     );
 }
 
-HRESULT WINAPI D3D11::CreateDeferredContext(
+HRESULT WINAPI DX11::CreateDeferredContext(
     HRESULT (WINAPI *pFunction)(
         ID3D11Device        *pDevice,
         UINT                ContextFlags,
@@ -2246,7 +2246,7 @@ HRESULT WINAPI D3D11::CreateDeferredContext(
     #define VIRTUAL_HOOK(name) { \
         M2Hook::GetInstance().VirtualHook( \
             pDeferredContext, &ID3D11DeviceContext::name, \
-            D3D11::Deferred::##name, "[D3D11] [Deferred] ID3D11DeviceContext::" #name \
+            DX11::Deferred::##name, "[D3D11] [Deferred] ID3D11DeviceContext::" #name \
         ); \
     }
 
@@ -2279,7 +2279,7 @@ HRESULT WINAPI D3D11::CreateDeferredContext(
     return res;
 }
 
-HRESULT WINAPI D3D11::Device::CreateDevice(
+HRESULT WINAPI DX11::Device::CreateDevice(
     IDXGIAdapter        *pAdapter,
     D3D_DRIVER_TYPE     DriverType,
     HMODULE             Software,
@@ -2291,8 +2291,8 @@ HRESULT WINAPI D3D11::Device::CreateDevice(
     D3D_FEATURE_LEVEL   *pFeatureLevel,
     ID3D11DeviceContext **ppImmediateContext
 ) {
-    return D3D11::GetInstance().CreateDevice(
-        D3D11::Device::CreateDevice,
+    return DX11::GetInstance().CreateDevice(
+        DX11::Device::CreateDevice,
         pAdapter,
         DriverType,
         Software,
@@ -2306,7 +2306,7 @@ HRESULT WINAPI D3D11::Device::CreateDevice(
     );
 }
 
-HRESULT WINAPI D3D11::CreateDevice(
+HRESULT WINAPI DX11::CreateDevice(
     HRESULT (WINAPI *pFunction)(
         IDXGIAdapter        *pAdapter,
         D3D_DRIVER_TYPE     DriverType,
@@ -2366,7 +2366,7 @@ HRESULT WINAPI D3D11::CreateDevice(
     #define VIRTUAL_HOOK(name) { \
         M2Hook::GetInstance().VirtualHook( \
             pDevice, &ID3D11Device::name, \
-            D3D11::Device::##name, "[D3D11] ID3D11Device::" #name \
+            DX11::Device::##name, "[D3D11] ID3D11Device::" #name \
         ); \
     }
 
@@ -2395,7 +2395,7 @@ HRESULT WINAPI D3D11::CreateDevice(
 	#define VIRTUAL_HOOK(name) { \
         M2Hook::GetInstance().VirtualHook( \
             pImmediateContext, &ID3D11DeviceContext::name, \
-            D3D11::Immediate::##name, "[D3D11] [Immediate] ID3D11DeviceContext::" #name \
+            DX11::Immediate::##name, "[D3D11] [Immediate] ID3D11DeviceContext::" #name \
         ); \
     }
 
@@ -2455,7 +2455,7 @@ HRESULT WINAPI D3D11::CreateDevice(
     return res;
 }
 
-void D3D11::Load()
+void DX11::Load()
 {
     HMODULE D3DCompiler_47 = LoadLibraryA("D3DCompiler_47.dll");
     if (!D3DCompiler_47) {
@@ -2492,7 +2492,7 @@ void D3D11::Load()
     }
     M2Hook::GetInstance().Hook(
         d3d11_CreateDevice,
-        D3D11::Device::CreateDevice, "[D3D11] D3D11CreateDevice"
+        DX11::Device::CreateDevice, "[D3D11] D3D11CreateDevice"
     );
 }
 

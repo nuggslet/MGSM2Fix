@@ -5,13 +5,13 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
-class D3D11 : public M2FixBase
+class DX11 : public M2FixBase
 {
 public:
-	static auto & GetInstance(D3D11 *instance = nullptr)
+	static auto & GetInstance(DX11 *instance = nullptr)
 	{
-		static D3D11 _instance_;
-		static D3D11 *_instance = nullptr;
+		static DX11 _instance_;
+		static DX11 *_instance = nullptr;
 		if (instance) _instance = instance;
 		if (!instance && !_instance) {
 			_instance = &_instance_;
@@ -19,7 +19,7 @@ public:
 		return *_instance;
 	}
 
-	static void LoadInstance(D3D11 *instance = nullptr) {
+	static void LoadInstance(DX11 *instance = nullptr) {
 		GetInstance(instance).Load();
 	}
 

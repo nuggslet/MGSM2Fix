@@ -9,14 +9,14 @@ if "%PLAT%"=="" set "PLAT=%Platform%"
 if "%PLAT%"=="" set "PLAT=x64"
 
 REM --- Locate Zydis project file ---
-set "ZY_PROJECT=%~dp0src\zydis\msvc\zydis\Zydis.vcxproj"
+set "ZY_PROJECT=%~dp0src\extern\zydis\msvc\zydis\Zydis.vcxproj"
 if not exist %ZY_PROJECT% (
     echo ERROR: Zydis project file not found at %ZY_PROJECT%
     exit /b 1
 )
 
 REM --- Get current submodule commit hash ---
-pushd "%~dp0src\zydis" >nul
+pushd "%~dp0src\extern\zydis" >nul
 for /f %%H in ('git rev-parse HEAD') do set "ZY_HASH=%%H"
 if not defined ZY_HASH (
     echo ERROR: Could not read Zydis git hash. Is the submodule initialized?
@@ -27,12 +27,12 @@ popd >nul
 
 REM --- Configure paths ---
 if /i "%PLAT%"=="x64" (
-    set "ZY_LIB=%~dp0src\zydis\msvc\bin\ReleaseX64\Zydis.lib"
-    set "HASH_FILE=%~dp0src\zydis\msvc\bin\ReleaseX64\.zydis_build_hash"
+    set "ZY_LIB=%~dp0src\extern\zydis\msvc\bin\ReleaseX64\Zydis.lib"
+    set "HASH_FILE=%~dp0src\extern\zydis\msvc\bin\ReleaseX64\.zydis_build_hash"
     set "MSBUILD_ARGS=/p:Configuration="Release MT" /p:Platform=x64 /m /nologo /verbosity:minimal"
 ) else if /i "%PLAT%"=="Win32" (
-    set "ZY_LIB=%~dp0src\zydis\msvc\bin\ReleaseX86\Zydis.lib"
-    set "HASH_FILE=%~dp0src\zydis\msvc\bin\ReleaseX86\.zydis_build_hash"
+    set "ZY_LIB=%~dp0src\extern\zydis\msvc\bin\ReleaseX86\Zydis.lib"
+    set "HASH_FILE=%~dp0src\extern\zydis\msvc\bin\ReleaseX86\.zydis_build_hash"
     set "MSBUILD_ARGS=/p:Configuration="Release MT" /p:Platform=Win32 /m /nologo /verbosity:minimal"
 ) else (
     echo ERROR: Unsupported platform %PLAT%
