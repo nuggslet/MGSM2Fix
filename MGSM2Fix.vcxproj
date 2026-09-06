@@ -29,7 +29,7 @@
     <ClCompile Include="src\extern\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\extern\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\games\mgs1in4.cpp" />
-    <ClCompile Include="src\patriots.cpp" />
+    <ClCompile Include="src\m2fix\patriots.cpp" />
     <ClCompile Include="src\extern\safetyhook\src\allocator.cpp" />
     <ClCompile Include="src\extern\safetyhook\src\easy.cpp" />
     <ClCompile Include="src\extern\safetyhook\src\inline_hook.cpp" />
@@ -75,16 +75,16 @@
     <ClCompile Include="src\extern\squirrel\squirrel\sqtable.cpp" />
     <ClCompile Include="src\extern\squirrel\squirrel\sqvm.cpp" />
     <ClCompile Include="src\modules\dx11.cpp" />
-    <ClCompile Include="src\ketchup.cpp" />
-    <ClCompile Include="src\m2config.cpp" />
+    <ClCompile Include="src\m2fix\ketchup.cpp" />
+    <ClCompile Include="src\m2fix\m2config.cpp" />
     <ClCompile Include="src\modules\epi.cpp" />
     <ClCompile Include="src\machines\psx.cpp" />
-    <ClCompile Include="src\m2utils.cpp" />
+    <ClCompile Include="src\m2fix\m2utils.cpp" />
     <ClCompile Include="src\games\mgs1.cpp" />
     <ClCompile Include="src\modules\sqhook.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
-    <ClCompile Include="src\versionchecker.cpp" />
-    <ClCompile Include="src\warning_background_shuffle.cpp" />
+    <ClCompile Include="src\m2fix\versionchecker.cpp" />
+    <ClCompile Include="src\m2fix\warning_background_shuffle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -96,14 +96,14 @@
     <ClInclude Include="src\extern\inipp\inipp\inipp.h" />
     <ClInclude Include="src\extern\json\include\nlohmann\json.hpp" />
     <ClInclude Include="src\extern\json\include\nlohmann\json_fwd.hpp" />
-    <ClInclude Include="src\ketchup.h" />
+    <ClInclude Include="src\m2fix\ketchup.h" />
     <ClInclude Include="src\m2\epi.h" />
-    <ClInclude Include="src\m2fixbase.h" />
-    <ClInclude Include="src\m2game.h" />
-    <ClInclude Include="src\m2machine.h" />
+    <ClInclude Include="src\m2fix\m2fixbase.h" />
+    <ClInclude Include="src\m2fix\m2game.h" />
+    <ClInclude Include="src\m2fix\m2machine.h" />
     <ClInclude Include="src\m2\psx.h" />
     <ClInclude Include="src\games\mgs1in4.h" />
-    <ClInclude Include="src\patriots.hpp" />
+    <ClInclude Include="src\m2fix\patriots.hpp" />
     <ClInclude Include="src\extern\spdlog\include\spdlog\async.h" />
     <ClInclude Include="src\extern\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="src\extern\spdlog\include\spdlog\async_logger.h" />
@@ -251,10 +251,10 @@
     <ClInclude Include="src\extern\squirrel\squirrel\squserdata.h" />
     <ClInclude Include="src\extern\squirrel\squirrel\squtils.h" />
     <ClInclude Include="src\extern\squirrel\squirrel\sqvm.h" />
-    <ClInclude Include="src\m2config.h" />
-    <ClInclude Include="src\m2fix.h" />
-    <ClInclude Include="src\m2hook.h" />
-    <ClInclude Include="src\m2utils.h" />
+    <ClInclude Include="src\m2fix\m2config.h" />
+    <ClInclude Include="src\m2fix\m2fix.h" />
+    <ClInclude Include="src\m2fix\m2hook.h" />
+    <ClInclude Include="src\m2fix\m2utils.h" />
     <ClInclude Include="src\games\mgs1.h" />
     <ClInclude Include="src\machines\psx.h" />
     <ClInclude Include="src\bindings\sqbinary.h" />
@@ -270,8 +270,8 @@
     <ClInclude Include="src\bindings\sqhelper.h" />
     <ClInclude Include="src\squirk.h" />
     <ClInclude Include="src\stdafx.h" />
-    <ClInclude Include="src\versionchecker.h" />
-    <ClInclude Include="src\warning_background_shuffle.hpp" />
+    <ClInclude Include="src\m2fix\versionchecker.h" />
+    <ClInclude Include="src\m2fix\warning_background_shuffle.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MGSM2Fix.ini" />
@@ -347,19 +347,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(IncludePath);.;src;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
+    <IncludePath>$(IncludePath);.;src;src\m2fix;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath);.;src;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
+    <IncludePath>$(IncludePath);.;src;src\m2fix;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath);.;src;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
+    <IncludePath>$(IncludePath);.;src;src\m2fix;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath);.;src;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
+    <IncludePath>$(IncludePath);.;src;src\m2fix;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\zydis\include;src\extern\zydis\dependencies\zycore\include;src\extern\safetyhook\include;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\imgui;src\extern\json\include</IncludePath>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -370,7 +370,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;src\m2fix;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;4703;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -402,7 +402,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;src\m2fix;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
@@ -438,7 +438,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;src\m2fix;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4661;4703;26498</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -470,7 +470,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;src;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;src\m2fix;src\bindings;src\games;src\machines;src\modules;src\extern\inipp\inipp;src\extern\spdlog\include;src\extern\spdlog\include\spdlog;src\extern\safetyhook;src\extern\FunctionTraits;src\extern\squirrel\include;src\extern\squirrel\sqstdlib;src\extern\squirrel\squirrel;src\extern\squirrel\sqdbg;src\extern\sqrat\include;src\extern\sqrat\include\sqrat;src\extern\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>

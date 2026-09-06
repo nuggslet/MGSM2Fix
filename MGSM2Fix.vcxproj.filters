@@ -105,13 +105,13 @@
     <ClCompile Include="src\modules\sqtrace.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\ketchup.cpp">
+    <ClCompile Include="src\m2fix\ketchup.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
-    <ClCompile Include="src\m2utils.cpp">
+    <ClCompile Include="src\m2fix\m2utils.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
-    <ClCompile Include="src\m2config.cpp">
+    <ClCompile Include="src\m2fix\m2config.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
     <ClCompile Include="src\extern\spdlog\src\color_sinks.cpp">
@@ -180,16 +180,16 @@
     <ClCompile Include="src\extern\FunctionTraits\TypeTraits.cppm">
       <Filter>FunctionTraits</Filter>
     </ClCompile>
-    <ClCompile Include="src\warning_background_shuffle.cpp">
+    <ClCompile Include="src\m2fix\warning_background_shuffle.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
-    <ClCompile Include="src\versionchecker.cpp">
+    <ClCompile Include="src\m2fix\versionchecker.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
     <ClCompile Include="src\modules\sqnames.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\patriots.cpp">
+    <ClCompile Include="src\m2fix\patriots.cpp">
       <Filter>M2Fix</Filter>
     </ClCompile>
     <ClCompile Include="src\games\mgs1in4.cpp">
@@ -356,28 +356,28 @@
     <ClInclude Include="src\modules\sqhook.h">
       <Filter>Modules</Filter>
     </ClInclude>
-    <ClInclude Include="src\ketchup.h">
+    <ClInclude Include="src\m2fix\ketchup.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2fix.h">
+    <ClInclude Include="src\m2fix\m2fix.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2fixbase.h">
+    <ClInclude Include="src\m2fix\m2fixbase.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2game.h">
+    <ClInclude Include="src\m2fix\m2game.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2hook.h">
+    <ClInclude Include="src\m2fix\m2hook.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2machine.h">
+    <ClInclude Include="src\m2fix\m2machine.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2utils.h">
+    <ClInclude Include="src\m2fix\m2utils.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\m2config.h">
+    <ClInclude Include="src\m2fix\m2config.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
     <ClInclude Include="src\bindings\sqbinary.h">
@@ -725,13 +725,13 @@
     <ClInclude Include="src\extern\spdlog\include\spdlog\mdc.h">
       <Filter>spdlog</Filter>
     </ClInclude>
-    <ClInclude Include="src\warning_background_shuffle.hpp">
+    <ClInclude Include="src\m2fix\warning_background_shuffle.hpp">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\versionchecker.h">
+    <ClInclude Include="src\m2fix\versionchecker.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
-    <ClInclude Include="src\patriots.hpp">
+    <ClInclude Include="src\m2fix\patriots.hpp">
       <Filter>M2Fix</Filter>
     </ClInclude>
     <ClInclude Include="src\bindings\sqresource.h">

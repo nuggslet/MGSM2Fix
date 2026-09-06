@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../m2hook.h"
+#include "m2hook.h"
 #include "resource.h"
 
 #include <squirrel.h>
