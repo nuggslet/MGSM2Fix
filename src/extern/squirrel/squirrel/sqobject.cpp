@@ -274,10 +274,25 @@ bool SafeRead(HSQUIRRELVM<Q> v,SQWRITEFUNC read,SQUserPointer up,SQUserPointer d
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+bool WriteValue(HSQUIRRELVM<Q> v,SQWRITEFUNC write,SQUserPointer up,const auto &value,bool reverseByte)
+{
+	auto output = value;
+	if(reverseByte) ByteReverse(&output);
+	return SafeWrite(v,write,up,&output,sizeof(output));
+}
+
+template <Squirk Q>
+bool WriteTag(HSQUIRRELVM<Q> v,SQWRITEFUNC write,SQUserPointer up,SQInteger tag,bool reverseByte)
+{
+	return WriteValue(v,write,up,tag,reverseByte);
+}
+#else
 bool WriteTag(HSQUIRRELVM<Q> v,SQWRITEFUNC write,SQUserPointer up,SQInteger tag)
 {
 	return SafeWrite(v,write,up,&tag,sizeof(tag));
 }
+#endif
 
 template <Squirk Q>
 bool CheckTag(HSQUIRRELVM<Q> v,SQWRITEFUNC read,SQUserPointer up,SQInteger tag)
@@ -292,18 +307,39 @@ bool CheckTag(HSQUIRRELVM<Q> v,SQWRITEFUNC read,SQUserPointer up,SQInteger tag)
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+bool WriteObject(HSQUIRRELVM<Q> v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr<Q> &o,bool reverseByte)
+#else
 bool WriteObject(HSQUIRRELVM<Q> v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr<Q> &o)
+#endif
 {
+#ifdef _SQ_M2
+	SQObjectType objectType = obj_type(o);
+	_CHECK_IO(WriteValue(v,write,up,objectType,reverseByte));
+#else
 	_CHECK_IO(SafeWrite(v,write,up,&obj_type(o),sizeof(SQObjectType)));
+#endif
 	switch(obj_type(o)){
 	case OT_STRING:
+#ifdef _SQ_M2
+		_CHECK_IO(WriteValue(v,write,up,_string(o)->_len,reverseByte));
+#else
 		_CHECK_IO(SafeWrite(v,write,up,&_string(o)->_len,sizeof(SQInteger)));
+#endif
 		_CHECK_IO(SafeWrite(v,write,up,_stringval(o),rsl(_string(o)->_len)));
 		break;
 	case OT_INTEGER:
+#ifdef _SQ_M2
+		_CHECK_IO(WriteValue(v,write,up,_integer(o),reverseByte));break;
+#else
 		_CHECK_IO(SafeWrite(v,write,up,&_integer(o),sizeof(SQInteger)));break;
+#endif
 	case OT_FLOAT:
+#ifdef _SQ_M2
+		_CHECK_IO(WriteValue(v,write,up,_float(o),reverseByte));break;
+#else
 		_CHECK_IO(SafeWrite(v,write,up,&_float(o),sizeof(SQFloat)));break;
+#endif
 	case OT_NULL:
 		break;
 	default:
@@ -345,6 +381,16 @@ bool ReadObject(HSQUIRRELVM<Q> v,SQUserPointer up,SQREADFUNC read,SQObjectPtr<Q>
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+bool SQClosure<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte)
+{
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_HEAD,reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,sizeof(SQChar),reverseByte));
+	_CHECK_IO(_funcproto(_function)->Save(v,up,write,reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_TAIL,reverseByte));
+	return true;
+}
+#else
 bool SQClosure<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write)
 {
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_HEAD));
@@ -353,11 +399,25 @@ bool SQClosure<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write)
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_TAIL));
 	return true;
 }
+#endif
 
 template <Squirk Q>
 bool SQClosure<Q>::Load(SQVM<Q> *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr<Q> &ret)
 {
+#ifdef _SQ_M2
+	SQInteger tag;
+	_CHECK_IO(SafeRead(v,read,up,&tag,sizeof(tag)));
+	if(tag == SQ_CLOSURESTREAM_HEAD_REVERSE) {
+		v->Raise_Error(_SC("invalid endian closure stream"));
+		return false;
+	}
+	if(tag != SQ_CLOSURESTREAM_HEAD) {
+		v->Raise_Error(_SC("invalid or corrupted closure stream"));
+		return false;
+	}
+#else
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_HEAD));
+#endif
 	_CHECK_IO(CheckTag(v,read,up,sizeof(SQChar)));
 	SQObjectPtr<Q> func;
 	_CHECK_IO(SQFunctionProto<Q>::Load(v,up,read,func));
@@ -367,12 +427,31 @@ bool SQClosure<Q>::Load(SQVM<Q> *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr<
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+bool SQFunctionProto<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte)
+#else
 bool SQFunctionProto<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write)
+#endif
 {
 	SQInteger i,nliterals = _nliterals,nparameters = _nparameters;
 	SQInteger noutervalues = _noutervalues,nlocalvarinfos = _nlocalvarinfos;
 	SQInteger nlineinfos=_nlineinfos,ninstructions = _ninstructions,nfunctions=_nfunctions;
 	SQInteger ndefaultparams = _ndefaultparams;
+#ifdef _SQ_M2
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	_CHECK_IO(WriteObject(v,up,write,_sourcename,reverseByte));
+	_CHECK_IO(WriteObject(v,up,write,_name,reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,nliterals,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,nparameters,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,noutervalues,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,nlocalvarinfos,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,nlineinfos,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,ndefaultparams,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,ninstructions,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,nfunctions,reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+#else
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
 	_CHECK_IO(WriteObject(v,up,write,_sourcename));
 	_CHECK_IO(WriteObject(v,up,write,_name));
@@ -386,31 +465,94 @@ bool SQFunctionProto<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write)
 	_CHECK_IO(SafeWrite(v,write,up,&ninstructions,sizeof(ninstructions)));
 	_CHECK_IO(SafeWrite(v,write,up,&nfunctions,sizeof(nfunctions)));
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+#endif
 	for(i=0;i<nliterals;i++){
+#ifdef _SQ_M2
+		_CHECK_IO(WriteObject(v,up,write,_literals[i],reverseByte));
+#else
 		_CHECK_IO(WriteObject(v,up,write,_literals[i]));
+#endif
 	}
 
+#ifdef _SQ_M2
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+#else
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+#endif
 	for(i=0;i<nparameters;i++){
+#ifdef _SQ_M2
+		_CHECK_IO(WriteObject(v,up,write,_parameters[i],reverseByte));
+#else
 		_CHECK_IO(WriteObject(v,up,write,_parameters[i]));
+#endif
 	}
 
+#ifdef _SQ_M2
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+#else
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+#endif
 	for(i=0;i<noutervalues;i++){
+#ifdef _SQ_M2
+		_CHECK_IO(WriteValue(v,write,up,_outervalues[i]._type,reverseByte));
+		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._src,reverseByte));
+		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._name,reverseByte));
+#else
 		_CHECK_IO(SafeWrite(v,write,up,&_outervalues[i]._type,sizeof(SQUnsignedInteger)));
 		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._src));
 		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._name));
+#endif
 	}
 
+#ifdef _SQ_M2
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+#else
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+#endif
 	for(i=0;i<nlocalvarinfos;i++){
 		SQLocalVarInfo<Q> &lvi=_localvarinfos[i];
+#ifdef _SQ_M2
+		_CHECK_IO(WriteObject(v,up,write,lvi._name,reverseByte));
+		_CHECK_IO(WriteValue(v,write,up,lvi._pos,reverseByte));
+		_CHECK_IO(WriteValue(v,write,up,lvi._start_op,reverseByte));
+		_CHECK_IO(WriteValue(v,write,up,lvi._end_op,reverseByte));
+#else
 		_CHECK_IO(WriteObject(v,up,write,lvi._name));
 		_CHECK_IO(SafeWrite(v,write,up,&lvi._pos,sizeof(SQUnsignedInteger)));
 		_CHECK_IO(SafeWrite(v,write,up,&lvi._start_op,sizeof(SQUnsignedInteger)));
 		_CHECK_IO(SafeWrite(v,write,up,&lvi._end_op,sizeof(SQUnsignedInteger)));
+#endif
 	}
 
+#ifdef _SQ_M2
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	if(reverseByte) {
+		for(i=0;i<nlineinfos;i++) {
+			SQLineInfo lineInfo = _lineinfos[i];
+			ByteReverse(&lineInfo._line);
+			ByteReverse(&lineInfo._op);
+			_CHECK_IO(SafeWrite(v,write,up,&lineInfo,sizeof(lineInfo)));
+		}
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,_lineinfos,sizeof(SQLineInfo)*nlineinfos));
+	}
+
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	for(i=0;i<ndefaultparams;i++) _CHECK_IO(WriteValue(v,write,up,_defaultparams[i],reverseByte));
+
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	if(reverseByte) {
+		for(i=0;i<ninstructions;i++) {
+			SQInstruction instruction = _instructions[i];
+			ByteReverse(&instruction._arg1);
+			_CHECK_IO(SafeWrite(v,write,up,&instruction,sizeof(instruction)));
+		}
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,_instructions,sizeof(SQInstruction)*ninstructions));
+	}
+
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+#else
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
 	_CHECK_IO(SafeWrite(v,write,up,_lineinfos,sizeof(SQLineInfo)*nlineinfos));
 
@@ -421,12 +563,23 @@ bool SQFunctionProto<Q>::Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write)
 	_CHECK_IO(SafeWrite(v,write,up,_instructions,sizeof(SQInstruction)*ninstructions));
 
 	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+#endif
 	for(i=0;i<nfunctions;i++){
+#ifdef _SQ_M2
+		_CHECK_IO(_funcproto(_functions[i])->Save(v,up,write,reverseByte));
+#else
 		_CHECK_IO(_funcproto(_functions[i])->Save(v,up,write));
+#endif
 	}
+#ifdef _SQ_M2
+	_CHECK_IO(WriteValue(v,write,up,_stacksize,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,_bgenerator,reverseByte));
+	_CHECK_IO(WriteValue(v,write,up,_varparams,reverseByte));
+#else
 	_CHECK_IO(SafeWrite(v,write,up,&_stacksize,sizeof(_stacksize)));
 	_CHECK_IO(SafeWrite(v,write,up,&_bgenerator,sizeof(_bgenerator)));
 	_CHECK_IO(SafeWrite(v,write,up,&_varparams,sizeof(_varparams)));
+#endif
 	return true;
 }
 

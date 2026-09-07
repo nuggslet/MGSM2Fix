@@ -715,6 +715,21 @@ bool SQVM<Q>::CLASS_OP(SQObjectPtr<Q> &target,SQInteger baseclass,SQInteger attr
 template <Squirk Q>
 bool SQVM<Q>::IsEqual(SQObjectPtr<Q> &o1,SQObjectPtr<Q> &o2,bool &res)
 {
+#ifdef _SQ_M2
+	if(obj_type(o1) == OT_INSTANCE && _delegable(o1)->_delegate) {
+		SQObjectPtr<Q> compareResult;
+		Push(o1);
+		Push(o2);
+		if(CallMetaMethod(_delegable(o1),MT_CMP,2,compareResult)) {
+			if(obj_type(compareResult) != OT_INTEGER) {
+				Raise_CompareError(o1,o2);
+				return false;
+			}
+			res = _integer(compareResult) == 0;
+			return true;
+		}
+	}
+#endif
 	if(obj_type(o1) == obj_type(o2)) {
 		res = ((_userpointer(o1) == _userpointer(o2)?true:false));
 	}
@@ -1109,6 +1124,18 @@ common_call:
 exception_trap:
 	{
 		SQObjectPtr currerror = _lasterror;
+#ifdef _SQ_M2
+		SQObjectPtr<Q> exceptionclass;
+		SQObjectPtr<Q> exceptionkey = SQString<Q>::Create(_ss(this), _SC("_m2_exceptionclass"));
+		if (_table(_ss(this)->_registry)->Get(exceptionkey, exceptionclass) &&
+			sq_isclass(exceptionclass) && sq_isstring(currerror)) {
+			SQInteger base = _top;
+			Push(_roottable);
+			Push(currerror);
+			Call(exceptionclass,2,base,currerror,false);
+			Pop(2);
+		}
+#endif
 #ifdef _DEBUG_DUMP
 		dumpstack(_stackbase);
 #endif

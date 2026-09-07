@@ -37,13 +37,64 @@ static SQInteger math_rand(HSQUIRRELVM<Q> v)
 }
 
 template <Squirk Q>
-static SQInteger math_abs(HSQUIRRELVM<Q> v)
+static SQInteger math_iabs(HSQUIRRELVM<Q> v)
 {
 	SQInteger n;
 	sq_getinteger(v,2,&n);
 	sq_pushinteger(v,(SQInteger)abs((int)n)); 
 	return 1; 
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger math_abs(HSQUIRRELVM<Q> v)
+{
+	if(sq_gettype(v,2) == OT_INTEGER) {
+		SQInteger n;
+		sq_getinteger(v,2,&n);
+		sq_pushinteger(v,(SQInteger)abs((int)n));
+	} else {
+		SQFloat f;
+		sq_getfloat(v,2,&f);
+		sq_pushfloat(v,(SQFloat)fabs(f));
+	}
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger math_min(HSQUIRRELVM<Q> v)
+{
+	SQInteger n = sq_gettop(v);
+	SQInteger minidx = 2;
+	for(SQInteger i = 3; i <= n; i++) {
+		sq_push(v, minidx);
+		sq_push(v, i);
+		if(sq_cmp(v) < 0) minidx = i;
+	}
+	sq_push(v, minidx);
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger math_max(HSQUIRRELVM<Q> v)
+{
+	SQInteger n = sq_gettop(v);
+	SQInteger maxidx = 2;
+	for(SQInteger i = 3; i <= n; i++) {
+		sq_push(v, maxidx);
+		sq_push(v, i);
+		if(sq_cmp(v) > 0) maxidx = i;
+	}
+	sq_push(v, maxidx);
+	return 1;
+}
+#else
+template <Squirk Q>
+static SQInteger math_abs(HSQUIRRELVM<Q> v)
+{
+	return math_iabs(v);
+}
+#endif
 
 SINGLE_ARG_FUNC(sqrt)
 SINGLE_ARG_FUNC(fabs)
@@ -81,7 +132,14 @@ static SQRegFunction<Q> mathlib_funcs[] = {
 	_DECL_FUNC(srand,2,_SC(".n")),
 	_DECL_FUNC(rand,1,NULL),
 	_DECL_FUNC(fabs,2,_SC(".n")),
+#ifdef _SQ_M2
+	_DECL_FUNC(iabs,2,_SC(".n")),
+#endif
 	_DECL_FUNC(abs,2,_SC(".n")),
+#ifdef _SQ_M2
+	_DECL_FUNC(min,-2,NULL),
+	_DECL_FUNC(max,-2,NULL),
+#endif
 	{0,0},
 };
 

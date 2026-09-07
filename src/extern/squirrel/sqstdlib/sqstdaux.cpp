@@ -125,10 +125,39 @@ void _sqstd_compiler_error(HSQUIRRELVM<Q> v,const SQChar *sErr,const SQChar *sSo
 	}
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger printCallStack(HSQUIRRELVM<Q> v)
+{
+	sqstd_printcallstack(v);
+	return SQ_OK;
+}
+
+template <Squirk Q>
+static SQInteger notifyAllExceptions(HSQUIRRELVM<Q> v)
+{
+	SQBool enable;
+	sq_tobool(v, 2, &enable);
+	sq_notifyallexceptions(v, enable != SQFalse);
+	return SQ_OK;
+}
+#endif
+
 template <Squirk Q>
 void sqstd_seterrorhandlers(HSQUIRRELVM<Q> v)
 {
 	sq_setcompilererrorhandler(v,_sqstd_compiler_error);
 	sq_newclosure(v,_sqstd_aux_printerror,0);
 	sq_seterrorhandler(v);
+#ifdef _SQ_M2
+	sq_pushroottable(v);
+	sq_pushstring(v, _SC("printCallStack"), -1);
+	sq_newclosure(v, printCallStack, 0);
+	sq_createslot(v, -3);
+	sq_pushstring(v, _SC("notifyAllExceptions"), -1);
+	sq_newclosure(v, notifyAllExceptions, 0);
+	sq_setparamscheck(v, 2, _SC(".n|b"));
+	sq_createslot(v, -3);
+	sq_pop(v,1);
+#endif
 }

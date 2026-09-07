@@ -5,6 +5,9 @@
 #include "squtils.h"
 
 #define SQ_CLOSURESTREAM_HEAD (('S'<<24)|('Q'<<16)|('I'<<8)|('R'))
+#ifdef _SQ_M2
+#define SQ_CLOSURESTREAM_HEAD_REVERSE (('S')|('Q'<<8)|('I'<<16)|('R'<<24))
+#endif
 #define SQ_CLOSURESTREAM_PART (('P'<<24)|('A'<<16)|('R'<<8)|('T'))
 #define SQ_CLOSURESTREAM_TAIL (('T'<<24)|('A'<<16)|('I'<<8)|('L'))
 

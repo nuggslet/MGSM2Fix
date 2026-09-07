@@ -35,6 +35,11 @@
 #include "sqratObject.h"
 #include "sqratClassType.h"
 #include "sqratMemberMethods.h"
+#ifdef _SQ_M2
+#include "sqratBridgeMethods.h"
+#include "sqratCastMethods.h"
+#include "sqratProxyMethods.h"
+#endif
 #include "sqratAllocator.h"
 #include "sqratTypes.h"
 
@@ -525,6 +530,24 @@ public:
     template<class F>
     Class& VarArgFunc(const SQChar* name, F method) {
         this->BindFunc(name, &method, sizeof(method), SqVarArgMemberFunc<Q>(method));
+        return *this;
+    }
+
+    template<class F>
+    Class& BridgeFunc(const SQChar* name, F method) {
+        this->BindFunc(name, &method, sizeof(method), SqBridgeFunc<Q, C>(method));
+        return *this;
+    }
+
+    template<class F>
+    Class& ProxyFunc(const SQChar* name, F method) {
+        this->BindFunc(name, &method, sizeof(method), SqProxyFunc<Q, C>(method));
+        return *this;
+    }
+
+    template<class F>
+    Class& CastFunc(const SQChar* name, F method) {
+        this->BindFunc(name, &method, sizeof(method), SqCastMemberFunc<Q, C>(method));
         return *this;
     }
 #endif

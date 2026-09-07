@@ -342,11 +342,19 @@ SQRESULT sqstd_dofile(HSQUIRRELVM<Q> v,const SQChar *filename,SQBool retval,SQBo
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM<Q> v,const SQChar *filename,SQInteger endian)
+#else
 SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM<Q> v,const SQChar *filename)
+#endif
 {
 	SQFILE file = sqstd_fopen(filename,_SC("wb+"));
 	if(!file) return sq_throwerror(v,_SC("cannot open the file"));
+#ifdef _SQ_M2
+	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,file,endian))) {
+#else
 	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,file))) {
+#endif
 		sqstd_fclose(file);
 		return SQ_OK;
 	}
@@ -373,7 +381,13 @@ SQInteger _g_io_writeclosuretofile(HSQUIRRELVM<Q> v)
 {
 	const SQChar *filename;
 	sq_getstring(v,2,&filename);
+#ifdef _SQ_M2
+	SQInteger endian = SQ_DEFAULT_ENDIAN;
+	if(sq_gettop(v) >= 3) sq_getinteger(v,3,&endian);
+	if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,filename,endian)))
+#else
 	if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,filename)))
+#endif
 		return 1;
 	return SQ_ERROR; //propagates the error
 }
@@ -398,7 +412,11 @@ template <Squirk Q>
 static SQRegFunction<Q> iolib_funcs[]={
 	_DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
 	_DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
+#ifdef _SQ_M2
+	_DECL_GLOBALIO_FUNC(writeclosuretofile,-2,_SC(".sn")),
+#else
 	_DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),
+#endif
 	{0,0}
 };
 

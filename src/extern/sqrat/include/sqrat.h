@@ -65,5 +65,8 @@
 #include "sqrat/sqratUtil.h"
 #include "sqrat/sqratScript.h"
 #include "sqrat/sqratArray.h"
+#ifdef _SQ_M2
+#include "sqrat/sqratPrintf.h"
+#endif
 
 #endif

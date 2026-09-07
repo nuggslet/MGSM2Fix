@@ -72,10 +72,23 @@ void SQVM<Q>::Raise_Error(const SQChar *s, ...)
 {
 	va_list vl;
 	va_start(vl, s);
+#ifdef _SQ_M2
+	Raise_ErrorV(s,vl);
+#else
 	scvsprintf(_sp(rsl((SQInteger)scstrlen(s)+(NUMBER_MAX_CHAR*2))), s, vl);
+	_lasterror = SQString<Q>::Create(_ss(this),_spval,-1);
+#endif
 	va_end(vl);
+}
+
+#ifdef _SQ_M2
+template <Squirk Q>
+void SQVM<Q>::Raise_ErrorV(const SQChar *s, va_list args)
+{
+	scvsprintf(_sp(rsl((SQInteger)scstrlen(s)+(NUMBER_MAX_CHAR*2))),s,args);
 	_lasterror = SQString<Q>::Create(_ss(this),_spval,-1);
 }
+#endif
 
 template <Squirk Q>
 void SQVM<Q>::Raise_Error(SQObjectPtr<Q> &desc)

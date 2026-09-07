@@ -42,7 +42,11 @@ SQUIRREL_API SQRESULT sqstd_loadfile(HSQUIRRELVM<Q> v,const SQChar *filename,SQB
 template <Squirk Q>
 SQUIRREL_API SQRESULT sqstd_dofile(HSQUIRRELVM<Q> v,const SQChar *filename,SQBool retval,SQBool printerror);
 template <Squirk Q>
+#ifdef _SQ_M2
+SQUIRREL_API SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM<Q> v,const SQChar *filename,SQInteger endian = SQ_DEFAULT_ENDIAN);
+#else
 SQUIRREL_API SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM<Q> v,const SQChar *filename);
+#endif
 
 template <Squirk Q>
 SQUIRREL_API SQRESULT sqstd_register_iolib(HSQUIRRELVM<Q> v);

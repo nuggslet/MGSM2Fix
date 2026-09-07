@@ -17,6 +17,23 @@ template <Squirk Q>
 bool str2num(const SQChar *s,SQObjectPtr<Q> &res)
 {
 	SQChar *end;
+#ifdef _SQ_M2
+	if(!scstrncmp(s,_SC("0x"),2) || !scstrncmp(s, _SC("0X"), 2)) {
+		s += 2;
+		SQInteger r = SQInteger(scstrtol(s,&end,16));
+		if(s == end) return false;
+		res = r;
+		return true;
+	}
+	else if(!scstrncmp(s,_SC("0b"),2) || !scstrncmp(s, _SC("0B"), 2)) {
+		s += 2;
+		SQInteger r = SQInteger(scstrtol(s,&end,2));
+		if(s == end) return false;
+		res = r;
+		return true;
+	}
+	else
+#endif
 	if(scstrstr(s,_SC("."))){
 		SQFloat r = SQFloat(scstrtod(s,&end));
 		if(s == end) return false;
@@ -77,6 +94,14 @@ static SQInteger base_setconsttable(HSQUIRRELVM<Q> v)
 	v->Push(o);
 	return 1;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger base_setexceptionclass(HSQUIRRELVM<Q> v)
+{
+	return sq_setexceptionclass(v);
+}
+#endif
 
 template <Squirk Q>
 static SQInteger base_seterrorhandler(HSQUIRRELVM<Q> v)
@@ -240,6 +265,47 @@ static SQInteger base_type(HSQUIRRELVM<Q> v)
 	return 1;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger base_exec(HSQUIRRELVM<Q> v)
+{
+	SQInteger nargs = sq_gettop(v);
+	const SQChar *source = NULL;
+	sq_getstring(v,2,&source);
+	SQInteger contextIdx = nargs >= 3 && sq_gettype(v,3) != OT_NULL ? 3 : 0;
+	SQInteger errorIdx = nargs >= 4 && sq_gettype(v,4) != OT_NULL ? 4 : 0;
+	return sq_execscript(v,source,sq_getsize(v,2),contextIdx,errorIdx);
+}
+
+template <Squirk Q>
+static SQInteger base_eval(HSQUIRRELVM<Q> v)
+{
+	SQInteger nargs = sq_gettop(v);
+	sq_tostring(v,2);
+	const SQChar *source = NULL;
+	sq_getstring(v,-1,&source);
+	SQInteger size = sq_getsize(v,-1);
+	SQChar *data = sq_getscratchpad(v,(size + 8) * sizeof(SQChar));
+	scstrcpy(data,_SC("return "));
+	scstrcpy(data + 7,source);
+	sq_settop(v,nargs);
+	SQInteger contextIdx = nargs >= 3 && sq_gettype(v,3) != OT_NULL ? 3 : 0;
+	SQInteger errorIdx = nargs >= 4 && sq_gettype(v,4) != OT_NULL ? 4 : 0;
+	return sq_execscript(v,data,size + 7,contextIdx,errorIdx);
+}
+
+template <Squirk Q>
+static SQInteger base_template(HSQUIRRELVM<Q> v)
+{
+	SQInteger nargs = sq_gettop(v);
+	const SQChar *source = NULL;
+	sq_getstring(v,2,&source);
+	SQInteger contextIdx = nargs >= 3 && sq_gettype(v,3) != OT_NULL ? 3 : 0;
+	SQInteger errorIdx = nargs >= 4 && sq_gettype(v,4) != OT_NULL ? 4 : 0;
+	return sq_template(v,source,sq_getsize(v,2),contextIdx,errorIdx);
+}
+#endif
+
 template <Squirk Q>
 static SQRegFunction<Q> base_funcs[]={
 	//generic
@@ -251,6 +317,9 @@ static SQRegFunction<Q> base_funcs[]={
 	{_SC("setroottable"),base_setroottable,2, NULL},
 	{_SC("getconsttable"),base_getconsttable,1, NULL},
 	{_SC("setconsttable"),base_setconsttable,2, NULL},
+#ifdef _SQ_M2
+	{_SC("setexceptionclass"),base_setexceptionclass,2, NULL},
+#endif
 	{_SC("assert"),base_assert,2, NULL},
 	{_SC("print"),base_print,2, NULL},
 	{_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
@@ -258,6 +327,11 @@ static SQRegFunction<Q> base_funcs[]={
 	{_SC("suspend"),base_suspend,-1, NULL},
 	{_SC("array"),base_array,-2, _SC(".n")},
 	{_SC("type"),base_type,2, NULL},
+#ifdef _SQ_M2
+	{_SC("execstring"),base_exec,-2, _SC(".so|x|y|t.")},
+	{_SC("evalstring"),base_eval,-2, _SC("..o|x|y|t.")},
+	{_SC("template"),base_template,-2, _SC(".so|x|y|t")},
+#endif
 	{_SC("dummy"),base_dummy,0,NULL},
 #ifndef NO_GARBAGE_COLLECTOR
 	{_SC("collectgarbage"),base_collectgarbage,1, _SC("t")},
@@ -357,6 +431,36 @@ static SQInteger default_delegate_tointeger(HSQUIRRELVM<Q> v)
 	return 1;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger default_delegate_tonumber(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	switch(obj_type(o)) {
+	case OT_STRING: {
+		SQObjectPtr<Q> result;
+		if(str2num(_stringval(o),result)) {
+			v->Push(result);
+			break;
+		}
+		v->Push(SQObjectPtr<Q>((SQInteger)0));
+		break;
+	}
+	case OT_INTEGER:
+	case OT_FLOAT:
+		v->Push(o);
+		break;
+	case OT_BOOL:
+		v->Push(SQObjectPtr<Q>(_integer(o) ? (SQInteger)1 : (SQInteger)0));
+		break;
+	default:
+		v->Push(SQObjectPtr<Q>((SQInteger)0));
+		break;
+	}
+	return 1;
+}
+#endif
+
 template <Squirk Q>
 static SQInteger default_delegate_tostring(HSQUIRRELVM<Q> v)
 {
@@ -376,6 +480,79 @@ static SQInteger obj_clear(HSQUIRRELVM<Q> v)
 {
 	return sq_clear(v,-1);
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger obj_find(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	SQObjectPtr<Q> &value = stack_get(v,2);
+	SQObjectPtr<Q> refpos, key, val;
+	SQInteger faketojump;
+	while(v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if(res == 0) {
+			v->Push(key);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+template <Squirk Q>
+static SQInteger obj_findall(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	SQArray<Q> *ret = SQArray<Q>::Create(_ss(v),0);
+	SQObjectPtr<Q> &value = stack_get(v,2);
+	SQObjectPtr<Q> refpos, key, val;
+	SQInteger faketojump;
+	while(v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if(res == 0) ret->Append(key);
+	}
+	v->Push(ret);
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger obj_includes(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	SQObjectPtr<Q> &value = stack_get(v,2);
+	SQObjectPtr<Q> refpos, key, val;
+	SQInteger faketojump;
+	while(v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if(res == 0) {
+			v->Push(true);
+			return 1;
+		}
+	}
+	v->Push(false);
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger obj_includeCount(HSQUIRRELVM<Q> v)
+{
+	SQInteger count = 0;
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	SQObjectPtr<Q> &value = stack_get(v,2);
+	SQObjectPtr<Q> refpos, key, val;
+	SQInteger faketojump;
+	while(v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if(res == 0) count++;
+	}
+	v->Push(count);
+	return 1;
+}
+#endif
 
 template <Squirk Q>
 static SQInteger number_delegate_tochar(HSQUIRRELVM<Q> v)
@@ -421,6 +598,22 @@ static SQInteger table_rawget(HSQUIRRELVM<Q> v)
 	return SQ_SUCCEEDED(sq_rawget(v,-2))?1:SQ_ERROR;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger table_keys(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &o = stack_get(v,1);
+	SQArray<Q> *ret = SQArray<Q>::Create(_ss(v),0);
+	SQObjectPtr<Q> refpos, key, val;
+	SQInteger faketojump;
+	while(v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		ret->Append(key);
+	}
+	v->Push(ret);
+	return 1;
+}
+#endif
+
 template <Squirk Q>
 SQRegFunction<Q> SQSharedState<Q>::_table_default_delegate_funcz[]={
 	{_SC("len"),default_delegate_len,1, _SC("t")},
@@ -430,7 +623,17 @@ SQRegFunction<Q> SQSharedState<Q>::_table_default_delegate_funcz[]={
 	{_SC("rawin"),container_rawexists,2, _SC("t")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("clear"),obj_clear,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("find"),obj_find,2, _SC("..")},
+	{_SC("findall"),obj_findall,2, _SC("..")},
+	{_SC("includes"),obj_includes,2, _SC("..")},
+	{_SC("includeCount"),obj_includeCount,2, _SC("..")},
+	{_SC("keys"),table_keys,1, _SC("t")},
+#endif
 	{0,0}
 };
 
@@ -497,6 +700,16 @@ static SQInteger array_remove(HSQUIRRELVM<Q> v)
 	}
 	return sq_throwerror(v, _SC("idx out of range"));
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger array_removeValue(HSQUIRRELVM<Q> v)
+{
+	SQBool all = sq_gettop(v) > 2 ? (tointeger(stack_get(v,3)) ? SQTrue : SQFalse) : SQTrue;
+	sq_push(v, 2);
+	return sq_arrayremovevalue(v, 1, all);
+}
+#endif
 
 template <Squirk Q>
 static SQInteger array_resize(HSQUIRRELVM<Q> v)
@@ -613,6 +826,78 @@ static SQInteger array_slice(HSQUIRRELVM<Q> v)
 	
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger array_splice(HSQUIRRELVM<Q> v)
+{
+	SQInteger top = sq_gettop(v);
+	SQInteger sidx = 0, count = 0;
+	SQObjectPtr<Q> o = stack_get(v,1);
+	SQInteger alen = _array(o)->Size();
+	SQObjectPtr<Q> &start = stack_get(v,2);
+	if(obj_type(start) != OT_NULL && sq_isnumeric(start)) sidx = tointeger(start);
+	if(sidx < 0) sidx = alen + sidx;
+	if(top > 2) {
+		SQObjectPtr<Q> &end = stack_get(v,3);
+		if(sq_isnumeric(end)) count = tointeger(end);
+	} else {
+		count = alen - sidx;
+	}
+	if(count <= 0) return sq_throwerror(v,_SC("wrong indexes"));
+	if(sidx + count > alen) return sq_throwerror(v,_SC("slice out of range"));
+	SQArray<Q> *arr = SQArray<Q>::Create(_ss(v),count);
+	SQObjectPtr<Q> value;
+	for(SQInteger i = 1; i <= count; i++) {
+		SQInteger idx = sidx + count - i;
+		_array(o)->Get(idx,value);
+		_array(o)->Remove(idx);
+		arr->Set(count-i,value);
+	}
+	for(SQInteger i = 4; i <= top; i++) {
+		SQObject<Q> &valueToInsert = stack_get(v,i);
+		_array(o)->Insert(sidx++,valueToInsert);
+	}
+	v->Push(arr);
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger array_join(HSQUIRRELVM<Q> v)
+{
+	SQObject<Q> &o = stack_get(v,1);
+	const SQChar *delimiter;
+	sq_getstring(v,2,&delimiter);
+	SQInteger delimiterLength = (SQInteger)scstrlen(delimiter);
+	SQInteger count = _array(o)->Size();
+	SQChar *dest = NULL;
+	SQInteger allocated = 0;
+	for(SQInteger i = 0; i < count; i++) {
+		SQObjectPtr<Q> value;
+		if(_array(o)->Get(i,value)) {
+			SQObjectPtr<Q> result;
+			v->ToString(value,result);
+			const SQChar *source = _stringval(result);
+			SQInteger sourceLength = (SQInteger)scstrlen(source);
+			SQInteger separatorLength = allocated ? delimiterLength : 0;
+			dest = sq_getscratchpad(v,allocated + separatorLength + sourceLength + 1);
+			if(separatorLength) {
+				memcpy(&dest[allocated],delimiter,separatorLength * sizeof(SQChar));
+				allocated += separatorLength;
+			}
+			memcpy(&dest[allocated],source,sourceLength * sizeof(SQChar));
+			allocated += sourceLength;
+			dest[allocated] = 0;
+		}
+	}
+	if(dest) {
+		v->Push(SQString<Q>::Create(_ss(v),dest,-1));
+	} else {
+		v->Push(SQString<Q>::Create(_ss(v),_SC(""),0));
+	}
+	return 1;
+}
+#endif
+
 template <Squirk Q>
 SQRegFunction<Q> SQSharedState<Q>::_array_default_delegate_funcz[]={
 	{_SC("len"),default_delegate_len,1, _SC("a")},
@@ -623,13 +908,30 @@ SQRegFunction<Q> SQSharedState<Q>::_array_default_delegate_funcz[]={
 	{_SC("top"),array_top,1, _SC("a")},
 	{_SC("insert"),array_insert,3, _SC("an")},
 	{_SC("remove"),array_remove,2, _SC("an")},
+#ifdef _SQ_M2
+	{_SC("erase"),array_remove,2, _SC("an")},
+	{_SC("removeValue"),array_removeValue,2, _SC("a.b")},
+#endif
 	{_SC("resize"),array_resize,-2, _SC("an")},
 	{_SC("reverse"),array_reverse,1, _SC("a")},
 	{_SC("sort"),array_sort,-1, _SC("ac")},
 	{_SC("slice"),array_slice,-1, _SC("ann")},
+#ifdef _SQ_M2
+	{_SC("splice"),array_splice,-1, _SC("ann")},
+	{_SC("join"),array_join,2, _SC("as")},
+#endif
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("clear"),obj_clear,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("find"),obj_find,2, _SC("..")},
+	{_SC("findall"),obj_findall,2, _SC("..")},
+	{_SC("includes"),obj_includes,2, _SC("..")},
+	{_SC("includeCount"),obj_includeCount,2, _SC("..")},
+#endif
 	{0,0}
 };
 
@@ -668,6 +970,190 @@ static SQInteger string_find(HSQUIRRELVM<Q> v)
 	return sq_throwerror(v,_SC("invalid param"));
 }
 
+#ifdef _SQ_M2
+static const SQChar *scstrrstr(const SQChar *string, const SQChar *pattern)
+{
+	const SQChar *last = NULL;
+	for(const SQChar *position = string; (position = scstrstr(position,pattern)); position++) {
+		last = position;
+		if(*position == '\0') return last;
+	}
+	return last;
+}
+
+template <Squirk Q>
+static SQInteger string_rfind(HSQUIRRELVM<Q> v)
+{
+	SQInteger top, startIdx = 0;
+	const SQChar *str, *substr, *result;
+	if(((top = sq_gettop(v)) > 1) && SQ_SUCCEEDED(sq_getstring(v,1,&str)) && SQ_SUCCEEDED(sq_getstring(v,2,&substr))) {
+		if(top > 2) sq_getinteger(v,3,&startIdx);
+		if(sq_getsize(v,1) >= startIdx && startIdx >= 0) {
+			result = scstrrstr(&str[startIdx],substr);
+			if(result) {
+				sq_pushinteger(v,(SQInteger)(result-str));
+				return 1;
+			}
+		}
+		return 0;
+	}
+	return sq_throwerror(v,_SC("invalid param"));
+}
+
+template <Squirk Q>
+static SQInteger string_substr(HSQUIRRELVM<Q> v)
+{
+	SQInteger top = sq_gettop(v);
+	SQObjectPtr<Q> object = stack_get(v,1);
+	SQInteger length = _string(object)->_len;
+	SQInteger start = top > 1 ? tointeger(stack_get(v,2)) : 0;
+	if(start < 0) start = length + start;
+	SQInteger end = top > 2 ? start + tointeger(stack_get(v,3)) : length;
+	if(start < 0 || end < start) return sq_throwerror(v,_SC("wrong indexes"));
+	if(end > length) return sq_throwerror(v,_SC("slice out of range"));
+	v->Push(SQString<Q>::Create(_ss(v),&_stringval(object)[start],end-start));
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger string_charAt(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> object = stack_get(v,1);
+	SQInteger index = tointeger(stack_get(v,2));
+	SQInteger length = _string(object)->_len;
+	if(index < 0) index = length + index;
+	if(index < 0 || index >= length) return sq_throwerror(v,_SC("slice out of range"));
+	v->Push(SQString<Q>::Create(_ss(v),&_stringval(object)[index],1));
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger string_replace(HSQUIRRELVM<Q> v)
+{
+	SQObject<Q> str = stack_get(v,1);
+	SQObject<Q> from = stack_get(v,2);
+	SQObject<Q> to = stack_get(v,3);
+	const SQChar *strData = _stringval(str);
+	const SQChar *fromData = _stringval(from);
+	const SQChar *toData = _stringval(to);
+	SQInteger strLength = _string(str)->_len;
+	SQInteger fromLength = _string(from)->_len;
+	SQInteger toLength = _string(to)->_len;
+	if(fromLength == 0) return sq_throwerror(v,_SC("empty search string"));
+	const SQChar *position;
+	const SQChar *start = strData;
+	while((position = scstrstr(start,fromData)) != NULL) {
+		start = position + fromLength;
+		strLength += toLength - fromLength;
+	}
+	SQChar *result = _ss(v)->GetScratchPad(rsl(strLength + 1));
+	start = strData;
+	SQChar *output = result;
+	while((position = scstrstr(start,fromData)) != NULL) {
+		while(start < position) *output++ = *start++;
+		start += fromLength;
+		for(SQInteger i = 0; i < toLength; i++) *output++ = toData[i];
+	}
+	while((*output++ = *start++) != '\0') {}
+	v->Push(SQString<Q>::Create(_ss(v),result,strLength));
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger string_split(HSQUIRRELVM<Q> v)
+{
+	SQObject<Q> str = stack_get(v,1);
+	SQObject<Q> delimiter = stack_get(v,2);
+	const SQChar *source = _stringval(str);
+	const SQChar *delimiterData = _stringval(delimiter);
+	SQInteger delimiterLength = _string(delimiter)->_len;
+	if(delimiterLength == 0) return sq_throwerror(v,_SC("empty delimiter"));
+	SQArray<Q> *result = SQArray<Q>::Create(_ss(v),0);
+	const SQChar *position;
+	while((position = scstrstr(source,delimiterData)) != NULL) {
+		SQInteger length = (SQInteger)(position-source);
+		result->Append(SQObjectPtr<Q>(SQString<Q>::Create(_ss(v),source,length)));
+		source = position + delimiterLength;
+	}
+	result->Append(SQObjectPtr<Q>(SQString<Q>::Create(_ss(v),source,(SQInteger)scstrlen(source))));
+	v->Push(result);
+	return 1;
+}
+
+static SQInteger string_mbcharlen(const SQChar *str, SQInteger index)
+{
+#if defined(SQUNICODE)
+	return str[index] ? 1 : 0;
+#elif defined(USESJIS)
+	unsigned char ch = (unsigned char)str[index];
+	return ch ? (((((ch ^ 0x20) - 0xa1) & 0xff) < 0x3c) ? 2 : 1) : 0;
+#else
+	unsigned char ch = (unsigned char)str[index];
+	if(!ch) return 0;
+	if((ch & 0x80) == 0) return 1;
+	if((ch & 0xe0) == 0xc0) return 2;
+	if((ch & 0xf0) == 0xe0) return 3;
+	if((ch & 0xf8) == 0xf0) return 4;
+	if((ch & 0xfc) == 0xf8) return 5;
+	if((ch & 0xfe) == 0xfc) return 6;
+	if((ch & 0xc0) == 0x80) {
+		SQInteger count = 0;
+		do { index++; count++; ch = (unsigned char)str[index]; } while(ch && (ch & 0xc0) == 0x80);
+		return count;
+	}
+	return 1;
+#endif
+}
+
+static SQInteger string_mbcount(const SQChar *str, SQInteger length)
+{
+	SQInteger count = 0, index = 0, charLength;
+	while(index < length && (charLength = string_mbcharlen(str,index)) > 0) {
+		count++;
+		index += charLength;
+	}
+	return count;
+}
+
+template <Squirk Q>
+static SQInteger string_mbnext(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &str = stack_get(v,1);
+	SQInteger index = sq_gettop(v) > 1 ? tointeger(stack_get(v,2)) : 0;
+	v->Push(SQObjectPtr<Q>(index >= 0 && index < _string(str)->_len ? string_mbcharlen(_stringval(str),index) : 0));
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger string_mblen(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> &str = stack_get(v,1);
+	v->Push(SQObjectPtr<Q>(string_mbcount(_stringval(str),_string(str)->_len)));
+	return 1;
+}
+
+template <Squirk Q>
+static SQInteger string_mbsubstr(HSQUIRRELVM<Q> v)
+{
+	SQInteger top = sq_gettop(v);
+	SQObjectPtr<Q> &str = stack_get(v,1);
+	const SQChar *data = _stringval(str);
+	SQInteger byteLength = _string(str)->_len;
+	SQInteger charCount = string_mbcount(data,byteLength);
+	SQInteger startChar = top > 1 ? tointeger(stack_get(v,2)) : 0;
+	if(startChar < 0) startChar = charCount + startChar;
+	SQInteger endChar = top > 2 ? startChar + tointeger(stack_get(v,3)) : charCount;
+	if(startChar < 0 || endChar < startChar) return sq_throwerror(v,_SC("wrong indexes"));
+	if(endChar > charCount) return sq_throwerror(v,_SC("slice out of range"));
+	SQInteger byteStart = 0, byteEnd = 0, charIndex = 0, charLength;
+	while(charIndex < startChar && (charLength = string_mbcharlen(data,byteStart)) > 0) { charIndex++; byteStart += charLength; }
+	byteEnd = byteStart;
+	while(charIndex < endChar && (charLength = string_mbcharlen(data,byteEnd)) > 0) { charIndex++; byteEnd += charLength; }
+	v->Push(SQString<Q>::Create(_ss(v),&data[byteStart],byteEnd-byteStart));
+	return 1;
+}
+#endif
+
 #define STRING_TOFUNCZ(func) static SQInteger string_##func(HSQUIRRELVM<Q> v) \
 { \
 	SQObject<Q> str=stack_get(v,1); \
@@ -690,11 +1176,26 @@ SQRegFunction<Q> SQSharedState<Q>::_string_default_delegate_funcz[]={
 	{_SC("tointeger"),default_delegate_tointeger,1, _SC("s")},
 	{_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("slice"),string_slice,-1, _SC(" s n  n")},
 	{_SC("find"),string_find,-2, _SC("s s n ")},
+#ifdef _SQ_M2
+	{_SC("rfind"),string_rfind,-2, _SC("ssn")},
+#endif
 	{_SC("tolower"),string_tolower,1, _SC("s")},
 	{_SC("toupper"),string_toupper,1, _SC("s")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
+#ifdef _SQ_M2
+	{_SC("substr"),string_substr,-1, _SC("snn")},
+	{_SC("charAt"),string_charAt,2, _SC("sn")},
+	{_SC("replace"),string_replace,3, _SC("sss")},
+	{_SC("split"),string_split,2, _SC("ss")},
+	{_SC("mbnext"),string_mbnext,-1, _SC("sn")},
+	{_SC("mblen"),string_mblen,1, _SC("s")},
+	{_SC("mbsubstr"),string_mbsubstr,-1, _SC("snn")},
+#endif
 	{0,0}
 };
 
@@ -704,6 +1205,9 @@ SQRegFunction<Q> SQSharedState<Q>::_number_default_delegate_funcz[]={
 	{_SC("tointeger"),default_delegate_tointeger,1, _SC("n|b")},
 	{_SC("tofloat"),default_delegate_tofloat,1, _SC("n|b")},
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("tochar"),number_delegate_tochar,1, _SC("n|b")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{0,0}
@@ -799,6 +1303,9 @@ SQRegFunction<Q> SQSharedState<Q>::_closure_default_delegate_funcz[]={
 	{_SC("pacall"),closure_pacall,2, _SC("ca")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("bindenv"),closure_bindenv,2, _SC("c x|y|t")},
 	{_SC("getinfos"),closure_getinfos,1, _SC("c")},
 	{0,0}
@@ -822,6 +1329,9 @@ SQRegFunction<Q> SQSharedState<Q>::_generator_default_delegate_funcz[]={
 	{_SC("getstatus"),generator_getstatus,1, _SC("g")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{0,0}
 };
 
@@ -911,6 +1421,9 @@ SQRegFunction<Q> SQSharedState<Q>::_thread_default_delegate_funcz[] = {
 	{_SC("getstatus"), thread_getstatus, 1, _SC("v")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{0,0},
 };
 
@@ -945,6 +1458,9 @@ SQRegFunction<Q> SQSharedState<Q>::_class_default_delegate_funcz[] = {
 	{_SC("rawin"),container_rawexists,2, _SC("y")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{_SC("instance"),class_instance,1, _SC("y")},
 	{0,0}
 };
@@ -963,6 +1479,9 @@ SQRegFunction<Q> SQSharedState<Q>::_instance_default_delegate_funcz[] = {
 	{_SC("rawin"),container_rawexists,2, _SC("x")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{0,0}
 };
 
@@ -979,5 +1498,8 @@ SQRegFunction<Q> SQSharedState<Q>::_weakref_default_delegate_funcz[] = {
 	{_SC("ref"),weakref_ref,1, _SC("r")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+#ifdef _SQ_M2
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
+#endif
 	{0,0}
 };

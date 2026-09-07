@@ -105,4 +105,18 @@ private:
 	SQUnsignedInteger _allocated;
 };
 
+#ifdef _SQ_M2
+template <typename T>
+void ByteReverse(T* data)
+{
+	char* low = reinterpret_cast<char*>(data);
+	char* high = low + sizeof(T);
+	while(--high > low) {
+		char temp = *low;
+		*low++ = *high;
+		*high = temp;
+	}
+}
+#endif
+
 #endif //_SQUTILS_H_

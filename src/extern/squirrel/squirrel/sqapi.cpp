@@ -2,6 +2,9 @@
 	see copyright notice in squirrel.h
 */
 #include "sqpcheader.h"
+#ifdef _SQ_M2
+#include <stdarg.h>
+#endif
 #include "sqvm.h"
 #include "sqstring.h"
 #include "sqtable.h"
@@ -284,8 +287,13 @@ SQBool sq_instanceof(HSQUIRRELVM<Q> v)
 {
 	SQObjectPtr<Q> &inst = stack_get(v,-1);
 	SQObjectPtr<Q> &cl = stack_get(v,-2);
-	if(obj_type(inst) != OT_INSTANCE || obj_type(cl) != OT_CLASS)
+	if(obj_type(inst) != OT_INSTANCE || obj_type(cl) != OT_CLASS) {
+#ifdef _SQ_M2
+		return SQFalse;
+#else
 		return sq_throwerror(v,_SC("invalid param type"));
+#endif
+	}
 	return _instance(inst)->InstanceOf(_class(cl))?SQTrue:SQFalse;
 }
 
@@ -367,6 +375,38 @@ SQRESULT sq_arrayinsert(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger destpos)
 	v->Pop();
 	return ret;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+SQRESULT sq_arrayremovevalue(HSQUIRRELVM<Q> v, SQInteger idx, SQBool all)
+{
+	sq_aux_paramscheck(v, 2);
+	SQObjectPtr<Q> *o;
+	_GETSAFE_OBJ(v, idx, OT_ARRAY, o);
+	SQArray<Q> *arr = _array(*o);
+	SQObjectPtr<Q> &value = v->GetUp(-1);
+	SQInteger i = 0;
+	SQInteger alen = arr->Size();
+	while(i < alen) {
+		SQObjectPtr<Q> avalue;
+		arr->Get(i, avalue);
+		SQInteger res;
+		v->ObjCmp(value, avalue, res);
+		if(res == 0) {
+			arr->Remove(i);
+			alen--;
+			if(!all) {
+				v->Pop(1);
+				return SQ_OK;
+			}
+		} else {
+			i++;
+		}
+	}
+	v->Pop(1);
+	return SQ_OK;
+}
+#endif
 
 template <Squirk Q>
 void sq_newclosure(HSQUIRRELVM<Q> v,SQFUNCTION<Q> func,SQUnsignedInteger nfreevars)
@@ -458,6 +498,32 @@ SQRESULT sq_bindenv(HSQUIRRELVM<Q> v,SQInteger idx)
 	return SQ_OK;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+SQRESULT sq_getenv(HSQUIRRELVM<Q> v,SQInteger idx)
+{
+	SQObjectPtr<Q> &o = stack_get(v,idx);
+	if(!sq_isnativeclosure(o) && !sq_isclosure(o))
+		return sq_throwerror(v,_SC("the target is not a closure"));
+	SQObjectPtr<Q> ret;
+	if(sq_isclosure(o)) {
+		ret = _closure(o)->_env;
+	} else {
+		ret = _nativeclosure(o)->_env;
+	}
+	v->Push(ret);
+	return SQ_OK;
+}
+
+template <Squirk Q>
+SQBool sq_hasenv(HSQUIRRELVM<Q> v,SQInteger idx)
+{
+	SQObjectPtr<Q> &object = stack_get(v,idx);
+	return ((sq_isclosure(object) && obj_type(_closure(object)->_env) != OT_NULL) ||
+		(sq_isnativeclosure(object) && obj_type(_nativeclosure(object)->_env) != OT_NULL)) ? SQTrue : SQFalse;
+}
+#endif
+
 template <Squirk Q>
 SQRESULT sq_clear(HSQUIRRELVM<Q> v,SQInteger idx)
 {
@@ -515,6 +581,21 @@ SQRESULT sq_setconsttable(HSQUIRRELVM<Q> v)
 	return sq_throwerror(v, _SC("ivalid type, expected table"));
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+SQRESULT sq_setexceptionclass(HSQUIRRELVM<Q> v)
+{
+	SQObject<Q> o = stack_get(v, -1);
+	if(sq_isclass(o)) {
+		SQObjectPtr<Q> key = SQString<Q>::Create(_ss(v), _SC("_m2_exceptionclass"));
+		_table(_ss(v)->_registry)->NewSlot(key, o);
+		v->Pop();
+		return SQ_OK;
+	}
+	return sq_throwerror(v, _SC("ivalid type"));
+}
+#endif
+
 template <Squirk Q>
 void sq_setforeignptr(HSQUIRRELVM<Q> v,SQUserPointer p)
 {
@@ -559,7 +640,11 @@ template <Squirk Q>
 SQRESULT sq_getinteger(HSQUIRRELVM<Q> v,SQInteger idx,SQInteger *i)
 {
 	SQObjectPtr<Q> &o = stack_get(v, idx);
-	if(sq_isnumeric(o)) {
+	if(sq_isnumeric(o)
+#ifdef _SQ_M2
+		|| sq_isbool(o)
+#endif
+	) {
 		*i = tointeger(o);
 		return SQ_OK;
 	}
@@ -570,7 +655,11 @@ template <Squirk Q>
 SQRESULT sq_getfloat(HSQUIRRELVM<Q> v,SQInteger idx,SQFloat *f)
 {
 	SQObjectPtr<Q> &o = stack_get(v, idx);
-	if(sq_isnumeric(o)) {
+	if(sq_isnumeric(o)
+#ifdef _SQ_M2
+		|| sq_isbool(o)
+#endif
+	) {
 		*f = tofloat(o);
 		return SQ_OK;
 	}
@@ -585,6 +674,12 @@ SQRESULT sq_getbool(HSQUIRRELVM<Q> v,SQInteger idx,SQBool *b)
 		*b = _integer(o);
 		return SQ_OK;
 	}
+#ifdef _SQ_M2
+	if(sq_isnumeric(o)) {
+		*b = tofloat(o) != 0 ? SQTrue : SQFalse;
+		return SQ_OK;
+	}
+#endif
 	return SQ_ERROR;
 }
 
@@ -592,6 +687,9 @@ template <Squirk Q>
 SQRESULT sq_getstring(HSQUIRRELVM<Q> v,SQInteger idx,const SQChar **c)
 {
 	SQObjectPtr<Q> *o = NULL;
+#ifdef _SQ_M2
+	*c = NULL;
+#endif
 	_GETSAFE_OBJ(v, idx, OT_STRING,o);
 	*c = _stringval(*o);
 	return SQ_OK;
@@ -773,7 +871,12 @@ SQRESULT sq_newslot(HSQUIRRELVM<Q> v, SQInteger idx, SQBool bstatic)
 	SQObjectPtr<Q> &self = stack_get(v, idx);
 	if(obj_type(self) == OT_TABLE || obj_type(self) == OT_CLASS) {
 		SQObjectPtr<Q> &key = v->GetUp(-2);
-		if(obj_type(key) == OT_NULL) return sq_throwerror(v, _SC("null is not a valid key"));
+		if(obj_type(key) == OT_NULL) {
+#ifdef _SQ_M2
+			v->Pop(2);
+#endif
+			return sq_throwerror(v, _SC("null is not a valid key"));
+		}
 		v->NewSlot(self, key, v->GetUp(-1),bstatic?true:false);
 		v->Pop(2);
 	}
@@ -805,14 +908,23 @@ SQRESULT sq_set(HSQUIRRELVM<Q> v,SQInteger idx)
 		v->Pop(2);
 		return SQ_OK;
 	}
-	v->Raise_IdxError(v->GetUp(-2));return SQ_ERROR;
+	v->Raise_IdxError(v->GetUp(-2));
+#ifdef _SQ_M2
+	v->Pop(2);
+#endif
+	return SQ_ERROR;
 }
 
 template <Squirk Q>
 SQRESULT sq_rawset(HSQUIRRELVM<Q> v,SQInteger idx)
 {
 	SQObjectPtr<Q> &self = stack_get(v, idx);
-	if(obj_type(v->GetUp(-2)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(obj_type(v->GetUp(-2)) == OT_NULL) {
+#ifdef _SQ_M2
+		v->Pop(2);
+#endif
+		return sq_throwerror(v, _SC("null key"));
+	}
 	switch(obj_type(self)) {
 	case OT_TABLE:
 		_table(self)->NewSlot(v->GetUp(-2), v->GetUp(-1));
@@ -840,7 +952,11 @@ SQRESULT sq_rawset(HSQUIRRELVM<Q> v,SQInteger idx)
 		v->Pop(2);
 		return sq_throwerror(v, _SC("rawset works only on array/table/class and instance"));
 	}
-	v->Raise_IdxError(v->GetUp(-2));return SQ_ERROR;
+	v->Raise_IdxError(v->GetUp(-2));
+#ifdef _SQ_M2
+	v->Pop(2);
+#endif
+	return SQ_ERROR;
 }
 
 template <Squirk Q>
@@ -1008,11 +1124,30 @@ void sq_resetobject(HSQOBJECT<Q> *po)
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+SQRESULT sq_throwerror(HSQUIRRELVM<Q> v,const SQChar *err,...)
+{
+	va_list args;
+	va_start(args,err);
+	v->Raise_ErrorV(err,args);
+	va_end(args);
+	return SQ_ERROR;
+}
+
+template <Squirk Q>
+SQRESULT sq_throwobj(HSQUIRRELVM<Q> v,HSQOBJECT<Q> object)
+{
+	SQObjectPtr<Q> error(object);
+	v->Raise_Error(error);
+	return SQ_ERROR;
+}
+#else
 SQRESULT sq_throwerror(HSQUIRRELVM<Q> v,const SQChar *err)
 {
 	v->_lasterror=SQString<Q>::Create(_ss(v),err);
 	return -1;
 }
+#endif
 
 template <Squirk Q>
 void sq_reseterror(HSQUIRRELVM<Q> v)
@@ -1117,14 +1252,29 @@ void sq_setcompilererrorhandler(HSQUIRRELVM<Q> v,SQCOMPILERERROR<Q> f)
 }
 
 template <Squirk Q>
+#ifdef _SQ_M2
+SQRESULT sq_writeclosure(HSQUIRRELVM<Q> v,SQWRITEFUNC w,SQUserPointer up,SQInteger endian)
+#else
 SQRESULT sq_writeclosure(HSQUIRRELVM<Q> v,SQWRITEFUNC w,SQUserPointer up)
+#endif
 {
+#ifdef _SQ_M2
+#ifdef __BIG_ENDIAN__
+	bool reverseByte = endian == SQ_LITTLE_ENDIAN;
+#else
+	bool reverseByte = endian == SQ_BIG_ENDIAN;
+#endif
+#endif
 	SQObjectPtr<Q> *o = NULL;
 	_GETSAFE_OBJ(v, -1, OT_CLOSURE,o);
 	unsigned short tag = SQ_BYTECODE_STREAM_TAG;
 	if(w(up,&tag,2) != 2)
 		return sq_throwerror(v,_SC("io error"));
+#ifdef _SQ_M2
+	if(!_closure(*o)->Save(v,up,w,reverseByte))
+#else
 	if(!_closure(*o)->Save(v,up,w))
+#endif
 		return SQ_ERROR;
 	return SQ_OK;
 }
@@ -1434,6 +1584,132 @@ SQRESULT sq_compilebuffer(HSQUIRRELVM<Q> v,const SQChar *s,SQInteger size,const 
 	return sq_compile(v, buf_lexfeed, &buf, sourcename, raiseerror);
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+SQRESULT sq_execscript(HSQUIRRELVM<Q> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx)
+{
+	SQRESULT ret = sq_compilebuffer(v,src,size,_SC("execscript"),SQTrue);
+	if(SQ_SUCCEEDED(ret)) {
+		if(contextIdx) {
+			sq_push(v,contextIdx);
+			ret = sq_bindenv(v,-2);
+			if(SQ_SUCCEEDED(ret)) {
+				sq_push(v,1);
+				ret = sq_call(v,1,SQTrue,SQTrue);
+			} else {
+				sq_pop(v,1);
+			}
+		} else {
+			sq_push(v,1);
+			ret = sq_call(v,1,SQTrue,SQTrue);
+		}
+	}
+	if(SQ_SUCCEEDED(ret)) return 1;
+	if(errorIdx) {
+		sq_push(v,errorIdx);
+		return 1;
+	}
+	return ret;
+}
+
+static bool isIdentFirst(SQChar ch)
+{
+	return ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+static bool isIdent(SQChar ch)
+{
+	return isIdentFirst(ch) || (ch >= '0' && ch <= '9');
+}
+
+template <Squirk Q>
+SQRESULT sq_template(HSQUIRRELVM<Q> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx)
+{
+	SQPRINTFUNCTION<Q> printerr = sq_getprintfunc(v);
+	SQInteger top = sq_gettop(v);
+	SQInteger allocated = (size + 1) * sizeof(SQChar);
+	SQChar *dest = (SQChar*)SQ_MALLOC(allocated);
+	SQChar expression[208];
+	const SQInteger maxExpression = 207;
+	scstrcpy(expression,_SC("return "));
+	SQInteger sourceIndex = 0;
+	SQInteger destIndex = 0;
+	while(sourceIndex < size && text[sourceIndex] != '\0') {
+		if(text[sourceIndex] != '$') {
+			dest[destIndex++] = text[sourceIndex++];
+			continue;
+		}
+		if(sourceIndex + 1 < size && text[sourceIndex + 1] == '$') {
+			dest[destIndex++] = '$';
+			sourceIndex += 2;
+			continue;
+		}
+		SQInteger expressionLength = 7;
+		SQChar *expressionDest = &expression[expressionLength];
+		if(sourceIndex + 1 < size && isIdentFirst(text[sourceIndex + 1])) {
+			sourceIndex++;
+			while(sourceIndex < size && isIdent(text[sourceIndex])) {
+				if(expressionLength <= maxExpression) *expressionDest++ = text[sourceIndex];
+				sourceIndex++;
+				expressionLength++;
+			}
+			*expressionDest = '\0';
+		} else if(sourceIndex + 1 < size && text[sourceIndex + 1] == '{') {
+			sourceIndex += 2;
+			while(sourceIndex < size && text[sourceIndex] != '\0') {
+				if(text[sourceIndex] == '}') {
+					sourceIndex++;
+					break;
+				}
+				if(expressionLength <= maxExpression) *expressionDest++ = text[sourceIndex];
+				sourceIndex++;
+				expressionLength++;
+			}
+			*expressionDest = '\0';
+		} else {
+			dest[destIndex++] = '$';
+			sourceIndex++;
+			continue;
+		}
+
+		if(expressionLength > maxExpression) {
+			if(printerr) printerr(v,_SC("too long expression:%s\n"),expression + 7);
+			if(errorIdx) sq_push(v,errorIdx); else sq_pushstring(v,_SC(""),0);
+		} else if(expressionLength > 7) {
+			SQRESULT ret = sq_execscript(v,expression,expressionLength,contextIdx,0);
+			if(SQ_FAILED(ret)) {
+				if(printerr) {
+					sq_getlasterror(v);
+					const SQChar *error = NULL;
+					if(SQ_SUCCEEDED(sq_getstring(v,-1,&error)) && error) printerr(v,_SC("%s"),error);
+					sq_settop(v,top);
+				}
+				if(errorIdx) sq_push(v,errorIdx); else sq_pushstring(v,_SC(""),0);
+			} else if(ret == 0) {
+				sq_pushstring(v,_SC(""),0);
+			}
+		} else {
+			sq_pushstring(v,_SC(""),0);
+		}
+
+		sq_tostring(v,-1);
+		const SQChar *data;
+		sq_getstring(v,-1,&data);
+		SQInteger length = sq_getsize(v,-1);
+		SQInteger additional = length * sizeof(SQChar);
+		dest = (SQChar*)SQ_REALLOC(dest,allocated,allocated + additional);
+		allocated += additional;
+		scstrncpy(&dest[destIndex],data,length);
+		destIndex += length;
+		sq_settop(v,top);
+	}
+	sq_settop(v,top);
+	sq_pushstring(v,dest,destIndex);
+	SQ_FREE(dest,allocated);
+	return 1;
+}
+#endif
+
 template <Squirk Q>
 void sq_move(HSQUIRRELVM<Q> dest,HSQUIRRELVM<Q> src,SQInteger idx)
 {
@@ -1446,11 +1722,34 @@ void sq_setprintfunc(HSQUIRRELVM<Q> v, SQPRINTFUNCTION<Q> printfunc)
 	_ss(v)->_printfunc = printfunc;
 }
 
+#ifdef _SQ_M2
+template <Squirk Q>
+void sq_setprinterrfunc(HSQUIRRELVM<Q> v,SQPRINTFUNCTION<Q> printfunc)
+{
+	SQObjectPtr<Q> key = SQString<Q>::Create(_ss(v),_SC("_m2_printerrfunc"));
+	SQObjectPtr<Q> value(reinterpret_cast<SQUserPointer>(printfunc));
+	_table(_ss(v)->_registry)->NewSlot(key,value);
+}
+#endif
+
 template <Squirk Q>
 SQPRINTFUNCTION<Q> sq_getprintfunc(HSQUIRRELVM<Q> v)
 {
 	return _ss(v)->_printfunc;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+SQPRINTFUNCTION<Q> sq_getprinterrfunc(HSQUIRRELVM<Q> v)
+{
+	SQObjectPtr<Q> key = SQString<Q>::Create(_ss(v),_SC("_m2_printerrfunc"));
+	SQObjectPtr<Q> value;
+	if(_table(_ss(v)->_registry)->Get(key,value) && sq_isuserpointer(value)) {
+		return reinterpret_cast<SQPRINTFUNCTION<Q>>(_userpointer(value));
+	}
+	return sq_getprintfunc(v);
+}
+#endif
 
 void *sq_malloc(SQUnsignedInteger size)
 {
@@ -1483,6 +1782,10 @@ template SQInteger sq_getvmstate<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard>
 /*compiler*/
 template SQRESULT sq_compile<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
 template SQRESULT sq_compilebuffer<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+#ifdef _SQ_M2
+template SQRESULT sq_execscript<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+template SQRESULT sq_template<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+#endif
 template void sq_enabledebuginfo<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQBool enable);
 template void sq_notifyallexceptions<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQBool enable);
 template void sq_setcompilererrorhandler<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQCOMPILERERROR<Squirk::Standard> f);
@@ -1505,6 +1808,13 @@ template void sq_newarray<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQI
 template void sq_newclosure<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQFUNCTION<Squirk::Standard> func, SQUnsignedInteger nfreevars);
 template SQRESULT sq_setparamscheck<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger nparamscheck, const SQChar *typemask);
 template SQRESULT sq_bindenv<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQRESULT sq_getenv<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
+template SQBool sq_hasenv<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
+template SQRESULT sq_throwobj<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, HSQOBJECT<Squirk::Standard> obj);
+template void sq_setprinterrfunc<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQPRINTFUNCTION<Squirk::Standard> printfunc);
+template SQPRINTFUNCTION<Squirk::Standard> sq_getprinterrfunc<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
+#endif
 template void sq_pushstring<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *s, SQInteger len);
 template void sq_pushfloat<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQFloat f);
 template void sq_pushinteger<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger n);
@@ -1550,6 +1860,9 @@ template void sq_pushregistrytable<Squirk::Standard>(HSQUIRRELVM<Squirk::Standar
 template void sq_pushconsttable<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
 template SQRESULT sq_setroottable<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
 template SQRESULT sq_setconsttable<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
+#ifdef _SQ_M2
+template SQRESULT sq_setexceptionclass<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
+#endif
 template SQRESULT sq_newslot<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQBool bstatic);
 template SQRESULT sq_deleteslot<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
@@ -1566,6 +1879,9 @@ template SQRESULT sq_arrayresize<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard>
 template SQRESULT sq_arrayreverse<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_arrayremove<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQInteger itemidx);
 template SQRESULT sq_arrayinsert<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQInteger destpos);
+#ifdef _SQ_M2
+template SQRESULT sq_arrayremovevalue<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQBool all);
+#endif
 template SQRESULT sq_setdelegate<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_getdelegate<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
 template SQRESULT sq_clone<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx);
@@ -1579,7 +1895,11 @@ template SQRESULT sq_call<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQI
 template SQRESULT sq_resume<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQBool retval, SQBool raiseerror);
 template const SQChar *sq_getlocal<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQUnsignedInteger level, SQUnsignedInteger idx);
 template const SQChar *sq_getfreevariable<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger idx, SQUnsignedInteger nval);
+#ifdef _SQ_M2
+template SQRESULT sq_throwerror<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *err, ...);
+#else
 template SQRESULT sq_throwerror<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, const SQChar *err);
+#endif
 template void sq_reseterror<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
 template void sq_getlasterror<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
 
@@ -1599,7 +1919,11 @@ template SQRESULT sq_getobjtypetag<Squirk::Standard>(HSQOBJECT<Squirk::Standard>
 template SQInteger sq_collectgarbage<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v);
 
 /*serialization*/
+#ifdef _SQ_M2
+template SQRESULT sq_writeclosure<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> vm, SQWRITEFUNC writef, SQUserPointer up, SQInteger endian);
+#else
 template SQRESULT sq_writeclosure<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> vm, SQWRITEFUNC writef, SQUserPointer up);
+#endif
 template SQRESULT sq_readclosure<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> vm, SQREADFUNC readf, SQUserPointer up);
 
 /*debug*/
@@ -1621,6 +1945,10 @@ template SQInteger sq_getvmstate<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignO
 /*compiler*/
 template SQRESULT sq_compile<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
 template SQRESULT sq_compilebuffer<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+#ifdef _SQ_M2
+template SQRESULT sq_execscript<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+template SQRESULT sq_template<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+#endif
 template void sq_enabledebuginfo<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQBool enable);
 template void sq_notifyallexceptions<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQBool enable);
 template void sq_setcompilererrorhandler<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQCOMPILERERROR<Squirk::AlignObject> f);
@@ -1643,6 +1971,13 @@ template void sq_newarray<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> 
 template void sq_newclosure<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQFUNCTION<Squirk::AlignObject> func, SQUnsignedInteger nfreevars);
 template SQRESULT sq_setparamscheck<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger nparamscheck, const SQChar *typemask);
 template SQRESULT sq_bindenv<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQRESULT sq_getenv<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
+template SQBool sq_hasenv<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
+template SQRESULT sq_throwobj<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, HSQOBJECT<Squirk::AlignObject> obj);
+template void sq_setprinterrfunc<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQPRINTFUNCTION<Squirk::AlignObject> printfunc);
+template SQPRINTFUNCTION<Squirk::AlignObject> sq_getprinterrfunc<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
+#endif
 template void sq_pushstring<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *s, SQInteger len);
 template void sq_pushfloat<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQFloat f);
 template void sq_pushinteger<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger n);
@@ -1688,6 +2023,9 @@ template void sq_pushregistrytable<Squirk::AlignObject>(HSQUIRRELVM<Squirk::Alig
 template void sq_pushconsttable<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
 template SQRESULT sq_setroottable<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
 template SQRESULT sq_setconsttable<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
+#ifdef _SQ_M2
+template SQRESULT sq_setexceptionclass<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
+#endif
 template SQRESULT sq_newslot<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQBool bstatic);
 template SQRESULT sq_deleteslot<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
@@ -1704,6 +2042,9 @@ template SQRESULT sq_arrayresize<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignO
 template SQRESULT sq_arrayreverse<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_arrayremove<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQInteger itemidx);
 template SQRESULT sq_arrayinsert<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQInteger destpos);
+#ifdef _SQ_M2
+template SQRESULT sq_arrayremovevalue<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQBool all);
+#endif
 template SQRESULT sq_setdelegate<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_getdelegate<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
 template SQRESULT sq_clone<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx);
@@ -1717,7 +2058,11 @@ template SQRESULT sq_call<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> 
 template SQRESULT sq_resume<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQBool retval, SQBool raiseerror);
 template const SQChar *sq_getlocal<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQUnsignedInteger level, SQUnsignedInteger idx);
 template const SQChar *sq_getfreevariable<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger idx, SQUnsignedInteger nval);
+#ifdef _SQ_M2
+template SQRESULT sq_throwerror<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *err, ...);
+#else
 template SQRESULT sq_throwerror<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, const SQChar *err);
+#endif
 template void sq_reseterror<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
 template void sq_getlasterror<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
 
@@ -1737,7 +2082,11 @@ template SQRESULT sq_getobjtypetag<Squirk::AlignObject>(HSQOBJECT<Squirk::AlignO
 template SQInteger sq_collectgarbage<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v);
 
 /*serialization*/
+#ifdef _SQ_M2
+template SQRESULT sq_writeclosure<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> vm, SQWRITEFUNC writef, SQUserPointer up, SQInteger endian);
+#else
 template SQRESULT sq_writeclosure<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> vm, SQWRITEFUNC writef, SQUserPointer up);
+#endif
 template SQRESULT sq_readclosure<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> vm, SQREADFUNC readf, SQUserPointer up);
 
 /*debug*/
@@ -1759,6 +2108,10 @@ template SQInteger sq_getvmstate<Squirk::StandardShared>(HSQUIRRELVM<Squirk::Sta
 /*compiler*/
 template SQRESULT sq_compile<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
 template SQRESULT sq_compilebuffer<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+#ifdef _SQ_M2
+template SQRESULT sq_execscript<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+template SQRESULT sq_template<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+#endif
 template void sq_enabledebuginfo<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQBool enable);
 template void sq_notifyallexceptions<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQBool enable);
 template void sq_setcompilererrorhandler<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQCOMPILERERROR<Squirk::StandardShared> f);
@@ -1781,6 +2134,13 @@ template void sq_newarray<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardSh
 template void sq_newclosure<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQFUNCTION<Squirk::StandardShared> func, SQUnsignedInteger nfreevars);
 template SQRESULT sq_setparamscheck<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger nparamscheck, const SQChar *typemask);
 template SQRESULT sq_bindenv<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQRESULT sq_getenv<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
+template SQBool sq_hasenv<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
+template SQRESULT sq_throwobj<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, HSQOBJECT<Squirk::StandardShared> obj);
+template void sq_setprinterrfunc<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQPRINTFUNCTION<Squirk::StandardShared> printfunc);
+template SQPRINTFUNCTION<Squirk::StandardShared> sq_getprinterrfunc<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
+#endif
 template void sq_pushstring<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *s, SQInteger len);
 template void sq_pushfloat<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQFloat f);
 template void sq_pushinteger<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger n);
@@ -1826,6 +2186,9 @@ template void sq_pushregistrytable<Squirk::StandardShared>(HSQUIRRELVM<Squirk::S
 template void sq_pushconsttable<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
 template SQRESULT sq_setroottable<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
 template SQRESULT sq_setconsttable<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
+#ifdef _SQ_M2
+template SQRESULT sq_setexceptionclass<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
+#endif
 template SQRESULT sq_newslot<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQBool bstatic);
 template SQRESULT sq_deleteslot<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
@@ -1842,6 +2205,9 @@ template SQRESULT sq_arrayresize<Squirk::StandardShared>(HSQUIRRELVM<Squirk::Sta
 template SQRESULT sq_arrayreverse<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_arrayremove<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQInteger itemidx);
 template SQRESULT sq_arrayinsert<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQInteger destpos);
+#ifdef _SQ_M2
+template SQRESULT sq_arrayremovevalue<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQBool all);
+#endif
 template SQRESULT sq_setdelegate<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_getdelegate<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
 template SQRESULT sq_clone<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx);
@@ -1855,7 +2221,11 @@ template SQRESULT sq_call<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardSh
 template SQRESULT sq_resume<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQBool retval, SQBool raiseerror);
 template const SQChar *sq_getlocal<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQUnsignedInteger level, SQUnsignedInteger idx);
 template const SQChar *sq_getfreevariable<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger idx, SQUnsignedInteger nval);
+#ifdef _SQ_M2
+template SQRESULT sq_throwerror<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *err, ...);
+#else
 template SQRESULT sq_throwerror<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, const SQChar *err);
+#endif
 template void sq_reseterror<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
 template void sq_getlasterror<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
 
@@ -1875,7 +2245,11 @@ template SQRESULT sq_getobjtypetag<Squirk::StandardShared>(HSQOBJECT<Squirk::Sta
 template SQInteger sq_collectgarbage<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v);
 
 /*serialization*/
+#ifdef _SQ_M2
+template SQRESULT sq_writeclosure<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> vm, SQWRITEFUNC writef, SQUserPointer up, SQInteger endian);
+#else
 template SQRESULT sq_writeclosure<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> vm, SQWRITEFUNC writef, SQUserPointer up);
+#endif
 template SQRESULT sq_readclosure<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> vm, SQREADFUNC readf, SQUserPointer up);
 
 /*debug*/
@@ -1897,6 +2271,10 @@ template SQInteger sq_getvmstate<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::
 /*compiler*/
 template SQRESULT sq_compile<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
 template SQRESULT sq_compilebuffer<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+#ifdef _SQ_M2
+template SQRESULT sq_execscript<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+template SQRESULT sq_template<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+#endif
 template void sq_enabledebuginfo<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQBool enable);
 template void sq_notifyallexceptions<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQBool enable);
 template void sq_setcompilererrorhandler<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQCOMPILERERROR<Squirk::AlignObjectShared> f);
@@ -1919,6 +2297,13 @@ template void sq_newarray<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignOb
 template void sq_newclosure<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQFUNCTION<Squirk::AlignObjectShared> func, SQUnsignedInteger nfreevars);
 template SQRESULT sq_setparamscheck<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger nparamscheck, const SQChar *typemask);
 template SQRESULT sq_bindenv<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
+#ifdef _SQ_M2
+template SQRESULT sq_getenv<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
+template SQBool sq_hasenv<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
+template SQRESULT sq_throwobj<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, HSQOBJECT<Squirk::AlignObjectShared> obj);
+template void sq_setprinterrfunc<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQPRINTFUNCTION<Squirk::AlignObjectShared> printfunc);
+template SQPRINTFUNCTION<Squirk::AlignObjectShared> sq_getprinterrfunc<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
+#endif
 template void sq_pushstring<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *s, SQInteger len);
 template void sq_pushfloat<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQFloat f);
 template void sq_pushinteger<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger n);
@@ -1964,6 +2349,9 @@ template void sq_pushregistrytable<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk
 template void sq_pushconsttable<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 template SQRESULT sq_setroottable<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 template SQRESULT sq_setconsttable<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
+#ifdef _SQ_M2
+template SQRESULT sq_setexceptionclass<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
+#endif
 template SQRESULT sq_newslot<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQBool bstatic);
 template SQRESULT sq_deleteslot<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQBool pushval);
 template SQRESULT sq_set<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
@@ -1980,6 +2368,9 @@ template SQRESULT sq_arrayresize<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::
 template SQRESULT sq_arrayreverse<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_arrayremove<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQInteger itemidx);
 template SQRESULT sq_arrayinsert<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQInteger destpos);
+#ifdef _SQ_M2
+template SQRESULT sq_arrayremovevalue<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQBool all);
+#endif
 template SQRESULT sq_setdelegate<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_getdelegate<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
 template SQRESULT sq_clone<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx);
@@ -1993,7 +2384,11 @@ template SQRESULT sq_call<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignOb
 template SQRESULT sq_resume<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQBool retval, SQBool raiseerror);
 template const SQChar *sq_getlocal<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQUnsignedInteger level, SQUnsignedInteger idx);
 template const SQChar *sq_getfreevariable<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger idx, SQUnsignedInteger nval);
+#ifdef _SQ_M2
+template SQRESULT sq_throwerror<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *err, ...);
+#else
 template SQRESULT sq_throwerror<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, const SQChar *err);
+#endif
 template void sq_reseterror<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 template void sq_getlasterror<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 
@@ -2013,7 +2408,11 @@ template SQRESULT sq_getobjtypetag<Squirk::AlignObjectShared>(HSQOBJECT<Squirk::
 template SQInteger sq_collectgarbage<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 
 /*serialization*/
+#ifdef _SQ_M2
+template SQRESULT sq_writeclosure<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> vm, SQWRITEFUNC writef, SQUserPointer up, SQInteger endian);
+#else
 template SQRESULT sq_writeclosure<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> vm, SQWRITEFUNC writef, SQUserPointer up);
+#endif
 template SQRESULT sq_readclosure<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> vm, SQREADFUNC readf, SQUserPointer up);
 
 /*debug*/

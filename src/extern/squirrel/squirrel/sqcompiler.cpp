@@ -161,6 +161,9 @@ public:
 
 		SQFuncState<Q> funcstate(_ss(_vm), NULL,ThrowError,this);
 		funcstate._name = SQString<Q>::Create(_ss(_vm), _SC("main"));
+#ifdef _SQ_M2
+		funcstate._varparams = true;
+#endif
 		_fs = &funcstate;
 		_fs->AddParameter(_fs->CreateString(_SC("this")));
 		_fs->_sourcename = _sourcename;
@@ -841,7 +844,23 @@ public:
 	{
 		SQObject<Q> varname;
 		do {
-			Lex(); varname = Expect(TK_IDENTIFIER);
+			Lex();
+#ifdef _SQ_M2
+			if(_token == TK_FUNCTION) {
+				Lex();
+				varname = Expect(TK_IDENTIFIER);
+				Expect(_SC('('));
+				CreateFunction(_null_<Q>);
+				_fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1,0);
+				SQInteger src = _fs->PopTarget();
+				SQInteger dest = _fs->PushTarget();
+				if(dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+				_fs->PopTarget();
+				_fs->PushLocalVariable(varname);
+				continue;
+			}
+#endif
+			varname = Expect(TK_IDENTIFIER);
 			if(_token == _SC('=')) {
 				Lex(); Expression();
 				SQInteger src = _fs->PopTarget();

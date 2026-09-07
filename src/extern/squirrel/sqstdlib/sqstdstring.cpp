@@ -95,13 +95,22 @@ SQRESULT sqstd_format(HSQUIRRELVM<Q> v,SQInteger nformatstringidx,SQInteger *out
 			SQInteger addlen = 0;
 			SQInteger valtype = 0;
 			const SQChar *ts = NULL;
+			bool popString = false;
 			SQInteger ti;
 			SQFloat tf;
 			switch(format[n]) {
 			case 's':
+#ifdef _SQ_M2
+				if(sq_gettype(v,nparam) != OT_STRING) {
+					sq_tostring(v,nparam);
+					popString = true;
+				}
+				if(SQ_FAILED(sq_getstring(v,popString ? -1 : nparam,&ts)))
+#else
 				if(SQ_FAILED(sq_getstring(v,nparam,&ts))) 
+#endif
 					return sq_throwerror(v,_SC("string expected for the specified format"));
-				addlen = (sq_getsize(v,nparam)*sizeof(SQChar))+((w+1)*sizeof(SQChar));
+				addlen = (sq_getsize(v,popString ? -1 : nparam)*sizeof(SQChar))+((w+1)*sizeof(SQChar));
 				valtype = 's';
 				break;
 			case 'i': case 'd': case 'c':case 'o':  case 'u':  case 'x':  case 'X':
@@ -127,6 +136,7 @@ SQRESULT sqstd_format(HSQUIRRELVM<Q> v,SQInteger nformatstringidx,SQInteger *out
 			case 'i': i += scsprintf(&dest[i],fmt,ti); break;
 			case 'f': i += scsprintf(&dest[i],fmt,tf); break;
 			};
+			if(popString) sq_pop(v,1);
 			nparam ++;
 		}
 	}
@@ -135,6 +145,29 @@ SQRESULT sqstd_format(HSQUIRRELVM<Q> v,SQInteger nformatstringidx,SQInteger *out
 	*output = dest;
 	return SQ_OK;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+SQInteger sqstd_printf(HSQUIRRELVM<Q> v, SQInteger nargs)
+{
+	SQInteger n = sq_gettop(v);
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_SUCCEEDED(sqstd_format(v,n-nargs,&length,&dest))) {
+		SQPRINTFUNCTION<Q> func = sq_getprintfunc(v);
+		if(func) {
+			func(v, _SC("%*s"), length, dest);
+		}
+	}
+	sq_pop(v, nargs+1);
+	return length;
+}
+
+template SQInteger sqstd_printf<Squirk::Standard>(HSQUIRRELVM<Squirk::Standard> v, SQInteger nargs);
+template SQInteger sqstd_printf<Squirk::AlignObject>(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger nargs);
+template SQInteger sqstd_printf<Squirk::StandardShared>(HSQUIRRELVM<Squirk::StandardShared> v, SQInteger nargs);
+template SQInteger sqstd_printf<Squirk::AlignObjectShared>(HSQUIRRELVM<Squirk::AlignObjectShared> v, SQInteger nargs);
+#endif
 
 template SQRESULT sqstd_format(HSQUIRRELVM<Squirk::Standard> v, SQInteger nformatstringidx, SQInteger *outlen, SQChar **output);
 template SQRESULT sqstd_format(HSQUIRRELVM<Squirk::AlignObject> v, SQInteger nformatstringidx, SQInteger *outlen, SQChar **output);
@@ -151,6 +184,30 @@ static SQInteger _string_format(HSQUIRRELVM<Q> v)
 	sq_pushstring(v,dest,length);
 	return 1;
 }
+
+#ifdef _SQ_M2
+template <Squirk Q>
+static SQInteger _string_printf(HSQUIRRELVM<Q> v)
+{
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_FAILED(sqstd_format(v,2,&length,&dest))) return SQ_ERROR;
+	SQPRINTFUNCTION<Q> print = sq_getprintfunc(v);
+	if(print) print(v,_SC("%*s"),length,dest);
+	return 0;
+}
+
+template <Squirk Q>
+static SQInteger _string_errprintf(HSQUIRRELVM<Q> v)
+{
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_FAILED(sqstd_format(v,2,&length,&dest))) return SQ_ERROR;
+	SQPRINTFUNCTION<Q> print = sq_getprinterrfunc(v);
+	if(print) print(v,_SC("%*s"),length,dest);
+	return 0;
+}
+#endif
 
 static void __strip_l(const SQChar *str,const SQChar **start)
 {
@@ -344,6 +401,10 @@ static SQRegFunction<Q> rexobj_funcs[]={
 #define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_string_##name,nparams,pmask}
 template <Squirk Q>
 static SQRegFunction<Q> stringlib_funcs[]={
+#ifdef _SQ_M2
+	_DECL_FUNC(printf,-2,_SC(".s")),
+	_DECL_FUNC(errprintf,-2,_SC(".s")),
+#endif
 	_DECL_FUNC(format,-2,_SC(".s")),
 	_DECL_FUNC(strip,2,_SC(".s")),
 	_DECL_FUNC(lstrip,2,_SC(".s")),

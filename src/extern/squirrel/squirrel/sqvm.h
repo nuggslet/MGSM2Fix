@@ -125,6 +125,9 @@ public:
 
  
 	void Raise_Error(const SQChar *s, ...);
+#ifdef _SQ_M2
+	void Raise_ErrorV(const SQChar *s, va_list args);
+#endif
 	void Raise_Error(SQObjectPtr<Q> &desc);
 	void Raise_IdxError(SQObject<Q> &o);
 	void Raise_CompareError(const SQObject<Q> &o1, const SQObject<Q> &o2);

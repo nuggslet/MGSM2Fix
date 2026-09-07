@@ -20,6 +20,10 @@ SQUIRREL_API SQBool sqstd_rex_getsubexp(SQRex* exp, SQInteger n, SQRexMatch *sub
 
 template <Squirk Q>
 SQUIRREL_API SQRESULT sqstd_format(HSQUIRRELVM<Q> v,SQInteger nformatstringidx,SQInteger *outlen,SQChar **output);
+#ifdef _SQ_M2
+template <Squirk Q>
+SQUIRREL_API SQInteger sqstd_printf(HSQUIRRELVM<Q> v, SQInteger nargs);
+#endif
 
 template <Squirk Q>
 SQUIRREL_API SQRESULT sqstd_register_stringlib(HSQUIRRELVM<Q> v);

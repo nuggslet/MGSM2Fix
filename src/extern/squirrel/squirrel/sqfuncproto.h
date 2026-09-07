@@ -128,7 +128,11 @@ public:
 	}
 	const SQChar* GetLocal(SQVM<Q> *v,SQUnsignedInteger stackbase,SQUnsignedInteger nseq,SQUnsignedInteger nop);
 	SQInteger GetLine(SQInstruction *curr);
+#ifdef _SQ_M2
+	bool Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte);
+#else
 	bool Save(SQVM<Q> *v,SQUserPointer up,SQWRITEFUNC write);
+#endif
 	static bool Load(SQVM<Q> *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr<Q> &ret);
 
 	SQObjectPtr<Q> _sourcename;

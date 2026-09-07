@@ -167,6 +167,11 @@ typedef wchar_t SQChar;
 #define scsprintf	swprintf
 #define scstrlen	wcslen
 #define scstrtod	wcstod
+#ifdef _SQ_M2
+#define scstrncmp	wcsncmp
+#define scstrcpy	wcscpy
+#define scstrncpy	wcsncpy
+#endif
 #define scstrtol	wcstol
 #define scatoi		_wtoi
 #define scstrtoul	wcstoul
@@ -185,6 +190,11 @@ typedef wchar_t SQChar;
 typedef char SQChar;
 #define _SC(a) a
 #define	scstrcmp	strcmp
+#ifdef _SQ_M2
+#define scstrncmp	strncmp
+#define scstrcpy	strcpy
+#define scstrncpy	strncpy
+#endif
 #define scsprintf	sprintf
 #define scstrlen	strlen
 #define scstrtod	strtod
@@ -381,6 +391,10 @@ template <Squirk Q> SQUIRREL_API void sq_setforeignptr(HSQUIRRELVM<Q> v, SQUserP
 template <Squirk Q> SQUIRREL_API SQUserPointer sq_getforeignptr(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API void sq_setprintfunc(HSQUIRRELVM<Q> v, SQPRINTFUNCTION<Q> printfunc);
 template <Squirk Q> SQUIRREL_API SQPRINTFUNCTION<Q> sq_getprintfunc(HSQUIRRELVM<Q> v);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API void sq_setprinterrfunc(HSQUIRRELVM<Q> v, SQPRINTFUNCTION<Q> printfunc);
+template <Squirk Q> SQUIRREL_API SQPRINTFUNCTION<Q> sq_getprinterrfunc(HSQUIRRELVM<Q> v);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_suspendvm(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_wakeupvm(HSQUIRRELVM<Q> v, SQBool resumedret, SQBool retval, SQBool raiseerror, SQBool throwerror);
 template <Squirk Q> SQUIRREL_API SQInteger sq_getvmstate(HSQUIRRELVM<Q> v);
@@ -388,6 +402,10 @@ template <Squirk Q> SQUIRREL_API SQInteger sq_getvmstate(HSQUIRRELVM<Q> v);
 /*compiler*/
 template <Squirk Q> SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM<Q> v, SQLEXREADFUNC read, SQUserPointer p, const SQChar *sourcename, SQBool raiseerror);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM<Q> v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_execscript(HSQUIRRELVM<Q> v, const SQChar *src, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+template <Squirk Q> SQUIRREL_API SQRESULT sq_template(HSQUIRRELVM<Q> v, const SQChar *text, SQInteger size, SQInteger contextIdx, SQInteger errorIdx);
+#endif
 template <Squirk Q> SQUIRREL_API void sq_enabledebuginfo(HSQUIRRELVM<Q> v, SQBool enable);
 template <Squirk Q> SQUIRREL_API void sq_notifyallexceptions(HSQUIRRELVM<Q> v, SQBool enable);
 template <Squirk Q> SQUIRREL_API void sq_setcompilererrorhandler(HSQUIRRELVM<Q> v, SQCOMPILERERROR<Q> f);
@@ -410,6 +428,10 @@ template <Squirk Q> SQUIRREL_API void sq_newarray(HSQUIRRELVM<Q> v, SQInteger si
 template <Squirk Q> SQUIRREL_API void sq_newclosure(HSQUIRRELVM<Q> v, SQFUNCTION<Q> func, SQUnsignedInteger nfreevars);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_setparamscheck(HSQUIRRELVM<Q> v, SQInteger nparamscheck, const SQChar *typemask);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_bindenv(HSQUIRRELVM<Q> v, SQInteger idx);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_getenv(HSQUIRRELVM<Q> v, SQInteger idx);
+template <Squirk Q> SQUIRREL_API SQBool sq_hasenv(HSQUIRRELVM<Q> v, SQInteger idx);
+#endif
 template <Squirk Q> SQUIRREL_API void sq_pushstring(HSQUIRRELVM<Q> v, const SQChar *s, SQInteger len);
 template <Squirk Q> SQUIRREL_API void sq_pushfloat(HSQUIRRELVM<Q> v, SQFloat f);
 template <Squirk Q> SQUIRREL_API void sq_pushinteger(HSQUIRRELVM<Q> v, SQInteger n);
@@ -462,6 +484,9 @@ template <Squirk Q> SQUIRREL_API void sq_pushregistrytable(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API void sq_pushconsttable(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_setroottable(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_setconsttable(HSQUIRRELVM<Q> v);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_setexceptionclass(HSQUIRRELVM<Q> v);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_newslot(HSQUIRRELVM<Q> v, SQInteger idx, SQBool bstatic);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_deleteslot(HSQUIRRELVM<Q> v, SQInteger idx, SQBool pushval);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_set(HSQUIRRELVM<Q> v, SQInteger idx);
@@ -478,6 +503,9 @@ template <Squirk Q> SQUIRREL_API SQRESULT sq_arrayresize(HSQUIRRELVM<Q> v, SQInt
 template <Squirk Q> SQUIRREL_API SQRESULT sq_arrayreverse(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_arrayremove(HSQUIRRELVM<Q> v, SQInteger idx, SQInteger itemidx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_arrayinsert(HSQUIRRELVM<Q> v, SQInteger idx, SQInteger destpos);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_arrayremovevalue(HSQUIRRELVM<Q> v, SQInteger idx, SQBool all);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_setdelegate(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_getdelegate(HSQUIRRELVM<Q> v, SQInteger idx);
 template <Squirk Q> SQUIRREL_API SQRESULT sq_clone(HSQUIRRELVM<Q> v, SQInteger idx);
@@ -491,7 +519,12 @@ template <Squirk Q> SQUIRREL_API SQRESULT sq_call(HSQUIRRELVM<Q> v, SQInteger pa
 template <Squirk Q> SQUIRREL_API SQRESULT sq_resume(HSQUIRRELVM<Q> v, SQBool retval, SQBool raiseerror);
 template <Squirk Q> SQUIRREL_API const SQChar *sq_getlocal(HSQUIRRELVM<Q> v, SQUnsignedInteger level, SQUnsignedInteger idx);
 template <Squirk Q> SQUIRREL_API const SQChar *sq_getfreevariable(HSQUIRRELVM<Q> v, SQInteger idx, SQUnsignedInteger nval);
+#ifdef _SQ_M2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_throwerror(HSQUIRRELVM<Q> v, const SQChar *err, ...);
+template <Squirk Q> SQUIRREL_API SQRESULT sq_throwobj(HSQUIRRELVM<Q> v, HSQOBJECT<Q> obj);
+#else
 template <Squirk Q> SQUIRREL_API SQRESULT sq_throwerror(HSQUIRRELVM<Q> v, const SQChar *err);
+#endif
 template <Squirk Q> SQUIRREL_API void sq_reseterror(HSQUIRRELVM<Q> v);
 template <Squirk Q> SQUIRREL_API void sq_getlasterror(HSQUIRRELVM<Q> v);
 
@@ -512,7 +545,14 @@ template <Squirk Q> SQUIRREL_API SQRESULT sq_getobjtypetag(HSQOBJECT<Q> *o, SQUs
 template <Squirk Q> SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM<Q> v);
 
 /*serialization*/
+#ifdef _SQ_M2
+#define SQ_DEFAULT_ENDIAN 0
+#define SQ_LITTLE_ENDIAN 1
+#define SQ_BIG_ENDIAN 2
+template <Squirk Q> SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM<Q> vm, SQWRITEFUNC writef, SQUserPointer up, SQInteger endian = SQ_DEFAULT_ENDIAN);
+#else
 template <Squirk Q> SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM<Q> vm, SQWRITEFUNC writef, SQUserPointer up);
+#endif
 template <Squirk Q> SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM<Q> vm, SQREADFUNC readf, SQUserPointer up);
 
 /*debug*/
