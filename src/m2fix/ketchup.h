@@ -98,6 +98,8 @@ private:
 	static inline std::vector<Ketchup_Write> Writes = {};
 	static inline std::vector<std::string> WriteSources = {};
 	static inline unsigned int WriteSource = 0;
+	// Per-file overrides, validated against the PPF's companion before loading.
+	static inline std::map<uint64_t, unsigned char> RecordOverrides = {};
 	static inline size_t WriteBytes = 0;
 	static inline bool WritesTruncated = false;
 	constexpr static size_t WriteByteLimit = 32u << 20;

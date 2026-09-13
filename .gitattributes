@@ -61,3 +61,11 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# A patch is fed to `git apply` verbatim: its context lines must match the
+# target's bytes exactly. With core.autocrlf=true a checkout on Windows
+# rewrites LF to CRLF and every hunk then fails to apply - which broke
+# rebuild.py on 2026-09-10, right after the upstream rebase re-checked these
+# files out. Never let git touch a patch's line endings.
+*.patch -text
+*.diff -text

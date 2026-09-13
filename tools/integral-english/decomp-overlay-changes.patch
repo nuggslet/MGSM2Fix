@@ -1,0 +1,1871 @@
+This patch belongs to the MGS Integral English text port
+(MGSM2Fix, tools/integral-english/). It applies to:
+
+    FoxdieTeam/mgs_reversing            https://github.com/FoxdieTeam/mgs_reversing
+    at commit 7964de7fd2e9e8276a6307d59fc7a0cdf96aae21  (2026-08-27)
+
+The MGS1 decompilation is that project's work, not this one's. The lines below
+marked with a leading space or minus are theirs, quoted so the change can be
+applied; the added lines are this port's. Building the three overlays this
+patch changes - option.bin, preope.bin and abst.bin - requires a clone of their
+repository, which this repository does not vendor.
+
+That project states no licence. See CREDITS.md beside this file for what that
+means and what has not been settled.
+
+(git apply ignores this header and starts at the first "diff --git" line.)
+
+diff --git a/source/onoda/abst/abst.c b/source/onoda/abst/abst.c
+index 50afa69..dd4ee40 100644
+--- a/source/onoda/abst/abst.c
++++ b/source/onoda/abst/abst.c
+@@ -5,6 +5,22 @@
+ 
+ #include <stdio.h>
+ 
++/*
++ * MGS Integral English port (MGSM2Fix, tools/integral-english): the MISSION
++ * LOG rebuilt to the USA release's model. Retail Integral drew up to 11
++ * Japanese lines on one screen (128x21 KCBs, 19 px apart, EXIT centred). USA
++ * draws 7 lines per screen (128x20 KCBs, 22 px apart, x 8) on up to two
++ * screens, prints a page counter, shows previous/next arrows and puts EXIT
++ * at the right. Everything that differs from retail below was read from
++ * USA's abst overlay (SLUS-00594, base 0x800C5968) instruction by
++ * instruction; the comments name the USA function it came from.
++ *
++ * USA also reads an option `d` and skips the READ MISSION LOG? prompt when it
++ * is 1. No page of either game sets it, and Integral's pages mostly lack the
++ * option (a GetOption scan for a missing letter walks past `i`'s overflowed
++ * length byte into the text), so this port does not read it.
++ */
++
+ // FIXME: it's the same struct as in change.c (in change overlay)
+ typedef struct _Unknown
+ {
+@@ -51,45 +67,61 @@ typedef struct _Work
+     GV_PAD  *pad;
+     DG_PRIM *prim1;
+     DG_PRIM *prim2;
+-    POLY_FT4 polys1[6];
++    POLY_FT4 polys1[7];      /* USA: l, r, abst_u_l, abst_u_r, abst_d_l, abst_d_r1, abst_d_r2 */
+     POLY_FT4 polys2[9];
+-    int      attrs1[6]; /* new name needed */
+-    int      attrs2[9]; /* new name needed */
+-    int      field_2C4;
+-    KCB      kcb[12];
++    int      attrs1[7];      /* new name needed */
++    int      attrs2[9];      /* new name needed */
++    int      field_2C4;      /* line count, option i */
++    KCB      kcb[24];        /* USA: 24 */
+     char     pad1[0x14];
+-    DR_TPAGE tpage[6];
+-    Unknown  field_51C[12];
++    DR_TPAGE tpage[12];      /* USA: six sprite families x two VRAM columns */
++    Unknown  field_51C[24];
+     int      font_x;
+     int      font_y;
+     int      clut_x;
+     int      clut_y;
+-    int      field_1D5C;
++    int      field_1D5C;     /* frame counter */
+     char     pad3[0x4];
+-    int      field_1D64;
+-    int      field_1D68;
++    int      field_1D64;     /* state: 0 prompt, 1 fade in, 2 reading, 3 fade out, 4 next page, 5 previous page */
++    int      field_1D68;     /* YES / NO cursor */
+     char     pad4[0x20];
+     MenuPrim primbuf;
+     char     field_1DA0[0x2000];
+     char     field_3DA0[0x2000];
+-    int      field_5DA0;
+-    int      field_5DA4;
++    int      field_5DA0;     /* draw the text outline */
++    int      field_5DA4;     /* SELECT: text hidden */
++    int      cursor;         /* USA: 0 previous arrow, 1 next arrow, 2 EXIT */
++    int      page;           /* USA: 1-based */
++    int      scroll;         /* USA: x offset of every line while a page slides */
+ } Work;
+ 
++#define ABST_LINES_PER_PAGE 7       /* USA */
++#define ABST_KCB_ROWS       20      /* USA: 128x20 KCBs (Integral 128x21) */
++#define ABST_COL_X          576     /* USA: first VRAM column of line KCBs; the second is 128 words right */
++#define ABST_COL_W          128
++#define ABST_COL_KCBS       12      /* 12 x 20 rows fill a column from y 256 */
++#define ABST_SLIDE_STEP     40      /* USA: a page slides 40 px per frame over 8 frames */
++#define SE_ABST_PAGE        (176)   /* USA's page-turn sound */
++
++/* USA 0x800C5998: record 0 (the prompt caption) then 14 lines, 7 per screen,
++   at x 8 and 22 rows apart. Integral: 11 lines at x 16, 19 rows apart. */
+ Unknown2 D_800C3238[] =
+ {
+     {88, 0x00B4, 0x6739},
+-    {16, 0x0023, 0},
+-    {16, 0x0036, 0},
+-    {16, 0x0049, 0},
+-    {16, 0x005C, 0},
+-    {16, 0x006F, 0},
+-    {16, 0x0082, 0},
+-    {16, 0x0095, 0},
+-    {16, 0x00A8, 0},
+-    {16, 0x00BB, 0},
+-    {16, 0x00CE, 0},
+-    {16, 0x00E1, 0},
++    {8, 35, 0},
++    {8, 57, 0},
++    {8, 79, 0},
++    {8, 101, 0},
++    {8, 123, 0},
++    {8, 145, 0},
++    {8, 167, 0},
++    {8, 35, 0},
++    {8, 57, 0},
++    {8, 79, 0},
++    {8, 101, 0},
++    {8, 123, 0},
++    {8, 145, 0},
++    {8, 167, 0},
+ };
+ 
+ signed char D_800C3298[] = {-1, 0, 1, 0, 0, 1, 0, -1};
+@@ -199,6 +231,7 @@ AbstRes abst_resources_800C32A0[] =
+     {0x00002F8D, 0x00000A1A, 0x00001FA1},
+ };
+ 
++/* USA 0x800C6DB0 */
+ void func_800C464C(Work *work, int index)
+ {
+     RECT  rect;
+@@ -206,24 +239,34 @@ void func_800C464C(Work *work, int index)
+     void *buf;
+ 
+     kcb = &work->kcb[index];
+-    
++
++    /* USA: twelve 20-row KCBs fill a column from y 256; the thirteenth
++       starts the second column at x 704 with its own CLUT column */
++    if (work->font_y + ABST_KCB_ROWS >= 512)
++    {
++        work->font_y = 256;
++        work->font_x = ABST_COL_X + ABST_COL_W;
++        work->clut_y = 275;
++        work->clut_x = work->font_x;
++    }
++
+     rect.x = work->font_x;
+     rect.y = work->font_y;
+     rect.w = 128;
+-    rect.h = 21;
+-    
++    rect.h = ABST_KCB_ROWS;
++
+     work->field_51C[index].x0 = work->font_x;
+     work->field_51C[index].y0 = work->font_y;
+ 
+     work->field_51C[index].x1 = work->font_x + 64;
+     work->field_51C[index].y1 = work->font_y;
+-    work->font_y += 21;
++    work->font_y += ABST_KCB_ROWS;
+ 
+     font_init_kcb(kcb, &rect, work->clut_x, work->clut_y);
+-    
++
+     work->field_51C[index].cx = work->clut_x;
+     work->field_51C[index].cy = work->clut_y;
+-    work->clut_y += 21;
++    work->clut_y += ABST_KCB_ROWS;
+ 
+     font_set_kcb(kcb, -1, -1, 0, 6, 2, 0);
+ 
+@@ -234,6 +277,7 @@ void func_800C464C(Work *work, int index)
+     font_clut_update(kcb);
+ }
+ 
++/* USA 0x800C6F44 */
+ void func_800C47A8(Work *work, int index)
+ {
+     KCB *kcb;
+@@ -245,15 +289,23 @@ void func_800C47A8(Work *work, int index)
+         font_update(kcb);
+         font_clut_update(kcb);
+ 
++        /* USA draws one row less than the KCB height, keeping the CLUT row
++           at the bottom of each 20-row band off screen */
+         work->field_51C[index].unk1 = 256;
+-        work->field_51C[index].unk2 = kcb->max_height;
+-        
++        work->field_51C[index].unk2 = kcb->max_height - 1;
++
+         work->field_51C[index].rect.x = D_800C3238[index].x;
+         work->field_51C[index].rect.y = D_800C3238[index].y;
+ 
+-        work->field_51C[index].unk3 = 256;
+-        work->field_51C[index].unk4 = kcb->max_height;
+-        
++        /* The KCB's buffer and upload are kcb->width px wide (504 for a
++           128-word rect: 42 cells of 12), so texels 504..511 of every line are
++           never written and hold stale VRAM. USA's second sprite is 256 wide
++           and reaches them; at rest they sit off screen at x 512, but the page
++           slide brings them in as coloured fragments (seen 2026-09-05). Draw
++           only the texels the buffer owns. */
++        work->field_51C[index].unk3 = kcb->width - 256;
++        work->field_51C[index].unk4 = kcb->max_height - 1;
++
+         work->field_51C[index].rect.w = D_800C3238[index].x + 256;
+         work->field_51C[index].rect.h = D_800C3238[index].y;
+ 
+@@ -262,160 +314,119 @@ void func_800C47A8(Work *work, int index)
+     }
+ }
+ 
+-void func_800C4890(Work *work, u_long *ot, int arg2)
++static SPRT *abst_sprt(Unknown *u, int family)
+ {
+-    int       i, j;
+-    SPRT     *sprt;
+-    DR_TPAGE *tpage;
+-    int       index;
+-    SPRT     *sprt1;
+-    SPRT     *sprt2;
+-
+-    index = 0;
+-    for (i = 0; i < work->field_2C4 + 3; i++)
++    switch (family)
+     {
+-        if (work->field_51C[index].num == 1)
+-        {
+-            sprt = &work->field_51C[index].text_sprt[GV_Clock];
+-            setSprt(sprt);
+-            setRGB0(sprt, 128, 128, 128);
+-            setSemiTrans(sprt, 1);
+-            LCOPY(&work->field_51C[index].rect.x, &sprt->x0);
+-            LCOPY(&work->field_51C[index].unk1, &sprt->w);
+-            setUV0(sprt, 0, work->field_51C[index].y0);
+-            setClut(sprt, work->field_51C[index].cx, work->field_51C[index].cy);
+-            addPrim(ot, sprt);
+-            index++;
+-        }
++    case 0:
++        return &u->text_sprt[GV_Clock];
++    case 1:
++        return &u->text_sprt2[GV_Clock];
++    case 2:
++        return &u->text_sprt3[GV_Clock];
++    default:
++        return &u->text_sprt4[GV_Clock];
+     }
++}
+ 
+-    tpage = &work->tpage[0];
+-    setDrawTPage(tpage, 1, 0, getTPage(0, 1, 704, 256));
+-    addPrim(ot, tpage);
++static void abst_line_sprt(Work *work, u_long *ot, SPRT *sprt, int index, int right)
++{
++    Unknown *u;
+ 
+-    index = 0;
+-    for (i = 0; i < work->field_2C4 + 3; i++)
++    u = &work->field_51C[index];
++    setSprt(sprt);
++    setRGB0(sprt, 128, 128, 128);
++    setSemiTrans(sprt, 1);
++    if (right)
+     {
+-        if (work->field_51C[index].num == 1)
+-        {
+-            sprt = &work->field_51C[index].text_sprt2[GV_Clock];
+-            setSprt(sprt);
+-            setRGB0(sprt, 128, 128, 128);
+-            setSemiTrans(sprt, 1);
+-            LCOPY(&work->field_51C[index].rect.w, &sprt->x0);
+-            LCOPY(&work->field_51C[index].unk3, &sprt->w);
+-            setUV0(sprt, 0, work->field_51C[index].y1);
+-            setClut(sprt, work->field_51C[index].cx, work->field_51C[index].cy);
+-            addPrim(ot, sprt);
+-            index++;
+-        }
++        LCOPY(&u->rect.w, &sprt->x0);
++        LCOPY(&u->unk3, &sprt->w);
++        setUV0(sprt, 0, u->y1);
+     }
+-
+-    tpage = &work->tpage[1];
+-    setDrawTPage(tpage, 1, 0, getTPage(0, 1, 768, 256));
+-    addPrim(ot, tpage);
+-
+-    index = 0;
+-    for (i = 0; i < work->field_2C4 + 3; i++)
++    else
+     {
+-        if (work->field_51C[index].num == 1)
+-        {        
+-            sprt = &work->field_51C[index].text_sprt3[GV_Clock];
+-            setSprt(sprt);
+-            setRGB0(sprt, 128, 128, 128);
+-            setSemiTrans(sprt, 1);
+-            LCOPY(&work->field_51C[index].rect.x, &sprt->x0);
+-            LCOPY(&work->field_51C[index].unk1, &sprt->w);
+-            setUV0(sprt, 0, work->field_51C[index].y0);
+-            setClut(sprt, work->field_51C[index].cx, work->field_51C[index].cy);
+-            addPrim(ot, sprt);
+-            index++;
+-        }
++        LCOPY(&u->rect.x, &sprt->x0);
++        LCOPY(&u->unk1, &sprt->w);
++        setUV0(sprt, 0, u->y0);
+     }
++    setClut(sprt, u->cx, u->cy);
++    sprt->x0 += work->scroll;           /* USA: the page slide */
++    addPrim(ot, sprt);
++}
+ 
+-    tpage = &work->tpage[4];
+-    setDrawTPage(tpage, 1, 0, getTPage(0, 2, 704, 256));
+-    addPrim(ot, tpage);
+-
+-    index = 0;
+-    for (i = 0; i < work->field_2C4 + 3; i++)
+-    {
+-        if (work->field_51C[index].num == 1)
+-        {        
+-            sprt = &work->field_51C[index].text_sprt4[GV_Clock];
+-            setSprt(sprt);
+-            setRGB0(sprt, 128, 128, 128);
+-            setSemiTrans(sprt, 1);
+-            LCOPY(&work->field_51C[index].rect.w, &sprt->x0);
+-            LCOPY(&work->field_51C[index].unk3, &sprt->w);
+-            setUV0(sprt, 0, work->field_51C[index].y1);
+-            setClut(sprt, work->field_51C[index].cx, work->field_51C[index].cy);
+-            addPrim(ot, sprt);
+-            index++;
+-        }
+-    }
++/* USA 0x800C7050: every line sprite, per VRAM column (entries 0..11 sit in
++   the column at x 576, 12..23 in the one at 704), shifted by the slide */
++void func_800C4890(Work *work, u_long *ot, int arg2)
++{
++    int       i, j, col, index, tp, family, right;
++    SPRT     *sprt1;
++    SPRT     *sprt2;
++    DR_TPAGE *tpage;
+ 
+-    tpage = &work->tpage[5];
+-    setDrawTPage(tpage, 1, 0, getTPage(0, 2, 768, 256));
+-    addPrim(ot, tpage);
+-    
+-    if (arg2 == 1)
++    tp = 0;
++    for (family = 0; family < 4; family++)
+     {
++        right = family & 1;
+         index = 0;
+-        for (i = 0; i < work->field_2C4 + 3; i++)
++        for (col = 0; col < 2; col++)
+         {
+-            if (work->field_51C[index].num == 1)
++            for (i = 0; i < ABST_COL_KCBS; i++)
+             {
+-                sprt2 = work->field_51C[index].text_sprt_outline[GV_Clock];
+-                sprt1 = &work->field_51C[index].text_sprt[GV_Clock];
+-
+-                for (j = 0; j < 8; j += 2)
++                if (work->field_51C[index].num == 1)
+                 {
+-                    *sprt2 = *sprt1;
+-                    setSprt(sprt2);
+-                    setRGB0(sprt2, 128, 128, 128);
+-                    setSemiTrans(sprt2, 1);
+-                    sprt2->x0 += D_800C3298[j];
+-                    sprt2->y0 += D_800C3298[j + 1];
+-                    addPrim(ot, sprt2);
+-                    sprt2++;
++                    abst_line_sprt(work, ot, abst_sprt(&work->field_51C[index], family), index, right);
++                    index++;
+                 }
+-
+-                index++;
+             }
+-        }
+ 
+-        tpage = &work->tpage[2];
+-        setDrawTPage(tpage, 1, 0, getTPage(0, 2, 704, 256));
+-        addPrim(ot, tpage);
++            tpage = &work->tpage[tp++];
++            setDrawTPage(tpage, 1, 0, getTPage(0, family < 2 ? 1 : 2, ABST_COL_X + col * ABST_COL_W + (right ? 64 : 0), 256));
++            addPrim(ot, tpage);
++        }
++    }
+ 
+-        index = 0;
+-        for (i = 0; i < work->field_2C4 + 3; i++)
++    if (arg2 == 1)
++    {
++        for (right = 0; right < 2; right++)
+         {
+-            if (work->field_51C[index].num == 1)
++            index = 0;
++            for (col = 0; col < 2; col++)
+             {
+-                sprt2 = work->field_51C[index].text_sprt_outline2[GV_Clock];
+-                sprt1 = &work->field_51C[index].text_sprt2[GV_Clock];
+-
+-                for (j = 0; j < 8; j += 2, sprt++)
++                for (i = 0; i < ABST_COL_KCBS; i++)
+                 {
+-                    *sprt2 = *sprt1;
+-                    setSprt(sprt2);
+-                    setRGB0(sprt2, 128, 128, 128);
+-                    setSemiTrans(sprt2, 1);
+-                    sprt2->x0 += D_800C3298[j];
+-                    sprt2->y0 += D_800C3298[j + 1];
+-                    addPrim(ot, sprt2);
+-                    sprt2++;
++                    if (work->field_51C[index].num == 1)
++                    {
++                        sprt1 = abst_sprt(&work->field_51C[index], right);
++                        if (right)
++                        {
++                            sprt2 = work->field_51C[index].text_sprt_outline2[GV_Clock];
++                        }
++                        else
++                        {
++                            sprt2 = work->field_51C[index].text_sprt_outline[GV_Clock];
++                        }
++
++                        for (j = 0; j < 8; j += 2)
++                        {
++                            *sprt2 = *sprt1;
++                            setSprt(sprt2);
++                            setRGB0(sprt2, 128, 128, 128);
++                            setSemiTrans(sprt2, 1);
++                            sprt2->x0 += D_800C3298[j];
++                            sprt2->y0 += D_800C3298[j + 1];
++                            addPrim(ot, sprt2);
++                            sprt2++;
++                        }
++
++                        index++;
++                    }
+                 }
+-                
+-                index++;
++
++                tpage = &work->tpage[tp++];
++                setDrawTPage(tpage, 1, 0, getTPage(0, 2, ABST_COL_X + col * ABST_COL_W + (right ? 64 : 0), 256));
++                addPrim(ot, tpage);
+             }
+         }
+-        
+-        tpage = &work->tpage[3];
+-        setDrawTPage(tpage, 1, 0, getTPage(0, 2, 768, 256));
+-        addPrim(ot, tpage);
+     }
+ }
+ 
+@@ -438,7 +449,7 @@ void abst_800C51F4(Work *work)
+ 
+     src = work->polys1;
+     dst = (POLY_FT4 *)work->prim1->packs[GV_Clock];
+-    for (i = 0; i < 6; i++)
++    for (i = 0; i < 7; i++)
+     {
+         *dst = *src;
+         SSTOREL(work->attrs1[i], dst);
+@@ -476,6 +487,168 @@ void abst_800C5318(MenuPrim *prim, int x, int y, int w, int h)
+     radio_draw_face_frame(prim, x, y, w, h);
+ }
+ 
++/* USA 0x800C7BD0: place the nine cursor pieces around a w x h box at (x, y),
++   screen-centred coordinates, and make them all visible in one colour.
++   USA only ever calls this with mode 1. */
++static void abst_cursor_frame(Work *work, int x, int y, int w, int h, int rgb, int mode)
++{
++    POLY_FT4 *poly;
++    int       i;
++    int       x0, y0, x1, y1, x2, y2, x3, y3;
++
++    poly = work->polys2;
++    for (i = 0; i < 9; i++)
++    {
++        work->attrs2[i] = 0x200;
++        setRGB0(poly, rgb, rgb, rgb);
++        poly++;
++    }
++
++    if (mode == 0)
++    {
++        x0 = x - 8;
++        y0 = y - 8;
++        x1 = x;
++        y1 = y;
++        x2 = x + w;
++        y2 = y + h;
++        x3 = x + w + 8;
++        y3 = y + h + 8;
++    }
++    else if (mode == 1)
++    {
++        x0 = x - 6;
++        y0 = y - 6;
++        x1 = x + 2;
++        y1 = y + 2;
++        x2 = x + w - 2;
++        y2 = y + h - 2;
++        x3 = x + w + 6;
++        y3 = y + h + 6;
++    }
++    else
++    {
++        return;
++    }
++
++    poly = work->polys2;
++    setXY4(&poly[0], x0, y0, x1, y0, x0, y1, x1, y1);   /* cur_lu */
++    setXY4(&poly[1], x2, y0, x3, y0, x2, y1, x3, y1);   /* cur_ru */
++    setXY4(&poly[2], x0, y2, x1, y2, x0, y3, x1, y3);   /* cur_ld */
++    setXY4(&poly[3], x2, y2, x3, y2, x2, y3, x3, y3);   /* cur_rd */
++    setXY4(&poly[4], x1, y0, x2, y0, x1, y1, x2, y1);   /* cur_u */
++    setXY4(&poly[5], x1, y2, x2, y2, x1, y3, x2, y3);   /* cur_d */
++    setXY4(&poly[6], x0, y1, x1, y1, x0, y2, x1, y2);   /* cur_l */
++    setXY4(&poly[7], x2, y1, x3, y1, x2, y2, x3, y2);   /* cur_r */
++    setXY4(&poly[8], x1, y1, x2, y1, x1, y2, x2, y2);   /* cur_c */
++}
++
++/* USA 0x800C7FC0: "1/2" in the menu font under the text panel; the total is
++   USA's literal 2. Fades with the frame counter while the log closes. */
++static void abst_draw_page_counter(Work *work)
++{
++    int r, g, b;
++
++    if (work->field_1D64 == 3)
++    {
++        r = 86 - (work->field_1D5C * 86) / 8;
++        g = 137 - (work->field_1D5C * 137) / 8;
++        b = 116 - (work->field_1D5C * 116) / 8;
++    }
++    else
++    {
++        r = 86;
++        g = 137;
++        b = 116;
++    }
++
++    MENU_Locate(145, 202, 0x10);
++    MENU_Color(r, g, b);
++    MENU_Printf("%d", work->page);
++
++    MENU_Locate(156, 202, 0x10);
++    MENU_Color(r, g, b);
++    MENU_Printf("/");
++
++    MENU_Locate(167, 202, 0x10);
++    MENU_Color(r, g, b);
++    MENU_Printf("%d", 2);
++}
++
++/* the lines of the current page are records base+1 .. base+7. USA colours
++   them unguarded; a page with count 7 has no second-screen KCBs, and
++   font_set_color on an unallocated KCB writes through a NULL CLUT buffer, so
++   stop at the last record the page actually has. */
++static void abst_color_page(Work *work, int base, int col)
++{
++    int i;
++
++    for (i = base + 1; i < base + ABST_LINES_PER_PAGE + 1; i++)
++    {
++        if (i > work->field_2C4)
++        {
++            break;
++        }
++        abst_800C5198(work, i, col);
++    }
++}
++
++/* USA: SELECT hides and shows the current page's text */
++static void abst_toggle_hidden(Work *work, int base)
++{
++    if (work->field_5DA4 == 0)
++    {
++        work->field_5DA4 = 1;
++        abst_color_page(work, base, 0);
++    }
++    else
++    {
++        work->field_5DA4 = 0;
++        abst_color_page(work, base, 0x6739);
++    }
++}
++
++/* USA: turning to the next page - the cursor lands on EXIT (or, from EXIT
++   with R1, on the previous arrow), the previous arrow appears, the next one
++   goes */
++static void abst_turn_forward(Work *work, int cursor)
++{
++    GM_SeSet2(0, 63, SE_ABST_PAGE);
++    work->field_1D64 = 4;
++    work->cursor = cursor;
++    if (cursor == 2)
++    {
++        abst_cursor_frame(work, 90, 87, 54, 12, 255, 1);
++    }
++    else
++    {
++        abst_cursor_frame(work, -46, 86, 16, 14, 255, 1);
++    }
++    work->field_1D5C = 0;
++    work->attrs1[4] = 0x100;
++    work->attrs1[5] = 0;
++}
++
++/* USA: turning back - the cursor lands on the next arrow, which reappears */
++static void abst_turn_back(Work *work)
++{
++    GM_SeSet2(0, 63, SE_ABST_PAGE);
++    work->field_1D64 = 5;
++    work->cursor = 1;
++    abst_cursor_frame(work, 30, 86, 16, 14, 255, 1);
++    work->field_1D5C = 0;
++    work->attrs1[4] = 0;
++    work->attrs1[5] = 0x100;
++}
++
++static void abst_leave(Work *work)
++{
++    GM_SeSet2(0, 63, SE_MENU_EXIT);
++    work->field_1D64 = 3;
++    work->field_1D5C = 0;
++}
++
++/* USA 0x800C8138 */
+ void func_800C5410(Work *work)
+ {
+     int       press;
+@@ -484,12 +657,17 @@ void func_800C5410(Work *work)
+     POLY_FT4 *poly;
+     int       shade;
+     int       col;
++    int       base;
++    int       f;
+ 
+     press = work->pad->press;
+ 
+     work->primbuf.next = work->primbuf.buf[GV_Clock];
+     work->primbuf.ot = DG_Chanl(1)->ot[GV_Clock];
+ 
++    base = ABST_LINES_PER_PAGE * (work->page - 1);
++    f = work->field_1D5C;
++
+     switch (work->field_1D64)
+     {
+     case 0:
+@@ -584,11 +762,12 @@ void func_800C5410(Work *work)
+ 
+                     work->field_1D64 = 1;
+ 
+-                    for (i = 0; i < 6; i++)
++                    for (i = 0; i < 7; i++)
+                     {
+                         work->attrs1[i] = 0x100;
+                     }
+-                    
++                    work->attrs1[4] = 0;            /* USA: no previous-page arrow on page 1 */
++
+                     work->field_1D5C = 0;
+ 
+                     r = 86;
+@@ -610,6 +789,8 @@ void func_800C5410(Work *work)
+                         work->attrs2[i] = 0x200;
+                     }
+ 
++                    /* USA: the cursor frame starts on the next-page arrow, black until it fades in */
++                    abst_cursor_frame(work, 30, 86, 16, 14, 255, 1);
+                     poly = work->polys2;
+                     for (i = 0; i < 9; i++)
+                     {
+@@ -650,92 +831,65 @@ void func_800C5410(Work *work)
+         work->field_1D5C++;
+         break;
+     case 1:
+-        if (work->field_1D5C < 9)
++        if (f < 9 || f < 65)
+         {
+-            poly = work->polys2;
+-            shade = (work->field_1D5C * 255) / 8;
+-            for (i = 0; i < 9; i++)
+-            {
+-                setRGB0(poly, shade, shade, shade);
+-                poly++;
+-            }
+-
+             poly = work->polys1;
+-            r = (work->field_1D5C * 86) / 64;
+-            g = (work->field_1D5C * 137) / 64;
+-            b = (work->field_1D5C * 116) / 64;
++            r = (f * 86) / 64;
++            g = (f * 137) / 64;
++            b = (f * 116) / 64;
+             for (i = 0; i < 2; i++)
+             {
+                 setRGB0(poly, r, g, b);
+                 poly++;
+             }
+ 
+-            col = 0;
+-            for (i = 1; i < work->field_2C4 + 1; i++)
+-            {
+-                abst_800C5198(work, i, col);
+-            }
++            abst_color_page(work, 0, 0);
+ 
+             work->field_1D5C++;
+         }
+-        else if (work->field_1D5C < 65)
+-        {
+-            poly = work->polys1;
+-            r = (work->field_1D5C * 86) / 64;
+-            g = (work->field_1D5C * 137) / 64;
+-            b = (work->field_1D5C * 116) / 64;
+-            for (i = 0; i < 2; i++)
+-            {
+-                setRGB0(poly, r, g, b);
+-                poly++;
+-            }
+-
+-            col = 0;
+-            for (i = 1; i < work->field_2C4 + 1; i++)
+-            {
+-                abst_800C5198(work, i, col);
+-            }
+-
+-            work->field_1D5C++;
+-        }
+-        else if (work->field_1D5C < 81)
++        else if (f < 81)
+         {
+             poly = work->polys1;
+             r = 86;
+             g = 137;
+             b = 116;
+-            for (i = 0; i < 6; i++)
++            for (i = 0; i < 7; i++)
+             {
+                 setRGB0(poly, r, g, b);
+                 poly++;
+             }
+ 
+-            col = 0;
+-            for (i = 1; i < work->field_2C4 + 1; i++)
+-            {
+-                abst_800C5198(work, i, col);
+-            }
++            abst_color_page(work, 0, 0);
+ 
+             work->field_1D5C++;
+         }
+-        else if (work->field_1D5C < 145)
++        else if (f < 145)
+         {
++            if (f >= 137)
++            {
++                /* USA: the cursor frame fades in over the last eight frames */
++                shade = ((f - 136) * 255) / 8;
++                poly = work->polys2;
++                for (i = 0; i < 9; i++)
++                {
++                    setRGB0(poly, shade, shade, shade);
++                    poly++;
++                }
++            }
++
+             poly = work->polys1;
+             r = 86;
+             g = 137;
+             b = 116;
+-            for (i = 0; i < 6; i++)
++            for (i = 0; i < 7; i++)
+             {
+                 setRGB0(poly, r, g, b);
+                 poly++;
+             }
+ 
+-            shade = ((work->field_1D5C - 80) * 25) / 64;
++            shade = ((f - 80) * 25) / 64;
+             col = (shade << 10) | (shade << 5) | shade;
+-            for (i = 1; i < work->field_2C4 + 1; i++)
+-            {
+-                abst_800C5198(work, i, col);
+-            }
++            abst_color_page(work, 0, col);
+ 
+             if (++work->field_1D5C < 89)
+             {
+@@ -750,73 +904,128 @@ void func_800C5410(Work *work)
+         {
+             work->field_1D64 = 2;
+             work->field_5DA0 = 1;
++            abst_draw_page_counter(work);
++            work->cursor = 1;
+         }
+         break;
+ 
+     case 2:
+-        if (press & PAD_SELECT)
++        switch (work->cursor)
+         {
+-            if (work->field_5DA4 == 0)
++        case 1:                                     /* on the next-page arrow */
++            if (press & PAD_RIGHT)
+             {
+-                work->field_5DA4 = 1;
+-                for (i = 1; i < work->field_2C4 + 1; i++)
++                abst_cursor_frame(work, 90, 87, 54, 12, 255, 1);
++                work->cursor = 2;
++                GM_SeSet2(0, 63, SE_MENU_CURSOR);
++            }
++            else if (press & (PAD_CIRCLE | PAD_R1))
++            {
++                abst_turn_forward(work, 2);
++            }
++            else if (press & PAD_SELECT)
++            {
++                abst_toggle_hidden(work, base);
++            }
++            else if (press & PAD_CROSS)
++            {
++                abst_leave(work);
++            }
++            break;
++        case 0:                                     /* on the previous-page arrow */
++            if (press & PAD_RIGHT)
++            {
++                abst_cursor_frame(work, 90, 87, 54, 12, 255, 1);
++                work->cursor = 2;
++                GM_SeSet2(0, 63, SE_MENU_CURSOR);
++            }
++            else if (press & (PAD_CIRCLE | PAD_L1))
++            {
++                abst_turn_back(work);
++            }
++            else if (press & PAD_SELECT)
++            {
++                abst_toggle_hidden(work, base);
++            }
++            else if (press & PAD_CROSS)
++            {
++                abst_leave(work);
++            }
++            break;
++        case 2:                                     /* on EXIT */
++            if (press & PAD_LEFT)
++            {
++                if (work->page != 1)
+                 {
+-                    abst_800C5198(work, i, 0);
++                    abst_cursor_frame(work, -46, 86, 16, 14, 255, 1);
++                    work->cursor = 0;
+                 }
++                else
++                {
++                    abst_cursor_frame(work, 30, 86, 16, 14, 255, 1);
++                    work->cursor = 1;
++                }
++                GM_SeSet2(0, 63, SE_MENU_CURSOR);
+             }
+-            else 
++            else if (press & PAD_L1)
+             {
+-                work->field_5DA4 = 0;
+-                for (i = 1; i < work->field_2C4 + 1; i++)
++                if (work->page != 1)
+                 {
+-                    abst_800C5198(work, i, 0x6739);
++                    abst_turn_back(work);
+                 }
+             }
++            else if (press & PAD_R1)
++            {
++                if (work->page != 2)
++                {
++                    abst_turn_forward(work, 0);
++                }
++            }
++            else if (press & PAD_SELECT)
++            {
++                abst_toggle_hidden(work, base);
++            }
++            else if (press & (PAD_CIRCLE | PAD_CROSS))
++            {
++                abst_leave(work);
++            }
++            break;
+         }
+-        else if (press & (PAD_CROSS | PAD_CIRCLE))
+-        {
+-            GM_SeSet2(0, 63, SE_MENU_EXIT);
+-            work->field_1D64 = 3;
+-            work->field_1D5C = 0;
+-        }
++        abst_draw_page_counter(work);
+         break;
+-    case 3:        
+-        if (work->field_1D5C < 97)
++
++    case 3:
++        if (f < 97)
+         {
+-            if (work->field_1D5C < 9)
++            if (f < 9)
+             {
+                 poly = work->polys2;
+-                shade = 255 - (work->field_1D5C * 255) / 8;
++                shade = 255 - (f * 255) / 8;
+                 for (i = 0; i < 9; i++)
+                 {
+                     setRGB0(poly, shade, shade, shade);
+                     poly++;
+                 }
++                abst_draw_page_counter(work);
+             }
+ 
+             poly = work->polys1;
+-            r = 86 - (work->field_1D5C * 86) / 96;
+-            g = 137 - (work->field_1D5C * 137) / 96;
+-            b = 116 - (work->field_1D5C * 116) / 96;
+-            for (i = 0; i < 6; i++)
++            r = 86 - (f * 86) / 96;
++            g = 137 - (f * 137) / 96;
++            b = 116 - (f * 116) / 96;
++            for (i = 0; i < 7; i++)
+             {
+                 setRGB0(poly, r, g, b);
+                 poly++;
+             }
+ 
+-            shade = 25 - (work->field_1D5C * 25) / 96;
++            shade = 25 - (f * 25) / 96;
+             col = (shade << 10) | (shade << 5) | shade;
+-            for (i = 1; i < work->field_2C4 + 1; i++)
+-            {
+-                abst_800C5198(work, i, col);
+-            }
++            abst_color_page(work, base, col);
+ 
+             if (work->field_5DA4 == 1)
+             {
+-                for (i = 1; i < work->field_2C4 + 1; i++)
+-                {
+-                    abst_800C5198(work, i, 0);
+-                }
++                abst_color_page(work, base, 0);
+             }
+ 
+             work->field_1D5C++;
+@@ -827,6 +1036,54 @@ void func_800C5410(Work *work)
+             GV_DestroyActor(work);
+         }
+         break;
++
++    case 4:                                         /* USA: slide to the next page */
++        if (f < 9)
++        {
++            work->scroll = -(f * ABST_SLIDE_STEP);
++        }
++        else if (f == 9)
++        {
++            abst_color_page(work, base, 0);
++            abst_color_page(work, base + ABST_LINES_PER_PAGE, 0x6739);
++        }
++        else if (f < 18)
++        {
++            work->scroll = (17 - f) * ABST_SLIDE_STEP;
++        }
++        else
++        {
++            work->page++;
++            work->field_1D64 = 2;
++            work->field_5DA4 = 0;
++        }
++        work->field_1D5C++;
++        abst_draw_page_counter(work);
++        break;
++
++    case 5:                                         /* USA: slide back to the previous page */
++        if (f < 9)
++        {
++            work->scroll = f * ABST_SLIDE_STEP;
++        }
++        else if (f == 9)
++        {
++            abst_color_page(work, base, 0);
++            abst_color_page(work, base - ABST_LINES_PER_PAGE, 0x6739);
++        }
++        else if (f < 18)
++        {
++            work->scroll = -((17 - f) * ABST_SLIDE_STEP);
++        }
++        else
++        {
++            work->page--;
++            work->field_1D64 = 2;
++            work->field_5DA4 = 0;
++        }
++        work->field_1D5C++;
++        abst_draw_page_counter(work);
++        break;
+     }
+ 
+     func_800C4890(work, DG_Chanl(1)->ot[GV_Clock], work->field_5DA0);
+@@ -840,8 +1097,8 @@ void func_800C5F8C(Work *work)
+ 
+     GM_FreePrim(work->prim1);
+     GM_FreePrim(work->prim2);
+-    
+-    for (i = 0; i < 12; i++)
++
++    for (i = 0; i < 24; i++)
+     {
+         buf = abst_800C51E8(&work->kcb[i]);
+         GV_FreeMemory(GV_NORMAL_MEMORY, buf);
+@@ -915,7 +1172,7 @@ static inline void InitTex(POLY_FT4 *poly, DG_TEX *tex, int x, int y)
+ static void Init_Res(void *work, int name, POLY_FT4 *poly, int x0, int y0, int x1, int y1, int abe, int mode)
+ {
+     DG_TEX *tex;
+-    
++
+     func_800C6114(work, poly, x0, y0, x1, y1, abe);
+     tex = DG_GetTexture(name);
+ 
+@@ -937,6 +1194,7 @@ static void Init_Res(void *work, int name, POLY_FT4 *poly, int x0, int y0, int x
+     }
+ }
+ 
++/* USA 0x800C9658 */
+ static int GetResources(Work *work, int where)
+ {
+     char     *opt;
+@@ -945,17 +1203,17 @@ static int GetResources(Work *work, int where)
+ 
+     GM_CurrentMap = where;
+ 
+-    work->font_x = 704;
++    work->font_x = ABST_COL_X;
+     work->font_y = 256;
+-    work->clut_x = 704;
+-    work->clut_y = 276;
++    work->clut_x = ABST_COL_X;
++    work->clut_y = 275;
+ 
+-    work->prim1 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 6, NULL, NULL);
++    work->prim1 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 7, NULL, NULL);
+     work->prim2 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 9, NULL, NULL);
+ 
+     poly = work->polys1;
+     i = 0;
+-    
++
+     opt = GCL_GetOption('l');
+     if (opt)
+     {
+@@ -970,7 +1228,7 @@ static int GetResources(Work *work, int where)
+     poly++;
+     work->attrs1[i] = 0;
+     i++;
+-    
++
+     opt = GCL_GetOption('r');
+     if (opt)
+     {
+@@ -998,13 +1256,25 @@ static int GetResources(Work *work, int where)
+     work->attrs1[i] = 0;
+     i++;
+ 
++    /* USA: the bottom bar is three textures - the previous-page arrow in the
++       left half, the next-page arrow in the first 80 px of the right half,
++       EXIT in the last 80 */
+     Init_Res(work, GV_StrCode("abst_d_l"), poly, -160, 82, 0, 112, 1, 0);
++    setRGB0(poly, 86, 137, 116);
++
++    poly++;
++    work->attrs1[i] = 0;
++    i++;
++
++    Init_Res(work, GV_StrCode("abst_d_r1"), poly, 0, 82, 80, 112, 1, 0);
++    setRGB0(poly, 86, 137, 116);
+ 
+     poly++;
+     work->attrs1[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("abst_d_r"), poly, 0, 82, 160, 112, 1, 0);
++    Init_Res(work, GV_StrCode("abst_d_r2"), poly, 80, 82, 160, 112, 1, 0);
++    setRGB0(poly, 86, 137, 116);
+ 
+     work->attrs1[i] = 0;
+ 
+@@ -1038,7 +1308,7 @@ static int GetResources(Work *work, int where)
+     poly++;
+     work->attrs2[i] = 0;
+     i++;
+-    
++
+     Init_Res(work, GV_StrCode("cur_u"), poly, -25, 81, 25, 89, 0, 2);
+     setRGB0(poly, 255, 255, 255);
+ 
+@@ -1089,7 +1359,11 @@ static int GetResources(Work *work, int where)
+     }
+     else
+     {
+-        work->field_2C4 = 12;
++        work->field_2C4 = 23;   /* USA defaults to 24; one less keeps 24 KCBs enough */
++    }
++    if (work->field_2C4 > 23)
++    {
++        work->field_2C4 = 23;
+     }
+ 
+     for (i = 0; i < work->field_2C4 + 1; i++)
+@@ -1103,7 +1377,7 @@ static int GetResources(Work *work, int where)
+     {
+         func_800C47A8(work, i);
+     }
+-    
++
+     work->pad = &GV_PadData[2];
+     work->field_1D5C = 0;
+     work->field_1D64 = 0;
+@@ -1124,6 +1398,9 @@ static int GetResources(Work *work, int where)
+ 
+     sub_80048124();
+     work->field_5DA4 = 0;
++    work->cursor = 0;
++    work->page = 1;
++    work->scroll = 0;
+     return 0;
+ }
+ 
+diff --git a/source/onoda/option/opt.c b/source/onoda/option/opt.c
+index 23a51af..a4b86c5 100644
+--- a/source/onoda/option/opt.c
++++ b/source/onoda/option/opt.c
+@@ -38,10 +38,14 @@ typedef struct _Work
+     DG_PRIM *field_30;
+     POLY_FT4 field_34[27];
+     POLY_FT4 field_46C[9];
+-    POLY_FT4 field_5D4[4];
++    POLY_FT4 field_5D4[5];
+     POLY_FT4 field_674[17];
+     int      f91C;
+     int      f920;
++    /* Indexed as f924[f920], and the cursor states run to 11, so retail's
++       eight entries are read and written off the end into kcb[0].  Retail
++       tolerates that; leave it at eight.  Growing it to 12 shifts kcb[] and
++       everything after by 16 bytes, and that is what freezes the EXIT row. */
+     int      f924[8];
+     KCB      kcb[31];
+     char     pad1[0x14];
+@@ -57,13 +61,18 @@ typedef struct _Work
+     int      f2A00[27];
+     int      f2A6C[9];
+     int      f2A90[27];
+-    int      f2AFC[4];
++    int      f2AFC[5];
+     int      f2B0C[17];
+     int      f2B50;
+     int      f2B54;
+     int      f2B58;
+     char     pad2[0x4];
+     int      f2B60;
++    /* USA draws the SCREEN brightness paragraph as the sc_text texture on a
++       fifth quad.  These are appended at the very END of Work on purpose: no
++       existing field's offset moves, so this cannot repeat the class of
++       breakage that growing f924 caused on the EXIT row.  The fifth pack comes
++       from GM_MakePrim below, which is a heap allocation, not this struct. */
+ } Work;
+ 
+ typedef struct _Unknown2
+@@ -80,19 +89,26 @@ static Unknown2 dword_800C3218[] =
+     {0, 76, 190, 0},
+     {0, 100, 190, 0},
+     {0, 42, 190, 0},
+-    {0, 94, 190, 0},
+-    {0, 88, 190, 0},
++    /* USA centres all four help lines at (160, 200) - screen centre - rather
++       than the per-string x retail hand-set for the Japanese widths.  num 1
++       subtracts half of max_width and half of max_height. */
++    {1, 160, 200, 0},   /* screen brightness setup */
++    {1, 160, 200, 0},   /* key configuration setup */
+     {0, 94, 190, 0},
+     {0, 158, 188, 0},
+     {0, 172, 190, 0},
+     {0, 172, 190, 0},
+     {0, 172, 190, 0},
+     {0, 172, 190, 0},
+-    {0, 122, 190, 0},
+-    {0, 36, 110, 0},
+-    {0, 36, 125, 0},
+-    {0, 36, 140, 0},
+-    {0, 36, 155, 0},
++    {1, 160, 200, 0},   /* use directional buttons to test */
++    /* The brightness paragraph, on USA's 12-row pitch.  Measured on screen:
++       measured against USA's own screen, the ink lands 1 px right of this x
++       and 16 rows below this y, so these are USA's ink positions (x 43, first
++       row y 134) less those offsets. */
++    {0, 42, 118, 0},   /* brightness line 1 */
++    {0, 42, 130, 0},   /* brightness line 2 */
++    {0, 42, 142, 0},   /* brightness line 3 */
++    {0, 42, 154, 0},   /* brightness line 4 */
+     {0, 88, 190, 0},
+     {0, 172, 190, 0},
+     {0, 172, 190, 0},
+@@ -100,10 +116,13 @@ static Unknown2 dword_800C3218[] =
+     {0, 42, 190, 0},
+     {0, 170, 190, 0},
+     {0, 170, 190, 0},
+-    {0, 36, 175, 0},
++    {0, 42, 166, 0},   /* brightness line 5 */
+     {0, 88, 190, 0},
+-    {0, 122, 190, 0},
+-    {0, 110, 188, 0},
++    {1, 160, 200, 0},   /* use directional buttons to test, other button type */
++    /* entry 27 was a colon USA never shows.  Reused for the second line of
++       USA's "Press the O button to return to the option / screen." - see the
++       case 5 / case 7 move below. */
++    {0, 42, 178, 0},   /* brightness line 6 */
+     {0, 76, 190, 0},
+     {0, 172, 190, 0},
+     {0, 172, 190, 0},
+@@ -114,6 +133,8 @@ signed char byte_800C3394[] = {-1, 0, 1, 0, 0, 1, 0, -1};
+ 
+ #define EXEC_LEVEL GV_ACTOR_MANAGER
+ 
++
++
+ static void option_800C339C(Work *work, int index)
+ {
+     RECT rect;
+@@ -373,7 +394,7 @@ static void option_800C3C74(Work *work)
+     poly_src = work->field_5D4;
+     poly_dst = work->field_2C->packs[GV_Clock];
+ 
+-    for (i = 0; i < 4; poly_dst++, poly_src++, i++)
++    for (i = 0; i < 5; poly_dst++, poly_src++, i++)
+     {
+         *poly_dst = *poly_src;
+ 
+@@ -500,7 +521,6 @@ static void option_800C4130(Work *work, u_long *ot)
+ 
+     case 5:
+         option_800C3B3C(work, 3, 0x6739);
+-        option_800C3B3C(work, 27, 0x6739);
+ 
+         if (work->f924[work->f920] == 0)
+         {
+@@ -517,11 +537,7 @@ static void option_800C4130(Work *work, u_long *ot)
+         break;
+ 
+     case 7:
+-        option_800C3B3C(work, 13, 0x6739);
+-        option_800C3B3C(work, 14, 0x6739);
+-        option_800C3B3C(work, 15, 0x6739);
+-        option_800C3B3C(work, 16, 0x6739);
+-        option_800C3B3C(work, 24, 0x6739);
++        /* nothing: the brightness paragraph is the sc_text quad now */
+         break;
+ 
+     case 8:
+@@ -772,41 +788,38 @@ static void option_800C4780(Work *work)
+         setRGB0(&poly[11], 70, 100, 90);
+         setRGB0(&poly[12], 70, 100, 90);
+ 
+-        poly[13].x0 = 74;
+-        poly[13].y0 = -18;
+-        poly[13].x1 = 138;
+-        poly[13].y1 = -18;
+-        poly[13].x2 = 74;
+-        poly[13].y2 = -11;
+-        poly[13].x3 = 138;
+-        poly[13].y3 = -11;
+-
+-        poly[14].x0 = -136;
+-        poly[14].y0 = -18;
+-        poly[14].x1 = -92;
+-        poly[14].y1 = -18;
+-        poly[14].x2 = -136;
+-        poly[14].y2 = -11;
+-        poly[14].x3 = -92;
+-        poly[14].y3 = -11;
+-
+-        poly[15].x0 = -136;
+-        poly[15].y0 = 2;
+-        poly[15].x1 = -84;
+-        poly[15].y1 = 2;
+-        poly[15].x2 = -136;
+-        poly[15].y2 = 9;
+-        poly[15].x3 = -84;
+-        poly[15].y3 = 9;
+-
+-        poly[16].x0 = 78;
+-        poly[16].y0 = -39;
+-        poly[16].x1 = 138;
+-        poly[16].y1 = -39;
+-        poly[16].x2 = 78;
+-        poly[16].y2 = -32;
+-        poly[16].x3 = 138;
+-        poly[16].y3 = -32;
++        poly[13].x0 = 88;
++        poly[13].y0 = -20;
++        poly[13].x1 = 120;
++        poly[13].y1 = -20;
++        poly[13].x2 = 88;
++        poly[13].y2 = -12;
++        poly[13].x3 = 120;
++        poly[13].y3 = -12;
++        poly[14].x0 = -121;
++        poly[14].y0 = -17;
++        poly[14].x1 = -77;
++        poly[14].y1 = -17;
++        poly[14].x2 = -121;
++        poly[14].y2 = -10;
++        poly[14].x3 = -77;
++        poly[14].y3 = -10;
++        poly[15].x0 = -120;
++        poly[15].y0 = 0;
++        poly[15].x1 = -92;
++        poly[15].y1 = 0;
++        poly[15].x2 = -120;
++        poly[15].y2 = 8;
++        poly[15].x3 = -92;
++        poly[15].y3 = 8;
++        poly[16].x0 = 60;
++        poly[16].y0 = -41;
++        poly[16].x1 = 148;
++        poly[16].y1 = -41;
++        poly[16].x2 = 60;
++        poly[16].y2 = -31;
++        poly[16].x3 = 148;
++        poly[16].y3 = -31;
+     }
+     else if (f29E8 == 1)
+     {
+@@ -814,41 +827,38 @@ static void option_800C4780(Work *work)
+         setRGB0(&poly[11], 100, 160, 135);
+         setRGB0(&poly[12], 70, 100, 90);
+ 
+-        poly[13].x0 = -135;
+-        poly[13].y0 = 2;
+-        poly[13].x1 = -71;
+-        poly[13].y1 = 2;
+-        poly[13].x2 = -135;
+-        poly[13].y2 = 9;
+-        poly[13].x3 = -71;
+-        poly[13].y3 = 9;
+-
+-        poly[14].x0 = -136;
+-        poly[14].y0 = -18;
+-        poly[14].x1 = -92;
+-        poly[14].y1 = -18;
+-        poly[14].x2 = -136;
+-        poly[14].y2 = -11;
+-        poly[14].x3 = -92;
+-        poly[14].y3 = -11;
+-
+-        poly[15].x0 = 86;
+-        poly[15].y0 = -18;
+-        poly[15].x1 = 138;
+-        poly[15].y1 = -18;
+-        poly[15].x2 = 86;
+-        poly[15].y2 = -11;
+-        poly[15].x3 = 138;
+-        poly[15].y3 = -11;
+-
+-        poly[16].x0 = 78;
+-        poly[16].y0 = -39;
+-        poly[16].x1 = 138;
+-        poly[16].y1 = -39;
+-        poly[16].x2 = 78;
+-        poly[16].y2 = -32;
+-        poly[16].x3 = 138;
+-        poly[16].y3 = -32;
++        poly[13].x0 = -120;
++        poly[13].y0 = 0;
++        poly[13].x1 = -88;
++        poly[13].y1 = 0;
++        poly[13].x2 = -120;
++        poly[13].y2 = 8;
++        poly[13].x3 = -88;
++        poly[13].y3 = 8;
++        poly[14].x0 = -121;
++        poly[14].y0 = -17;
++        poly[14].x1 = -77;
++        poly[14].y1 = -17;
++        poly[14].x2 = -121;
++        poly[14].y2 = -10;
++        poly[14].x3 = -77;
++        poly[14].y3 = -10;
++        poly[15].x0 = 92;
++        poly[15].y0 = -20;
++        poly[15].x1 = 120;
++        poly[15].y1 = -20;
++        poly[15].x2 = 92;
++        poly[15].y2 = -12;
++        poly[15].x3 = 120;
++        poly[15].y3 = -12;
++        poly[16].x0 = 60;
++        poly[16].y0 = -41;
++        poly[16].x1 = 148;
++        poly[16].y1 = -41;
++        poly[16].x2 = 60;
++        poly[16].y2 = -31;
++        poly[16].x3 = 148;
++        poly[16].y3 = -31;
+     }
+     else if (f29E8 == 2)
+     {
+@@ -856,41 +866,38 @@ static void option_800C4780(Work *work)
+         setRGB0(&poly[11], 70, 100, 90);
+         setRGB0(&poly[12], 100, 160, 135);
+ 
+-        poly[13].x0 = -135;
+-        poly[13].y0 = -18;
+-        poly[13].x1 = -71;
+-        poly[13].y1 = -18;
+-        poly[13].x2 = -135;
+-        poly[13].y2 = -11;
+-        poly[13].x3 = -71;
+-        poly[13].y3 = -11;
+-
+-        poly[14].x0 = 94;
+-        poly[14].y0 = -18;
+-        poly[14].x1 = 138;
+-        poly[14].y1 = -18;
+-        poly[14].x2 = 94;
+-        poly[14].y2 = -11;
+-        poly[14].x3 = 138;
+-        poly[14].y3 = -11;
+-
+-        poly[15].x0 = -136;
+-        poly[15].y0 = f29E8;
+-        poly[15].x1 = -84;
+-        poly[15].y1 = f29E8;
+-        poly[15].x2 = -136;
+-        poly[15].y2 = 9;
+-        poly[15].x3 = -84;
+-        poly[15].y3 = 9;
+-
+-        poly[16].x0 = 78;
+-        poly[16].y0 = -39;
+-        poly[16].x1 = 138;
+-        poly[16].y1 = -39;
+-        poly[16].x2 = 78;
+-        poly[16].y2 = -32;
+-        poly[16].x3 = 138;
+-        poly[16].y3 = -32;
++        poly[13].x0 = -121;
++        poly[13].y0 = -20;
++        poly[13].x1 = -89;
++        poly[13].y1 = -20;
++        poly[13].x2 = -121;
++        poly[13].y2 = -12;
++        poly[13].x3 = -89;
++        poly[13].y3 = -12;
++        poly[14].x0 = 80;
++        poly[14].y0 = -17;
++        poly[14].x1 = 124;
++        poly[14].y1 = -17;
++        poly[14].x2 = 80;
++        poly[14].y2 = -10;
++        poly[14].x3 = 124;
++        poly[14].y3 = -10;
++        poly[15].x0 = -120;
++        poly[15].y0 = 0;
++        poly[15].x1 = -92;
++        poly[15].y1 = 0;
++        poly[15].x2 = -120;
++        poly[15].y2 = 8;
++        poly[15].x3 = -92;
++        poly[15].y3 = 8;
++        poly[16].x0 = 60;
++        poly[16].y0 = -41;
++        poly[16].x1 = 148;
++        poly[16].y1 = -41;
++        poly[16].x2 = 60;
++        poly[16].y2 = -31;
++        poly[16].x3 = 148;
++        poly[16].y3 = -31;
+     }
+ }
+ 
+@@ -1135,6 +1142,34 @@ static void option_800C4B68(Work *work)
+     }
+ }
+ 
++/* The Master Collection intercepts KEY CONFIG. It replaces the six instructions
++   that begin `case 8`'s third branch below (retail 0x800C550C, the first KEY
++   CONFIG cursor call) with
++
++       lui   v1, 0x8020        ; 0x80200000 - the emulator's doorbell, the one
++       lui   v0, 0x0000        ; address MGSM2Fix's Ketchup deliberately never
++       addiu v0, v0, 1         ; blocks, even with DisableRAM on
++       sw    v0, 0(v1)
++       j     0x800C5684        ; option_800C5150's epilogue, 20 bytes before
++       nop                     ; the next function
++
++   so selecting KEY CONFIG rings the doorbell and returns WITHOUT transitioning
++   to state 9. Its own Control Settings panel then draws over the OPTION menu -
++   which is why its screen still shows the OPTION rows behind it.
++
++   That patch is `disc1_16F8E024_patch.bin`, keyed to a byte offset inside
++   retail's overlay. This overlay is recompiled and 172 bytes shorter, and the
++   English port relocates the whole option stage into DUMMY3M besides, so the
++   patch lands on bytes the game never reads and the interception was lost.
++   Hence reproducing it here rather than inheriting it: ours works wherever the
++   stage ends up living.
++
++   Set to 0 for a raw PSX disc, where there is no collection to intercept
++   anything, 0x80200000 is past the end of a retail console's 2 MB, and the
++   ported KEY CONFIG screen is the entire point of porting its text. */
++#define OPTION_MC_CONTROL_SETTINGS 1
++#define OPTION_MC_DOORBELL         0x80200000
++
+ static void option_800C5150(Work *work, int param_2)
+ {
+     POLY_FT4 *poly;
+@@ -1238,6 +1273,7 @@ static void option_800C5150(Work *work, int param_2)
+             work->f2AFC[1] = 768;
+             work->f2AFC[2] = 256;
+             work->f2AFC[3] = 256;
++            work->f2AFC[4] = 512;
+         }
+         break;
+ 
+@@ -1254,7 +1290,13 @@ static void option_800C5150(Work *work, int param_2)
+         }
+         else
+         {
+-            option_800C449C(work, -149, -70, 88, 12, 255, 1);
++#if OPTION_MC_CONTROL_SETTINGS
++            /* Ring the doorbell and return, exactly as their patch does - no
++               transition to state 9. See the note above this function. */
++            *(volatile unsigned int *)OPTION_MC_DOORBELL = 1;
++            return;
++#endif
++            option_800C449C(work, -148, -70, 88, 13, 255, 1);
+ 
+             work->f920 = 9;
+             work->f29E4 = 0;
+@@ -1284,7 +1326,7 @@ static void option_800C5150(Work *work, int param_2)
+         break;
+ 
+     case 7:
+-        for (i = 0; i < 4; i++)
++        for (i = 0; i < 5; i++)
+         {
+             work->f2AFC[i] = 0;
+         }
+@@ -1328,7 +1370,7 @@ static void option_800C5698(Work *work)
+         if (press & PAD_DOWN)
+         {
+             work->f29E4 = 1;
+-            option_800C449C(work, -149, 38, 88, 12, 255, 1);
++            option_800C449C(work, -148, 38, 112, 13, 255, 1);
+             GM_SeSet2(0, 63, SE_MENU_CURSOR);
+         }
+         else if (press & (PAD_LEFT | PAD_RIGHT))
+@@ -1380,7 +1422,7 @@ static void option_800C5698(Work *work)
+         if (press & PAD_UP)
+         {
+             work->f29E4 = 0;
+-            option_800C449C(work, -149, -70, 88, 12, 255, 1);
++            option_800C449C(work, -148, -70, 88, 13, 255, 1);
+             GM_SeSet2(0, 63, SE_MENU_CURSOR);
+         }
+         else if (press & PAD_DOWN)
+@@ -1418,7 +1460,7 @@ static void option_800C5698(Work *work)
+         if (press & PAD_UP)
+         {
+             work->f29E4 = 1;
+-            option_800C449C(work, -149, 38, 88, 12, 255, 1);
++            option_800C449C(work, -148, 38, 112, 13, 255, 1);
+             GM_SeSet2(0, 63, SE_MENU_CURSOR);
+         }
+         else if (!(press & PAD_CIRCLE))
+@@ -2378,7 +2420,7 @@ static int GetResources(Work *work, int map)
+ 
+     work->field_24 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 27, NULL, NULL);
+     work->field_28 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 9, NULL, NULL);
+-    work->field_2C = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 4, NULL, NULL);
++    work->field_2C = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 5, NULL, NULL);
+     work->field_30 = GM_MakePrim(DG_PRIM_SORTONLY | DG_PRIM_POLY_FT4, 17, NULL, NULL);
+ 
+     po = work->field_34;
+@@ -2547,6 +2589,22 @@ static int GetResources(Work *work, int map)
+     work->f2AFC[i] = 0;
+     i++;
+ 
++    /* USA's own call, copied exactly, drawing USA's whole 232x70 texture.
++       An earlier build used (-121, 14, 111, 60) with the texture cropped to 46
++       rows, because the Master Collection's USA shows only lines 1-4 and shows
++       them 12 rows lower than this constant puts them.  Both of those are the
++       collection's doing, not USA's: it ships four CD-ROM patches that replace
++       `sc_text` in USA's option stage with a 4-line version on the same 232x70
++       canvas, the four lines centred in it - which drops the O-button sentence
++       (that button's name is platform-specific) and moves the block down 12
++       rows.  With the collection's patches disabled, its USA draws all six
++       lines at exactly SwanStation's position, so USA's constant is right and
++       the measurement had been fitted to replaced artwork. */
++    Init_Res(work, GV_StrCode("sc_text"), po, -121, 2, 111, 72, 0, 0);
++    po++;
++    work->f2AFC[i] = 0;
++    i++;
++
+     po = work->field_674;
+     i = 0;
+ 
+@@ -2566,25 +2624,33 @@ static int GetResources(Work *work, int map)
+     work->f2B0C[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_button"), po, -149, -70, -61, -58, 1, 0);
++    /* KEY CONFIG labels: USA's own quads, read out of USA's option overlay
++       (base 0x800C5968, each label's string referenced from exactly one
++       lui/addiu site, arguments taken at the following Init_Res call).
++       Four quads change because USA's art is a different size; the other four
++       - key_syukan, key_action, key_buki, key_hohuku - already carry USA's
++       constants, and for three of those USA's own art is SMALLER than the quad,
++       so USA stretches it. Keeping the quad reproduces that stretch exactly,
++       which is what matching USA means here. */
++    Init_Res(work, GV_StrCode("key_button"), po, -148, -70, -60, -57, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2B0C[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_sykan"), po, -149, 38, -61, 50, 1, 0);
++    Init_Res(work, GV_StrCode("key_sykan"), po, -148, 38, -36, 51, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2B0C[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_reverse"), po, 29, 41, 93, 47, 1, 0);
++    Init_Res(work, GV_StrCode("key_reverse"), po, 40, 42, 84, 48, 1, 0);
+     setRGB0(po, 70, 100, 90);
+     po++;
+     work->f2B0C[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_normal"), po, -35, 41, 17, 47, 1, 0);
++    Init_Res(work, GV_StrCode("key_normal"), po, -18, 39, 22, 49, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2B0C[i] = 0;
+@@ -2624,25 +2690,48 @@ static int GetResources(Work *work, int map)
+     work->f2AFC[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_action"), po, 74, -18, 138, -11, 0, 0);
++    /* These four quads are OVERWRITTEN every frame by the per-button-type
++       function above, which is where the real rectangles live - so these values
++       only matter for the first frame, and they are USA's type-A ones to keep
++       the source honest. Init_Res takes the screen rect from the quad and the
++       UVs from the texture, so a rectangle that does not match its art scales
++       the art; every one of USA's is exactly its art's size. */
++    /* abe = 1 on these four, as USA does. USA passes a saved register that is
++       always non-zero here, so every KEY CONFIG label is drawn semi-transparent,
++       and USA's own art relies on it: its palettes have no (0,0,0) entry - index
++       0 is a visible grey - so with abe = 0 the label's background renders as an
++       opaque box (LoadPalette in libdg/loader.c maps only pure black to 0x0000).
++       Integral's own art did have a transparent index 0 and did not need it.
++       USA's textures also carry PCXINFO flag 0x18, i.e. blend rate 1
++       ((flag & 0x30) >> 4 -> DG_SetTexture's abr), which comes along with the
++       art. */
++    Init_Res(work, GV_StrCode("key_action"), po, 88, -20, 120, -12, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2AFC[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_buki"), po, -136, -18, -92, -11, 0, 0);
++    Init_Res(work, GV_StrCode("key_buki"), po, -121, -17, -77, -10, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2AFC[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_hohuku"), po, -136, 2, -84, 9, 0, 0);
++    Init_Res(work, GV_StrCode("key_hohuku"), po, -120, 0, -92, 8, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po++;
+     work->f2AFC[i] = 0;
+     i++;
+ 
+-    Init_Res(work, GV_StrCode("key_syukan"), po, 78, -39, 138, -32, 0, 0);
++    /* key_syukan is USA's art at USA's size, but shifted +11 px right of USA's
++       own x. Integral's background art puts the connector curve coming off the
++       triangle button 11 px further right than USA's does - USA moved its curve
++       to clear the label, Integral did not - so USA's absolute x would leave the
++       label sitting on the curve. Measured from paired screenshots: the rule
++       beneath the label starts at screen x 2343 in USA and 2442 here, 99 px at
++       8.92 px per game px. Moving the text instead of porting the art is by the
++       user's rule of 2026-09-03, and was asked for in this case. */
++    Init_Res(work, GV_StrCode("key_syukan"), po, 60, -41, 148, -31, 1, 0);
+     setRGB0(po, 100, 160, 135);
+     po->b0 = 135;
+     po++;
+diff --git a/source/onoda/preope/pre_met1.c b/source/onoda/preope/pre_met1.c
+index 60aea1e..96d906e 100644
+--- a/source/onoda/preope/pre_met1.c
++++ b/source/onoda/preope/pre_met1.c
+@@ -16,7 +16,7 @@
+ /*---------------------------------------------------------------------------*/
+ 
+ #define EXEC_LEVEL  GV_ACTOR_USER
+-#define PAGE_COUNT  9
++#define PAGE_COUNT  13
+ 
+ typedef struct PreMet1Prims
+ {
+@@ -92,15 +92,21 @@ typedef struct PreMet1Unk
+     int   fore_color;
+ } PreMet1Unk;
+ 
++/* USA's recap layout, measured line by line against its own screenshots:
++   origin x 8, pitch 22 rows.  Retail Integral had x 16 / pitch 19, and that
++   8 px of extra left margin is what ran the longest lines off the 320 px
++   screen edge.  With these values every line lands on USA's to the pixel at
++   both ends - the glyph widths are identical between the two builds.  Slot 8
++   is the blank that pads USA's 7 lines a page out to this engine's 8. */
+ static PreMet1Unk premet1_800C3250[8] = {
+-    {0x0010, 0x0023, 0x00000000},
+-    {0x0010, 0x0036, 0x00000000},
+-    {0x0010, 0x0049, 0x00000000},
+-    {0x0010, 0x005C, 0x00000000},
+-    {0x0010, 0x006F, 0x00000000},
+-    {0x0010, 0x0082, 0x00000000},
+-    {0x0010, 0x0095, 0x00000000},
+-    {0x0010, 0x00A8, 0x00000000},
++    {0x0008, 0x0023, 0x00000000},
++    {0x0008, 0x0039, 0x00000000},
++    {0x0008, 0x004F, 0x00000000},
++    {0x0008, 0x0065, 0x00000000},
++    {0x0008, 0x007B, 0x00000000},
++    {0x0008, 0x0091, 0x00000000},
++    {0x0008, 0x00A7, 0x00000000},
++    {0x0008, 0x00BD, 0x00000000},
+ };
+ 
+ static signed char premet1_800C3290[8] = {-1, 0, 1, 0, 0, 1, 0, -1};
+diff --git a/source/onoda/preope/pre_met2.c b/source/onoda/preope/pre_met2.c
+index 29e3ca4..145ef96 100644
+--- a/source/onoda/preope/pre_met2.c
++++ b/source/onoda/preope/pre_met2.c
+@@ -16,7 +16,7 @@
+ /*---------------------------------------------------------------------------*/
+ 
+ #define EXEC_LEVEL  GV_ACTOR_USER
+-#define PAGE_COUNT  14
++#define PAGE_COUNT  19
+ 
+ typedef struct PreMet2Prims
+ {
+@@ -93,14 +93,14 @@ typedef struct PreMet2Unk
+ } PreMet2Unk;
+ 
+ static PreMet2Unk premet2_800C3250[8] = {
+-    {0x0010, 0x0023, 0x00000000},
+-    {0x0010, 0x0036, 0x00000000},
+-    {0x0010, 0x0049, 0x00000000},
+-    {0x0010, 0x005C, 0x00000000},
+-    {0x0010, 0x006F, 0x00000000},
+-    {0x0010, 0x0082, 0x00000000},
+-    {0x0010, 0x0095, 0x00000000},
+-    {0x0010, 0x00A8, 0x00000000},
++    {0x0008, 0x0023, 0x00000000},
++    {0x0008, 0x0039, 0x00000000},
++    {0x0008, 0x004F, 0x00000000},
++    {0x0008, 0x0065, 0x00000000},
++    {0x0008, 0x007B, 0x00000000},
++    {0x0008, 0x0091, 0x00000000},
++    {0x0008, 0x00A7, 0x00000000},
++    {0x0008, 0x00BD, 0x00000000},
+ };
+ 
+ static signed char premet2_800C3290[8] = {-1, 0, 1, 0, 0, 1, 0, -1};
+diff --git a/source/onoda/preope/preope.c b/source/onoda/preope/preope.c
+index 003bda4..2659285 100644
+--- a/source/onoda/preope/preope.c
++++ b/source/onoda/preope/preope.c
+@@ -16,6 +16,8 @@
+ #define EXEC_LEVEL GV_ACTOR_MANAGER
+ 
+ // FIXME: it's the same struct as in change.c (in change overlay)
++#define MG2_RECAP_OFFSET 22042
++
+ typedef struct _Unknown
+ {
+     SPRT  text_sprt[2];
+@@ -46,8 +48,11 @@ typedef struct _Work
+     char     pad378[0x14];
+     DR_TPAGE field_38C;
+     Unknown  field_394[4];
+-    Unknown  field_714[72];
+-    Unknown  field_4614[112];
++    /* 13 pages, USA's pagination.  The engine draws 8 slots a page and USA
++       lays out 7, so every page carries USA's 7 lines then one blank, which
++       keeps USA's page breaks exactly without touching any draw loop. */
++    Unknown  field_714[13 * 8];
++    Unknown  field_4614[19 * 8];
+     int      field_A814;
+     int      field_A818;
+     int      clut_x;
+@@ -820,7 +825,7 @@ static int GetResources(Work *work, int map)
+     }
+ 
+     index = 0;
+-    for (j = 0; j < 9; j++)
++    for (j = 0; j < 13; j++)
+     {
+         for (i = 0; i < 8; i++)
+         {
+@@ -829,13 +834,21 @@ static int GetResources(Work *work, int map)
+         }
+     }
+ 
+-    index = 0;
+-    for (j = 0; j < 14; j++)
++    /* Metal Gear 2's lines sit in the script chunk past the end of the script,
++       as NUL terminated strings: both recaps' text together overflows the GCL
++       chain's size ceiling, and the overlay loads at a fixed address so it
++       cannot hold them either.  field_394[0].string is the payload of the
++       chain's first record, so the run is a fixed distance from it. */
+     {
+-        for (i = 0; i < 8; i++)
++        const char *p = work->field_394[0].string - 2 + MG2_RECAP_OFFSET;
++
++        for (index = 0; index < 19 * 8; index++)
+         {
+-            work->field_4614[index].string = GCL_GetString(GCL_NextStr());
+-            index++;
++            work->field_4614[index].string = (char *)p;
++
++            while (*p++ != '\0')
++            {
++            }
+         }
+     }
+ 
+@@ -854,6 +867,15 @@ static int GetResources(Work *work, int map)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++/* Keeps NewPreviousOperation at the fixed 0x800C4DA4 the main executable
++   calls.  Never called. */
++volatile int preope_reserved_sink;
++
++void preope_reserved(int n)
++{
++    preope_reserved_sink = n + 1;
++}
++
+ void *NewPreviousOperation(int name, int where, int argc, char **argv)
+ {
+     Work *work;
