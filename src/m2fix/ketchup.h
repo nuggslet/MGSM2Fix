@@ -88,6 +88,12 @@ private:
 	static inline unsigned int RamApplies = 0;
 	constexpr static unsigned int RamCheckInterval = 30;
 
+	// Explicit read-only diagnostic. Update independently verifies and repairs
+	// every byte at its bounded retry cadence.
+	static void Audit();
+	static inline unsigned int RamAuditReports = 0;
+	static inline std::set<unsigned int> RamAuditSeen = {};
+
 	// Every write this pass made, with the patch it came from, so that two
 	// patches writing the same disc byte with different values can be reported
 	// once the folder is done. Ketchup applies the selected files in path order, so
