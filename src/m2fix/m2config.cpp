@@ -136,8 +136,49 @@ void M2Config::Load()
     spdlog::info("[Config] UnlockVRMissions={}, UnlockVRExtras={}, UnlockVRMovies={}, UnlockTitleBonuses={}",
         bGameUnlockVRMissions, bGameUnlockVRExtras, bGameUnlockVRMovies, bGameUnlockTitleBonuses);
 
-    inipp::get_value(ini.sections["Game"], "StageSelect", bGameStageSelect);
+    {
+        // StageSelect is a bool that also accepts a menu name: `true` opens the
+        // developer top menu ("select" - TITLE / DEMO ALL / SOUND TEST), and a
+        // name such as `select3` opens that stage-list menu directly, since the
+        // retail top menu does not link to the four stage lists.
+        std::string v;
+        if (inipp::get_value(ini.sections["Game"], "StageSelect", v)) {
+            std::string lower = v;
+            for (auto &c : lower) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if (lower == "true" || lower == "1" || lower == "yes" || lower == "on") { bGameStageSelect = true; sGameStageSelect = "select"; }
+            else if (lower == "false" || lower == "0" || lower == "no" || lower == "off" || lower.empty()) { bGameStageSelect = false; sGameStageSelect.clear(); }
+            else if (lower.size() <= 7) { bGameStageSelect = true; sGameStageSelect = lower; }
+            else spdlog::warn("[Config] StageSelect: '{}' is longer than a stage name (7 chars), ignored.", v);
+        }
+    }
     inipp::get_value(ini.sections["Game"], "EnglishText", bGameEnglishText);
+    inipp::get_value(ini.sections["Game"], "UnlockBriefing", bGameUnlockBriefing);
+    {
+        // Comma-separated ids: items are MGS1's IT_* numbering (Camera is 12),
+        // weapons its WP_* numbering, which is its own list of ten and not the
+        // order the menu shows.
+        auto ids = [](const std::string &list, const char *what, int limit,
+                      std::vector<int> &out) {
+            std::stringstream ss(list);
+            std::string tok;
+            while (std::getline(ss, tok, ',')) {
+                try {
+                    int id = std::stoi(tok);
+                    if (id >= 0 && id < limit) out.push_back(id);
+                    else spdlog::warn("[Config] {}: {} is not an id (0..{}), ignored.", what, id, limit - 1);
+                } catch (...) {
+                    if (!tok.empty() && tok.find_first_not_of(" \t") != std::string::npos)
+                        spdlog::warn("[Config] {}: '{}' is not a number, ignored.", what, tok);
+                }
+            }
+        };
+        std::string list;
+        if (inipp::get_value(ini.sections["Game"], "GiveItems", list))
+            ids(list, "GiveItems", 24, vGameGiveItems);
+        list.clear();
+        if (inipp::get_value(ini.sections["Game"], "GiveWeapons", list))
+            ids(list, "GiveWeapons", 10, vGameGiveWeapons);
+    }
 
     inipp::get_value(ini.sections["Update Notifications"], "CheckForUpdates", bShouldCheckForUpdates);
     inipp::get_value(ini.sections["Update Notifications"], "ConsoleNotifications", bConsoleUpdateNotifications);
@@ -206,8 +247,19 @@ void M2Config::Load()
         eBrightnessText == M2BrightnessText::Fixed    ? "fixed"    :
         eBrightnessText == M2BrightnessText::Original ? "original" : "collection");
     spdlog::info("[Config] bPatchesPreserveConfiguration: {}", bPatchesPreserveConfiguration);
-    spdlog::info("[Config] bGameStageSelect: {}", bGameStageSelect);
+    spdlog::info("[Config] bGameStageSelect: {} ({})", bGameStageSelect, sGameStageSelect);
     spdlog::info("[Config] bGameEnglishText: {}", bGameEnglishText);
+    spdlog::info("[Config] bGameUnlockBriefing: {}", bGameUnlockBriefing);
+    if (!vGameGiveWeapons.empty()) {
+        std::string ids;
+        for (int id : vGameGiveWeapons) ids += (ids.empty() ? "" : ",") + std::to_string(id);
+        spdlog::info("[Config] vGameGiveWeapons: {}", ids);
+    }
+    if (!vGameGiveItems.empty()) {
+        std::string ids;
+        for (int id : vGameGiveItems) ids += (ids.empty() ? "" : ",") + std::to_string(id);
+        spdlog::info("[Config] vGameGiveItems: {}", ids);
+    }
     spdlog::info("[Config] bShouldCheckForUpdates: {}", bShouldCheckForUpdates);
     spdlog::info("[Config] bConsoleUpdateNotifications: {}", bConsoleUpdateNotifications);
     spdlog::info("[Config] bDisableWindowsFullscreenOptimization: {}", bDisableWindowsFullscreenOptimization);

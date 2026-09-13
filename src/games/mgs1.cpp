@@ -96,8 +96,28 @@ void MGS1::SQOnMemoryDefine()
             MGS1_LanguagePTR, MGS1_LanguageMask);
     }
 
+    // GCL's variable buffer (libgcl/variable.c var_buf) is a static, not a memory
+    // define, and its address moves between builds - the Master Collection's USA
+    // executable has it 8 bytes below the retail disc's. What is stable is
+    // variable.c's own layout: var_buf[1024 shorts], sv_linkvarbuf[96],
+    // sv_var_buf[1024], stage_name[16], linkvarbuf[96], so var_buf sits 0x10D0
+    // below linkvarbuf and the "scene_name" define is stage_name, 0x10 below
+    // linkvarbuf. Read from RAM on Integral (0xB3CC8) and the collection's USA
+    // (0xB6440), the relation holds in both. The VR disks have no briefing menu.
+    MGS1_VarBufPTR = 0;
+    MGS1_UnlockWrites = 0;
     MGS1_LastStageName[0] = 0;
-
+    switch (SQGlobals<Squirk::Standard>::GetTitle()) {
+        case 99:  // INTEGRAL (its VR-DISK version shares the title id)
+            if (SQSystemData<Squirk::Standard>::SettingETC::GetVersion() != "INTEGRAL") break;
+            [[fallthrough]];
+        case 980: case 981: case 982: case 983: case 984: case 985: case 986: // MGS1 JP/US/UK/DE/FR/IT/ES
+            if (MGS1_GlobalsPTR != 0) MGS1_VarBufPTR = MGS1_GlobalsPTR + 0x10 - 0x10D0;
+            break;
+    }
+    if (MGS1_VarBufPTR != 0) {
+        spdlog::info("[MGS 1] GCL var_buf is 0x{:x}.", MGS1_VarBufPTR);
+    }
 }
 
 void MGS1::SQOnUpdateGadgets()
@@ -115,10 +135,16 @@ void MGS1::SQOnUpdateGadgets()
             memcpy(MGS1_LastStageName, MGS1_StageName, sizeof(MGS1_StageName));
         }
 
-
         if (M2Config::bGameStageSelect) {
-            if (strcmp(MGS1_LoaderName, "title") == 0 && strcmp(MGS1_StageName, "select") != 0) {
-                strcpy(MGS1_LoaderName, "select");
+            // The retail developer menu ("select") offers only TITLE / DEMO ALL /
+            // SOUND TEST; the four stage lists are their own menus - select1
+            // (D00A..S04B), select2 (S05A..S09A), select3 (S11A..S14E, i.e.
+            // disc 2), select4 (S15A..S20A) - which it never links to, so the
+            // setting may name one of them to open it directly.
+            const char *menu = M2Config::sGameStageSelect.empty() ? "select" : M2Config::sGameStageSelect.c_str();
+            if (strcmp(MGS1_LoaderName, "title") == 0 && strncmp(MGS1_StageName, "select", 6) != 0) {
+                strncpy(MGS1_LoaderName, menu, sizeof(MGS1_LoaderName) - 1);
+                MGS1_LoaderName[sizeof(MGS1_LoaderName) - 1] = 0;
                 SQEmuTask<Squirk::Standard>::RamCopy(MGS1_LoaderPTR, MGS1_LoaderName, sizeof(MGS1_LoaderName));
                 spdlog::info("[MGS 1] Set mgs_loader_stage to \"{}\".", MGS1_LoaderName);
             }
@@ -189,6 +215,99 @@ void MGS1::SQOnUpdateGadgets()
             }
         }
 
+        // The briefing menu shows an item only while its GCL `$f:` flag is set.
+        // Those flags live in var_buf, which GCL_InitVar zeroes on boot and the
+        // stage scripts set as the story advances, so a fresh boot shows 1 / 3 / 6
+        // of the sixteen. Hold all of them set while the title screens and the
+        // briefing itself are up - and never once a stage is running, because
+        // var_buf is then the live game's flag memory.
+        if (M2Config::bGameUnlockBriefing && MGS1_VarBufPTR != 0
+            && (!strcmp(MGS1_StageName, "title") || !strcmp(MGS1_StageName, "brf"))) {
+            bool changed = false;
+            for (unsigned i = 0; i < sizeof(MGS1_BriefingFlagsMask); i++) {
+                uintptr_t addr = MGS1_VarBufPTR + MGS1_BriefingFlagsOffset + i;
+                SQInteger flags = SQEmuTask<Squirk::Standard>::GetRamValue(CHAR_BIT, addr) & 0xFF;
+                if ((flags & MGS1_BriefingFlagsMask[i]) != MGS1_BriefingFlagsMask[i]) {
+                    SQEmuTask<Squirk::Standard>::SetRamValue(CHAR_BIT, addr,
+                        flags | MGS1_BriefingFlagsMask[i]);
+                    changed = true;
+                }
+            }
+            // Log the first few writes: more than one means something cleared the
+            // flags again between the title and the briefing.
+            if (changed && ++MGS1_UnlockWrites <= 8) {
+                spdlog::info("[MGS 1] Set the sixteen briefing flags (var_buf+0x{:x}, write {}, scene \"{}\").",
+                    MGS1_BriefingFlagsOffset, MGS1_UnlockWrites, MGS1_StageName);
+            }
+        }
+    }
+
+    // [Game] GiveItems: a test aid. GM_Items is linkvarbuf[37..60], shorts
+    // (include/linkvar.h "0x4a Items"), and linkvarbuf sits 0x10 above the
+    // scene_name define - the same relation UnlockBriefing already relies on.
+    // Granted once per gameplay stage, only while one is running (names are
+    // sNNx / dNNx, read from the mirrored MGS1_LastStageName; the menus, title
+    // and the developer select are left alone). linkvarbuf is saved with the
+    // game, so a save made afterwards keeps the item.
+    //
+    // AN ITEM YOU DO NOT HAVE IS -1, NOT 0. game/g_define.h has it in one line,
+    // `IT_None = -1`, and game/item.c tests `GM_Items[IT_Ketchup] == -1`. This
+    // first granted nothing for exactly that reason: it looked for a count of
+    // zero, every absent item read 0xFFFF, and the log dutifully reported
+    // "count 65535 -> 65535" twenty-four times while the inventory stayed
+    // empty. Owned-but-disabled is a separate state - disable_equipment() ORs
+    // IT_TYPE_DISABLED (0x8000) into the entry - and 0x8001 is deliberately
+    // left alone here, so a sequence that took an item away on purpose is not
+    // quietly undone.
+    //
+    // Nothing writes GM_ItemsMax any more. It was being set to 1 wherever it
+    // read 0, which helped nothing: for the three consumables the max the game
+    // actually consults is GM_Items[id + 11] (item.c add_item), not
+    // GM_ItemsMax[id], and for everything else add_item just assigns. Writing a
+    // slot whose meaning is not established is not a safe default.
+    if ((!M2Config::vGameGiveItems.empty() || !M2Config::vGameGiveWeapons.empty()) && MGS1_GlobalsPTR != 0
+        && strlen(MGS1_LastStageName) == 4 && (MGS1_LastStageName[0] == 's' || MGS1_LastStageName[0] == 'd')
+        && isdigit((unsigned char)MGS1_LastStageName[1]) && isdigit((unsigned char)MGS1_LastStageName[2])
+        && strcmp(MGS1_GaveItemsIn, MGS1_LastStageName) != 0) {
+        strcpy(MGS1_GaveItemsIn, MGS1_LastStageName);
+        uintptr_t items = MGS1_GlobalsPTR + 0x10 + 0x4A;     // linkvarbuf + GM_Items
+        for (int id : M2Config::vGameGiveItems) {
+            SQInteger have = SQEmuTask<Squirk::Standard>::GetRamValue(16, items + id * 2) & 0xFFFF;
+            bool absent = (have == 0xFFFF || have == 0);
+            if (absent) SQEmuTask<Squirk::Standard>::SetRamValue(16, items + id * 2, 1);
+            spdlog::info("[MGS 1] GiveItems: item {} in stage \"{}\" - {} ({} -> {}).",
+                id, MGS1_LastStageName, absent ? "granted" : "already held, left alone",
+                have, absent ? 1 : have);
+        }
+
+        // [Game] GiveWeapons. A weapon is a different shape from an item: two
+        // arrays, GM_Weapons at linkvarbuf[17..26] holding the CURRENT AMMO and
+        // GM_WeaponsMax at [27..36] holding the capacity, ten of each. The
+        // menu's own ownership test is `GM_Weapons[i] >= 0` (menu/weapon.c), so
+        // -1 is "not carried" here exactly as it is for items.
+        //
+        // What to put in it is taken from the game rather than invented. Its
+        // own add_weapon (game/item.c) lifts a negative entry to 0 and then
+        // fills toward GM_WeaponsMax, so that is what happens here: a weapon
+        // Snake does not have is given its recorded full magazine, and where
+        // the capacity is not set it is granted empty rather than having a
+        // number made up for it. Nothing writes GM_WeaponsMax - no capacity
+        // table exists in the decompiled source to write a truthful one from.
+        uintptr_t weapons = MGS1_GlobalsPTR + 0x10 + 0x22;   // linkvarbuf + GM_Weapons
+        uintptr_t wmax    = MGS1_GlobalsPTR + 0x10 + 0x36;   // linkvarbuf + GM_WeaponsMax
+        for (int id : M2Config::vGameGiveWeapons) {
+            short ammo = (short)(SQEmuTask<Squirk::Standard>::GetRamValue(16, weapons + id * 2) & 0xFFFF);
+            short cap  = (short)(SQEmuTask<Squirk::Standard>::GetRamValue(16, wmax    + id * 2) & 0xFFFF);
+            if (ammo >= 0) {
+                spdlog::info("[MGS 1] GiveWeapons: weapon {} in stage \"{}\" - already carried,"
+                    " left alone (ammo {} of {}).", id, MGS1_LastStageName, ammo, cap);
+                continue;
+            }
+            short give = cap > 0 ? cap : 0;
+            SQEmuTask<Squirk::Standard>::SetRamValue(16, weapons + id * 2, give);
+            spdlog::info("[MGS 1] GiveWeapons: weapon {} in stage \"{}\" - granted with {} of {}"
+                " ammo ({} -> {}).", id, MGS1_LastStageName, give, cap, ammo, give);
+        }
     }
 
     if (M2Config::bAnalog.has_value() && M2Config::bAnalog.value()) {
