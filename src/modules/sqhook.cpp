@@ -478,6 +478,7 @@ SQInteger SQHook<Q>::SQReturn_init_system_last(HSQUIRRELVM<Q> v)
 template <Squirk Q>
 SQInteger SQHook<Q>::_SQReturn_update_gadgets(HSQUIRRELVM<Q> v)
 {
+    Ketchup<Q>::Update();
     M2Fix::GameInstance().SQOnUpdateGadgets();
     Command();
     return 0;

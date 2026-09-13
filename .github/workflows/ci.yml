@@ -11,6 +11,15 @@ permissions:
   actions: write
 
 jobs:
+  native-tests:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1
+    - name: Standalone loader tests
+      shell: cmd
+      run: tests\run_native_tests.cmd
+
   make:
     runs-on: windows-latest
     outputs:
@@ -107,7 +116,7 @@ jobs:
         path: .\dist\
 
   preview:
-    needs: make
+    needs: [make, native-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: windows-latest
     permissions:
@@ -148,7 +157,7 @@ jobs:
         updateOnlyUnreleased: true
 
   release:
-    needs: make
+    needs: [make, native-tests]
     if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     permissions:

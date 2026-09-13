@@ -359,6 +359,9 @@
     <ClInclude Include="src\m2fix\ketchup.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
+    <ClInclude Include="src\m2fix\ram_patch.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
     <ClInclude Include="src\m2fix\m2fix.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
