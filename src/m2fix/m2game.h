@@ -23,6 +23,9 @@ public:
 	}
 
 	virtual std::vector<Ketchup_TitleInfo> *SQKetchupHook() { return nullptr; }
+	// Patches the fix writes to the disc image itself, alongside the mods
+	// folder's PPFs. Keyed by title, version and disk; see Ketchup_DiskPatch.
+	virtual std::vector<Ketchup_DiskPatch> *SQKetchupPatches() { return nullptr; }
 
 	virtual void SQOnMemoryDefine() {}
 	virtual void SQOnUpdateGadgets() {}

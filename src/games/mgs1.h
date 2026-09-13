@@ -59,6 +59,20 @@ public:
             SQHook<Squirk::Standard>::SetPatchDataBlacklist(MGS1_DataBlacklist_Medicine);
         }
 
+        if (M2Config::eBrightnessText != M2BrightnessText::Collection) {
+            // Scope the collection replacement to USA and the selected disc.
+            for (unsigned disk = 0; disk < MGS1_RangeBlacklist_BrightnessText.size(); ++disk) {
+                const auto &range = MGS1_RangeBlacklist_BrightnessText[disk];
+                SQHook<Squirk::Standard>::SetPatchRangeBlacklist(981, disk, range.first, range.second);
+            }
+        }
+
+        // `fixed` also writes back the two lines the collection was right to
+        // drop, blanked - see MGS1_BrightnessTextData.
+        if (M2Config::eBrightnessText == M2BrightnessText::Fixed) {
+            MGS1_KetchupPatches = MGS1_BrightnessTextPatches();
+        }
+
         if (M2Config::bPatchesDisableFont) {
             for (auto & MGS1_TextureWhitelist_Font : MGS1_TextureWhitelist_Fonts) {
                 SQHook<Squirk::Standard>::SetTextureWhitelist(MGS1_TextureWhitelist_Font);
@@ -95,6 +109,10 @@ public:
         return &MGS1_Ketchup;
     }
 
+    virtual std::vector<Ketchup_DiskPatch> *SQKetchupPatches() override
+    {
+        return &MGS1_KetchupPatches;
+    }
 
 #ifndef _WIN64
     virtual void GWRenderGeometry(int & gw_width, int & gw_height, int & fb_width, int & fb_height, int & img_width, int & img_height) override
@@ -199,6 +217,110 @@ private:
     };
 
     const std::string MGS1_FileBlacklist_Ghosts = "shinrei";
+
+    // The collection replaces the Option -> SCREEN help texture (`sc_text` in
+    // the `option` stage's archive) with a four-line version on the same 232x70
+    // canvas. Dropping "Press the O button to return to the option screen." is
+    // fair - that button's name is not the same on every platform - but it also
+    // re-centres the four lines it keeps, and that is a bug: the whole canvas is
+    // opaque (its quad is drawn with abe = 0), and the game's art paints canvas
+    // rows 0..3 one step off black, at (8,8,8), so they vanish into the grey
+    // ramp's own 8 band and hide the backdrop's top edge. Re-centring carries
+    // those four rows down with the text, leaving flat black over the 8 band.
+    // Measured on the collection's USA: 0.00 luminance inside the canvas
+    // against 8.89 beside it, four rows, with the text one full line pitch
+    // (12 game rows) below where the game draws it.
+    //
+    // These are the four pieces of that one archive entry on MGS1 (USA) disc 1,
+    // addressed by image offset, which is how the collection names them.
+    // Integral needs none: it has no `sc_text` of its own for them to replace.
+    const std::vector<std::string> MGS1_FileBlacklist_BrightnessText = {
+        "disc1_165A34CC", "disc1_165A3BD8", "disc1_165A4508", "disc1_165A4E38",
+    };
+
+    // The same entry as a disc-image range, per disk: `option` is STAGE.DIR
+    // sector 27023 on both of MGS1 (USA)'s disks, and the entry's payload is
+    // 5852 bytes at file offset 55499300, so the span follows from each disk's
+    // STAGE.DIR LBA (132344 and 100801). Tight enough to be safe, checked two
+    // ways against every patch candidate in the log archive: of the 107 the
+    // collection offers this title, exactly four fall anywhere inside the
+    // 81-sector option stage and they are the four above; and across titles
+    // 99 (Integral) and 980 (the Japanese MGS1), whose disc images do span
+    // these offsets, nothing falls inside either window. Registered with USA title 981 and a disc index; checked against the
+    // active title/disc when each collection patch is submitted.
+    const std::vector<std::pair<uint64_t, uint64_t>> MGS1_RangeBlacklist_BrightnessText = {
+        { 0x165A34CCull, 0x165A4F38ull },   // disk 0
+        { 0x11EE2B7Cull, 0x11EE45E8ull },   // disk 1
+    };
+
+    // Rows 46..69 of that texture, re-encoded blank. Splicing these over the
+    // game's own payload leaves rows 0..45 - the four lines the collection also
+    // keeps, and the (8,8,8) filler - byte for byte as the game has them, and
+    // drops lines 5 and 6. The payload's declared size does not change: PCX
+    // here is four bit planes run-length encoded one row at a time, so rows are
+    // independent in the byte stream, this encoding is shorter than the one it
+    // replaces, and the decoder stops after 70 rows without reading the rest.
+    //
+    // Why not move the quad instead: the texture's own size supplies the UVs
+    // (SetPacketTexture reads them from DG_TEX), so the quad cannot crop, and
+    // shifting it up 11 rows would drag the backdrop's top edge onto the ramp's
+    // brighter 16 band - a worse notch than the one being fixed.
+    // Kept as a plain array in .rdata, not an initializer_list: the bytes are
+    // then greppable in the shipped binary, which is how this build verified
+    // that what ends up on disc is what the tools produced.
+    static inline const unsigned char MGS1_BrightnessTextData[426] = {
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0x40, 0xDB, 0x00, 0x10, 0xDF, 0x00,
+        0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00, 0xBF, 0xDB, 0xFF, 0xC1, 0xEF, 0x00,
+        0xDC, 0x00, 0x10, 0xDF, 0x00, 0xDC, 0xFF, 0xC1, 0xEF, 0x00, 0xDC, 0xFF,
+        0xC1, 0xEF, 0x00, 0xDC, 0x00, 0x10, 0xDF, 0x00, 0xDC, 0xFF, 0xC1, 0xEF,
+        0x00, 0xDC, 0xFF, 0xC1, 0xEF, 0x00,
+    };
+
+    // Where those bytes go: row 46 of the payload, i.e. file offset 55503496,
+    // mapped through (lba + fo / 2048) * 2352 + 24 + fo % 2048. Both writes
+    // land inside one sector, so neither needs splitting.
+    static std::vector<Ketchup_DiskPatch> MGS1_BrightnessTextPatches()
+    {
+        std::vector<unsigned char> data(std::begin(MGS1_BrightnessTextData),
+                                        std::end(MGS1_BrightnessTextData));
+        return {
+            {981, "USA", 0, 0x165A4790ull, data, "sc_text rows 46-69 blanked"},
+            {981, "USA", 1, 0x11EE3E40ull, data, "sc_text rows 46-69 blanked"},
+        };
+    }
+
+    std::vector<Ketchup_DiskPatch> MGS1_KetchupPatches = {};
 
     const std::vector<unsigned char> MGS1_DataBlacklist_Medicine = {
         0, 152, 0, 72, 152, 72, 152, 152, 152

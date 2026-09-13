@@ -98,6 +98,7 @@
     <ClInclude Include="src\extern\json\include\nlohmann\json_fwd.hpp" />
     <ClInclude Include="src\m2fix\ketchup.h" />
     <ClInclude Include="src\m2fix\ram_patch.h" />
+    <ClInclude Include="src\m2fix\patch_range.h" />
     <ClInclude Include="src\m2\epi.h" />
     <ClInclude Include="src\m2fix\m2fixbase.h" />
     <ClInclude Include="src\m2fix\m2game.h" />

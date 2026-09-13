@@ -23,6 +23,18 @@ typedef struct {
 
 
 
+// A patch this fix carries itself, rather than reading from a PPF in the mods
+// folder. Same destination as a PPF record - an offset into the disc image -
+// but the game keys it, so one entry targets exactly one release and disk.
+typedef struct {
+	unsigned int title;
+	std::string version;
+	unsigned int disk;
+	uint64_t offset;
+	std::vector<unsigned char> data;
+	std::string name;
+} Ketchup_DiskPatch;
+
 // One write as it was applied, kept only until the folder has been processed
 // so collisions between two patches can be reported. See ReportOverlaps().
 typedef struct {
@@ -64,6 +76,7 @@ private:
 	static bool ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk, std::ifstream &data);
 	static int MetaPPF_FileId(std::ifstream &data, int version);
 
+	static bool ProcessBuiltins(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk);
 	static bool ProcessDisk(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk);
 	static bool ProcessVersion(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version);
 	static bool ProcessTitle(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title);
