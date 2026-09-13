@@ -81,6 +81,20 @@ Once all of the Master Collection patches have been identified and grouped (plea
 
 Additional mod formats may be supported in future.
 
+## Integral English text (this branch)
+This branch (`integral-english-text`) adds a port of MGS1 (USA)'s English text into
+**MGS Integral** (the Japanese-only version bundled as MGS1's Integral DLC), for
+players who own the Master Collection but not the USA release. Nothing is
+translated — every string is copied verbatim from the USA disc — and it ships as
+Ketchup PPF3 mods, so it needs this branch's build of MGSM2Fix (`EnglishText = true`
+in **MGSM2Fix.ini**) plus a small number of general fixes (see **UPSTREAM.md**)
+that this branch carries ahead of upstream.
+
+The port's tooling, technical record and build instructions live in
+[`tools/integral-english/`](tools/integral-english/README.md) — start with
+[`tools/integral-english/NextSteps.md`](tools/integral-english/NextSteps.md) if
+you are picking this up cold.
+
 ## Known Issues
 Please report any issues you see.
 This list will contain bugs which may or may not be fixed.

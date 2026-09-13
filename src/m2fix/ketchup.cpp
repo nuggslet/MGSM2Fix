@@ -1,6 +1,7 @@
 #include "m2fix.h"
 #include "sqhook.h"
 #include "ketchup.h"
+#include "../games/mgs1_patch_options.h"
 
 #include <algorithm>
 
@@ -281,6 +282,12 @@ bool Ketchup<Q>::ApplyPPF3(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_V
 			return false;
 		}
 
+		// English mission text must follow GrenadeDelayFix even when no texture
+		// addon is active. The companion pins the PPF and its five digit offsets.
+		for (const auto &[address, value] : RecordOverrides) {
+			if (address >= offset && address - offset < anz)
+				ppfmem[static_cast<size_t>(address - offset)] = value;
+		}
 		if (!ApplyBlock(v, title, version, disk, offset, ppfmem, anz))
 			return false;
 
@@ -357,17 +364,24 @@ bool Ketchup<Q>::ProcessDisk(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup
 		return true;
 	}
 
-	std::vector<std::filesystem::path> files;
-	for (const auto &entry : std::filesystem::directory_iterator(root))
-		if (entry.is_regular_file()) files.push_back(entry.path());
-	std::sort(files.begin(), files.end());
-	for (const auto &path : files) {
-		std::ifstream data(path, std::ios::in | std::ios::binary);
+	const MGS1PatchOptions::Settings settings {
+		M2Config::bPatchesIntegralEnglish, M2Config::bPatchesIntegralVREnglish,
+		M2Config::bPatchesGrenadeDelay, M2Config::bGameUnlockVRMissions,
+		M2Config::bGameUnlockVRExtras, M2Config::bGameUnlockVRMovies,
+		M2Config::bGameUnlockTitleBonuses
+	};
+	const auto plan = MGS1PatchOptions::prepare(root.path(), title.id, version.name, disk.id, settings);
+	for (const auto &message : plan.messages) spdlog::info("[SQ] [Ketchup] {}", message);
+	for (const auto &patch : plan.patches) {
+		std::ifstream data(patch.path, std::ios::in | std::ios::binary);
+		RecordOverrides = patch.overrides;
 		WriteSource = static_cast<unsigned int>(WriteSources.size());
-		WriteSources.push_back(path.filename().string());
-		if (Apply(v, title, version, disk, data))
-			spdlog::info("[SQ] [Ketchup] loaded {}.", path.string());
+		WriteSources.push_back(patch.path.filename().string());
+		if (Apply(v, title, version, disk, data)) {
+			spdlog::info("[SQ] [Ketchup] loaded {} ({} configured byte overrides).", patch.path.string(), patch.overrides.size());
+		}
 	}
+	RecordOverrides.clear();
 
 	// After the whole folder, because a collision is between two of its files.
 	ReportOverlaps();

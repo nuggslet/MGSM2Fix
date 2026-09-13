@@ -20,6 +20,37 @@ jobs:
       shell: cmd
       run: tests\run_native_tests.cmd
 
+  integral-english-tools:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install tool dependencies
+      run: py -m pip install -r tools/integral-english/requirements.txt
+
+    - name: Self-test (data-free - PPF emitter, PCX codec, width model, load-delay scanner)
+      run: py tools\integral-english\selftest.py
+
+    - name: Compile-check every tool script
+      shell: bash
+      run: |
+        cd tools/integral-english
+        py -m py_compile *.py
+
+    - name: Set up C++ compiler
+      uses: ilammy/msvc-dev-cmd@v1
+    - name: Native patch and repair tests
+      shell: cmd
+      run: tools\integral-english\run_native_tests.cmd
+
   make:
     runs-on: windows-latest
     outputs:
@@ -116,7 +147,7 @@ jobs:
         path: .\dist\
 
   preview:
-    needs: [make, native-tests]
+    needs: [make, native-tests, integral-english-tools]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: windows-latest
     permissions:
@@ -157,7 +188,7 @@ jobs:
         updateOnlyUnreleased: true
 
   release:
-    needs: [make, native-tests]
+    needs: [make, native-tests, integral-english-tools]
     if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     permissions:
