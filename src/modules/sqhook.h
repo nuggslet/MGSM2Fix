@@ -125,6 +125,8 @@ private:
     static SQInteger SQ_SystemEtc_getStartPadId(HSQUIRRELVM<Q> v);
 
     static SQInteger SQNative_setRamValue(HSQUIRRELVM<Q> v);
+    static SQInteger SQNative_getRamValue(HSQUIRRELVM<Q> v);
+    static std::string CallStack(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_setupCdRom(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v);
     static SQInteger SQNative_releaseCdRomPatch(HSQUIRRELVM<Q> v);

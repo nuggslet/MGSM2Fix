@@ -13,6 +13,7 @@ public:
         bPatchesEnableMosaic = true;
         bPatchesRestoreGhosts = true;
         bPatchesRestoreMedicine = true;
+        bPatchesPreserveConfiguration = true;
     }
 
     static auto & GetInstance()
@@ -58,6 +59,7 @@ public:
     static inline bool bLauncherSkipNotice;
     static inline bool bLauncherStartGame;
     static inline bool bGameStageSelect;
+    static inline bool bGameEnglishText;
     static inline bool bPatchesDisableRAM;
     static inline bool bPatchesDisableCDROM;
     static inline bool bPatchesDisableFont;
@@ -65,6 +67,7 @@ public:
     static inline bool bPatchesEnableMosaic;
     static inline bool bPatchesRestoreGhosts;
     static inline bool bPatchesRestoreMedicine;
+    static inline bool bPatchesPreserveConfiguration;
     static inline bool bShouldCheckForUpdates;
     static inline bool bConsoleUpdateNotifications;
     static inline bool bDisableWindowsFullscreenOptimization;

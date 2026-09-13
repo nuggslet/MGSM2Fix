@@ -49,6 +49,7 @@ std::vector<std::pair<std::string, SQFUNCTION<Q>>> SQHook<Q>::LoadScriptTable = 
 template <Squirk Q>
 std::vector<std::pair<const SQChar *, SQFUNCTION<Q>>> SQHook<Q>::NativeTable = {
     {"setRamValue",                             SQNative_setRamValue},
+    {"getRamValue",                             SQNative_getRamValue},
     {"entryCdRomPatch",                         SQNative_entryCdRomPatch},
     {"releaseCdRomPatch",                       SQNative_releaseCdRomPatch},
     {"setCdRomShellOpen",                       SQNative_setCdRomShellOpen},
@@ -280,6 +281,8 @@ void SQHook<Q>::SetNativeCallHook(const char *name, SQFUNCTION<Q> func)
     NativeTable.push_back({ name, func });
 }
 
+
+
 template <Squirk Q>
 void SQHook<Q>::SetPatchFileBlacklist(std::string file)
 {
@@ -496,6 +499,31 @@ SQInteger SQHook<Q>::SQNative_setDotmatrix(HSQUIRRELVM<Q> v)
 }
 
 template <Squirk Q>
+std::string SQHook<Q>::CallStack(HSQUIRRELVM<Q> v)
+{
+    std::stringstream stack;
+    SQStackInfos si;
+    for (SQInteger level = 0; level < 16 && SQ_SUCCEEDED(sq_stackinfos(v, level, &si)); level++) {
+        stack << (level ? " < " : "")
+              << (si.funcname ? si.funcname : "?")
+              << " (" << (si.source ? si.source : "?") << ":" << si.line << ")";
+    }
+    return stack.str();
+}
+
+template <Squirk Q>
+SQInteger SQHook<Q>::SQNative_getRamValue(HSQUIRRELVM<Q> v)
+{
+    unsigned width = SQHelper<Q>::GetObject(2).Cast<unsigned>();
+    unsigned offset = SQHelper<Q>::GetObject(3).Cast<unsigned>();
+
+    if (M2Fix::GameInstance().SQOnRamRead(width, offset)) {
+        spdlog::info("[SQ] getRamValue({}, 0x{:x}) called from {}", width, offset, CallStack(v));
+    }
+    return 0;
+}
+
+template <Squirk Q>
 SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
 {
     SQInteger ret = 0;
@@ -503,6 +531,24 @@ SQInteger SQHook<Q>::SQNative_setRamValue(HSQUIRRELVM<Q> v)
     unsigned width = SQHelper<Q>::GetObject(2).Cast<unsigned>();
     unsigned offset = SQHelper<Q>::GetObject(3).Cast<unsigned>();
     unsigned value = SQHelper<Q>::GetObject(4).Cast<unsigned>();
+
+    // Let the game single out writes it cares about, and name the Squirrel
+    // code that made them: function, source and line for every frame. The game
+    // may also rewrite the value; it is put back into the argument slot (this,
+    // width, offset, value sit at stackbase + 0..3) so the native writes it.
+    unsigned original = value;
+    if (M2Fix::GameInstance().SQOnRamWrite(width, offset, value)) {
+        spdlog::info("[SQ] setRamValue({}, 0x{:x}, 0x{:x}) called from {}", width, offset, original, CallStack(v));
+    }
+    if (value != original) {
+        SQObjectPtr<Q> *obj = &v->_stack._vals[v->_stackbase + 3];
+        if (sq_type(*obj) == OT_INTEGER) {
+            _integer(*obj) = value;
+        }
+        else {
+            spdlog::warn("[SQ] setRamValue's value argument is not an integer; left as 0x{:x}.", original);
+        }
+    }
 
     Sqrat::RootTable root = Sqrat::RootTable<Q>();
     Sqrat::Array<Q> patches = root.GetSlot("s_ram_patch_binary");

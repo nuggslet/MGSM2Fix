@@ -95,6 +95,7 @@ public:
         return &MGS1_Ketchup;
     }
 
+
 #ifndef _WIN64
     virtual void GWRenderGeometry(int & gw_width, int & gw_height, int & fb_width, int & fb_height, int & img_width, int & img_height) override
     {
@@ -140,6 +141,8 @@ public:
 
     virtual void SQOnMemoryDefine() override;
     virtual void SQOnUpdateGadgets() override;
+    virtual bool SQOnRamWrite(unsigned width, unsigned offset, unsigned &value) override;
+    virtual bool SQOnRamRead(unsigned width, unsigned offset) override;
     virtual void EPIOnLoadImage(void *image, unsigned int size) override;
     virtual bool EPIOnMachineCommand(std::any machine, int cmd, unsigned int **args) override;
 
@@ -155,6 +158,34 @@ public:
 private:
     uintptr_t MGS1_GlobalsPTR = 0;
     uintptr_t MGS1_LoaderPTR = 0;
+    uintptr_t MGS1_LanguagePTR = 0;
+    unsigned MGS1_LanguageMask = 0;
+    unsigned MGS1_LanguageHeld = 0;
+    bool MGS1_LanguageDone = false;
+    constexpr static unsigned MGS1_LanguageHoldFrames = 120;
+    // Last value of the English bit seen (-1: not read yet), the language the
+    // player is taken to want once the hold is over, and a cap on the log lines
+    // the change tracking may emit.
+    int MGS1_LanguageLast = -1;
+    bool MGS1_LanguageWanted = false;
+    unsigned MGS1_LanguageLogs = 0;
+    // The Master Collection's _update_option_button_setting rewrites the whole
+    // GM_Configuration word every frame; only report the first few of those
+    // writes and reads, and every write that actually changes the word.
+    unsigned MGS1_LanguageWriteLogs = 0;
+    unsigned MGS1_LanguageReadLogs = 0;
+    // GM_Configuration (libgcl's linkvarbuf[2]): linkvarbuf sits 0x10 above the
+    // "scene_name" define (variable.c's stage_name[16]), so the word is at
+    // scene_name + 0x14 in every MGS1 executable. The collection's
+    // _update_option_button_setting reads it (getRamValue) and writes the whole
+    // word back (setRamValue) once per frame; [Patches] PreserveConfiguration
+    // remembers what it read and, at the write, re-applies only the bits it
+    // changed on top of the word as the game has it by then.
+    uintptr_t MGS1_ConfigPTR = 0;
+    unsigned MGS1_ConfigSeen = 0;
+    bool MGS1_ConfigSeenValid = false;
+    unsigned MGS1_ConfigPreserved = 0;
+    char MGS1_LastStageName[8] = { 0 };
     static inline HSQOBJECT<Squirk::Standard> SQ_EmuTask_getHeight = {};
 
 #ifndef _WIN64

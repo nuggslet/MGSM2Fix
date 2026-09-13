@@ -28,6 +28,12 @@ public:
 	virtual void SQOnUpdateGadgets() {}
 	virtual void SQOnInitSystemFirst() {}
 	virtual void SQOnInitSystemLast() {}
+	// A Squirrel-side setRamValue is about to run. Return true to have the
+	// caller's Squirrel call stack logged (the game decides which writes matter).
+	// The game may change `value`; the write then carries the new value.
+	virtual bool SQOnRamWrite(unsigned width, unsigned offset, unsigned &value) { return false; }
+	// Likewise for a Squirrel-side getRamValue.
+	virtual bool SQOnRamRead(unsigned width, unsigned offset) { return false; }
 
 	virtual std::any EPIModuleHook() { return {}; }
 
