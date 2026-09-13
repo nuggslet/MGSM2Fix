@@ -432,6 +432,75 @@ void PSX::GPU_SetSmoothing(safetyhook::Context & ctx)
 {
     ctx.r14 = Smoothing ? 4 : 0;
 }
+
+// A textured polygon one pixel tall (or wide) whose texture coordinates span
+// more than one texel has to be resolved to a single texel row (column), and
+// the PlayStation GPU resolves it to the one at the top (left) edge: the row
+// it rasterises is the first one, and the coordinate there is the first
+// vertex's. The collection's renderer samples somewhere inside the span
+// instead and lands on a different texel. MGS1's briefing draws its connector
+// lines exactly this way - a 4x2 texture with a bright row over a dark one,
+// stretched into a one-pixel quad - and they come out faint or missing in
+// the collection while hardware, and every accurate emulator, draws them
+// bright. Nothing about the game data is wrong.
+//
+// This runs on the emulator's GP0 path at the point where a polygon command
+// is complete in the FIFO and about to be handed to the polygon handler:
+// rbx is the GPU, rdx the command words. For a textured polygon whose Y
+// extent is exactly one pixel, every vertex takes the V of the top edge;
+// likewise U for a one-pixel X extent. Anything else is untouched, so a
+// two-pixel line still shows its bright row and its shadow.
+void PSX::GPU_PolygonCommand(safetyhook::Context & ctx)
+{
+    if (!M2Config::bPatchesThinTexturedQuads) return;
+
+    uint32_t *words = reinterpret_cast<uint32_t *>(ctx.rdx);
+    uint32_t cmd = words[0] >> 24;
+    if (!(cmd & 4)) return;                       // not textured
+
+    const int n = (cmd & 8) ? 4 : 3;              // quad or triangle
+    const int stride = (cmd & 0x10) ? 3 : 2;      // gouraud adds a colour word per vertex
+
+    int16_t x[4], y[4]; uint32_t u[4], v[4];
+    for (int i = 0; i < n; i++) {
+        uint32_t xy = words[1 + i * stride];
+        uint32_t uv = words[2 + i * stride];
+        x[i] = static_cast<int16_t>(xy & 0xFFFF);
+        y[i] = static_cast<int16_t>(xy >> 16);
+        u[i] = uv & 0xFF;
+        v[i] = (uv >> 8) & 0xFF;
+    }
+
+    auto collapse = [&](int16_t *pos, uint32_t *tex, int shift) {
+        int16_t lo = pos[0], hi = pos[0];
+        for (int i = 1; i < n; i++) { if (pos[i] < lo) lo = pos[i]; if (pos[i] > hi) hi = pos[i]; }
+        if (hi - lo != 1) return false;
+        // the texel at the leading edge, and only if that edge agrees on it
+        std::optional<uint32_t> edge;
+        for (int i = 0; i < n; i++) {
+            if (pos[i] != lo) continue;
+            if (edge && *edge != tex[i]) return false;
+            edge = tex[i];
+        }
+        if (!edge) return false;
+        bool changed = false;
+        for (int i = 0; i < n; i++) {
+            if (tex[i] == *edge) continue;
+            tex[i] = *edge;
+            uint32_t &uv = words[2 + i * stride];
+            uv = (uv & ~(0xFFu << shift)) | (*edge << shift);
+            changed = true;
+        }
+        return changed;
+    };
+
+    bool fy = collapse(y, v, 8);
+    bool fx = collapse(x, u, 0);
+    if ((fy || fx) && M2Config::iEmulatorLevel >= 2) {
+        spdlog::info("[PSX] GPU_PolygonCommand: GP0(0x{:02X}) {} snapped {}{}.", cmd,
+            n == 4 ? "quad" : "triangle", fy ? "V" : "", fx ? "U" : "");
+    }
+}
 #endif
 
 void __cdecl PSX::CommandR3000101(M2_EmuR3000 *cpu, int cmd, unsigned int **args)
@@ -645,6 +714,15 @@ void PSX::Load()
             M2Hook::GetInstance().MidHook(
                 "44 89 74 24 28 39 75 83 0F 84 2F 06 00 00 8B FE",
                 0, PSX::GPU_SetSmoothing, "[PSX] GPU_SetSmoothing"
+            );
+
+            // The GP0 dispatch for polygons: index the eight-entry word-count
+            // table by the command's textured/quad/gouraud bits, compare with
+            // the FIFO depth, and if complete `mov rcx, rbx; call polygon`.
+            // Hook lands on the `mov rcx, rbx`, with rdx still the FIFO.
+            M2Hook::GetInstance().MidHook(
+                "48 C1 E8 02 4C 8D 15 ?? ?? ?? ?? 83 E0 07 42 0F B6 84 10 ?? ?? ?? ?? 44 3B C0 7C 0F 48 8B CB E8",
+                0x1C, PSX::GPU_PolygonCommand, "[PSX] GPU_PolygonCommand"
             );
 #endif
 

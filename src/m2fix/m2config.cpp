@@ -108,6 +108,7 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Patches"], "EnableMosaic", bPatchesEnableMosaic);
     inipp::get_value(ini.sections["Patches"], "RestoreGhosts", bPatchesRestoreGhosts);
     inipp::get_value(ini.sections["Patches"], "RestoreMedicine", bPatchesRestoreMedicine);
+    inipp::get_value(ini.sections["Patches"], "ThinTexturedQuads", bPatchesThinTexturedQuads);
     {
         // Tri-state, and it accepts a bool for anyone who assumes one: `true`
         // is the game's own text, which is what the old RestoreBrightnessText
@@ -188,6 +189,7 @@ void M2Config::Load()
     spdlog::info("[Config] bPatchesEnableMosaic: {}", bPatchesEnableMosaic);
     spdlog::info("[Config] bPatchesRestoreGhosts: {}", bPatchesRestoreGhosts);
     spdlog::info("[Config] bPatchesRestoreMedicine: {}", bPatchesRestoreMedicine);
+    spdlog::info("[Config] bPatchesThinTexturedQuads: {}", bPatchesThinTexturedQuads);
     spdlog::info("[Config] eBrightnessText: {}",
         eBrightnessText == M2BrightnessText::Fixed    ? "fixed"    :
         eBrightnessText == M2BrightnessText::Original ? "original" : "collection");
