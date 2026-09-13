@@ -319,10 +319,36 @@ std::filesystem::path Ketchup<Q>::RootPath(Ketchup_TitleInfo &title, Ketchup_Ver
 	return root;
 }
 
+template <Squirk Q>
+bool Ketchup<Q>::ProcessBuiltins(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk)
+{
+	auto *patches = M2Fix::GameInstance().SQKetchupPatches();
+	if (!patches) return true;
+
+	for (auto &patch : *patches) {
+		if (patch.title != title.id) continue;
+		if (patch.version != version.name) continue;
+		if (patch.disk != disk.id) continue;
+		if (patch.data.empty()) continue;
+
+		spdlog::info("[SQ] [Ketchup] built-in patch {} -> {} {} disk {}.",
+			patch.name, title.name, version.name, disk.id);
+		WriteSource = static_cast<unsigned int>(WriteSources.size());
+		WriteSources.push_back("built-in " + patch.name);
+		ApplyBlock(v, title, version, disk, patch.offset,
+			patch.data.data(), patch.data.size());
+	}
+
+	return true;
+}
 
 template <Squirk Q>
 bool Ketchup<Q>::ProcessDisk(HSQUIRRELVM<Q> v, Ketchup_TitleInfo &title, Ketchup_VersionInfo &version, Ketchup_DiskInfo &disk)
 {
+	// Built-ins first, and unconditionally: they do not live in the mods folder,
+	// so an absent or empty one must not skip them.
+	ProcessBuiltins(v, title, version, disk);
+
 	std::filesystem::directory_entry root { RootPath(title, version, disk) };
 	spdlog::info("[SQ] [Ketchup] base path is {}.", root.path().string());
 

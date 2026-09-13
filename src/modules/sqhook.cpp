@@ -281,6 +281,11 @@ void SQHook<Q>::SetNativeCallHook(const char *name, SQFUNCTION<Q> func)
     NativeTable.push_back({ name, func });
 }
 
+template <Squirk Q>
+void SQHook<Q>::SetPatchRangeBlacklist(unsigned title, unsigned disk, uint64_t start, uint64_t end)
+{
+    RangeBlacklist.push_back({ title, disk, start, end });
+}
 
 
 template <Squirk Q>
@@ -635,6 +640,14 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
             spdlog::info("[SQ] [Patch] filtering CD-ROM patch offset 0x{:x}.", offset);
             return 1;
         }
+    }
+    for (auto &range : RangeBlacklist)
+    {
+        if (!range.matches(SQGlobals<Q>::GetTitle(), SQGlobals<Q>::GetDisk(), offset)) continue;
+        spdlog::info("[SQ] [Patch] filtering CD-ROM patch {} at offset 0x{:x},"
+            " inside blacklisted range 0x{:x}..0x{:x}.",
+            file.empty() ? "<data>" : file, offset, range.start, range.end);
+        return 1;
     }
 
     return 0;
