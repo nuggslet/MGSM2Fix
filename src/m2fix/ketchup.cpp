@@ -140,6 +140,34 @@ void Ketchup<Q>::ReportOverlaps()
 	WritesTruncated = false;
 }
 
+template <Squirk Q>
+void Ketchup<Q>::Audit()
+{
+	// Every byte, not just the first of each run, so a foreign write that lands
+	// mid-run is seen. Reported once per run, a few runs at most, and never
+	// repaired here: the point is to know, not to start a tug of war.
+	for (auto &patch : RamPatches) {
+		if (RamAuditSeen.contains(patch.address)) continue;
+		size_t first = patch.data.size(), count = 0;
+		for (size_t i = 0; i < patch.data.size(); i++) {
+			if ((SQEmuTask<Q>::GetRamValue(CHAR_BIT, patch.address + i) & 0xFF) != patch.data[i]) {
+				if (first == patch.data.size()) first = i;
+				count++;
+			}
+		}
+		if (count == 0) continue;
+		RamAuditSeen.insert(patch.address);
+		if (++RamAuditReports > 16) return;
+		std::string want, have;
+		for (size_t i = first; i < patch.data.size() && i < first + 8; i++) {
+			want += fmt::format("{:02x}", patch.data[i]);
+			have += fmt::format("{:02x}", SQEmuTask<Q>::GetRamValue(CHAR_BIT, patch.address + i) & 0xFF);
+		}
+		spdlog::warn("[SQ] [Ketchup] RAM patch run 0x{:08x} ({} bytes) differs from what was written:"
+			" {} byte(s) from +{} (0x{:08x}), wrote {} have {}.",
+			patch.address, patch.data.size(), count, first, patch.address + first, want, have);
+	}
+}
 
 template <Squirk Q>
 void Ketchup<Q>::Update()
@@ -419,6 +447,8 @@ bool Ketchup<Q>::Process(HSQUIRRELVM<Q> v)
 	RamPatches.clear();
 	RamTick = 0;
 	RamApplies = 0;
+	RamAuditReports = 0;
+	RamAuditSeen.clear();
 	Writes.clear();
 	WriteSources.clear();
 	WriteSource = 0;
@@ -443,6 +473,10 @@ template bool Ketchup<Squirk::AlignObject>::Process(HSQUIRRELVM<Squirk::AlignObj
 template bool Ketchup<Squirk::StandardShared>::Process(HSQUIRRELVM<Squirk::StandardShared> v);
 template bool Ketchup<Squirk::AlignObjectShared>::Process(HSQUIRRELVM<Squirk::AlignObjectShared> v);
 
+template void Ketchup<Squirk::Standard>::Audit();
+template void Ketchup<Squirk::AlignObject>::Audit();
+template void Ketchup<Squirk::StandardShared>::Audit();
+template void Ketchup<Squirk::AlignObjectShared>::Audit();
 
 template void Ketchup<Squirk::Standard>::Update();
 template void Ketchup<Squirk::AlignObject>::Update();
