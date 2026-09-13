@@ -34,7 +34,7 @@ jobs:
         path: |
           .\src\extern\zydis\msvc\bin\ReleaseX64
           .\src\extern\zydis\msvc\bin\ReleaseX86
-        key: zydis-${{ runner.os }}-${{ steps.zydishash.outputs.hash }}
+        key: zydis-${{ runner.os }}-v143-${{ steps.zydishash.outputs.hash }}
 
     - name: Install Python dependencies
       uses: py-actions/py-dependency-install@v4
