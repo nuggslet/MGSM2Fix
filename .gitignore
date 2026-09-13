@@ -367,3 +367,14 @@ MGSM2Fix/
 MGSM2Fix.zip
 dist/
 M2Install.yml
+
+# bridge.py (Squirrel debugger client) runtime files
+tools/integral-english/sqcmd/
+tools/integral-english/sqout/
+tools/integral-english/bridge.log
+
+# No game data in this repository (CREDITS.md): no screenshots, no ripped
+# textures, no font bitmaps. Findings and tooling only.
+tools/integral-english/reference/
+tools/integral-english/*.png
+tools/integral-english/*.jpg

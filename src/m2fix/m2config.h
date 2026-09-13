@@ -71,6 +71,13 @@ public:
     static inline bool bLauncherStartGame;
     static inline bool bGameStageSelect;
     static inline bool bGameEnglishText;
+    static inline bool bGameUnlockVRMissions = false;
+    static inline bool bGameUnlockVRExtras = false;
+    static inline bool bGameUnlockVRMovies = false;
+    static inline bool bGameUnlockTitleBonuses = false;
+    static inline bool bPatchesIntegralEnglish = true;
+    static inline bool bPatchesIntegralVREnglish = true;
+    static inline bool bPatchesGrenadeDelay = true;
     static inline bool bPatchesDisableRAM;
     static inline bool bPatchesDisableCDROM;
     static inline bool bPatchesDisableFont;
