@@ -59,6 +59,7 @@ public:
     static void SetNativeCallHook(const char *name, SQFUNCTION<Q> func);
     static void SetPatchFileBlacklist(std::string file);
     static void SetPatchRangeBlacklist(unsigned title, unsigned disk, uint64_t start, uint64_t end);
+    static void SetPatchWatch(uint64_t start, uint64_t end, std::string label);
     static void SetPatchDataBlacklist(std::vector<unsigned char> data);
     static void SetTextureWhitelist(unsigned int data);
 
@@ -146,6 +147,12 @@ private:
     // names differ per disk - the collection names each piece after its own
     // image offset, so one range covers every piece of one archive entry.
     static inline std::vector<PatchRange> RangeBlacklist = {};
+    // Ranges to REPORT rather than filter: a patch landing here is logged with
+    // its length and leading bytes, then applied as normal. For watching what
+    // the collection does to a region you care about - the thing you want when
+    // a patch of theirs turns out to matter and you cannot see its contents.
+    typedef struct { uint64_t start, end; std::string label; } PatchWatch;
+    static inline std::vector<PatchWatch> PatchWatches = {};
     static inline std::vector<std::vector<unsigned char>> DataBlacklist = {};
     static inline std::vector<unsigned int> TextureWhitelist = {};
     static inline unsigned int ThreadCount           = 0;
