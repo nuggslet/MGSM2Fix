@@ -22,6 +22,7 @@ public:
         bPatchesEnableMosaic = true;
         bPatchesRestoreGhosts = true;
         bPatchesRestoreMedicine = true;
+        bPatchesThinTexturedQuads = true;
         eBrightnessText = M2BrightnessText::Fixed;
         bPatchesPreserveConfiguration = true;
     }
@@ -77,6 +78,8 @@ public:
     static inline bool bPatchesEnableMosaic;
     static inline bool bPatchesRestoreGhosts;
     static inline bool bPatchesRestoreMedicine;
+    // Given a value here as well: the GPU hook reads it on every polygon.
+    static inline bool bPatchesThinTexturedQuads = true;
     // Given a value here, not just in the constructor: an enum's zero is
     // Collection, so a read before the singleton is first constructed would
     // otherwise see the wrong default.

@@ -58,6 +58,7 @@ private:
     static void GTE_RotTransPersSX2P(safetyhook::Context & ctx);
     static void GPU_SetResolution(safetyhook::Context & ctx);
     static void GPU_SetSmoothing(safetyhook::Context & ctx);
+    static void GPU_PolygonCommand(safetyhook::Context & ctx);
 #endif
 
 public:
