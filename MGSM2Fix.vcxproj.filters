@@ -365,6 +365,9 @@
     <ClInclude Include="src\m2fix\patch_range.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
+    <ClInclude Include="src\games\mgs1_patch_options.h">
+      <Filter>M2Fix</Filter>
+    </ClInclude>
     <ClInclude Include="src\m2fix\m2fix.h">
       <Filter>M2Fix</Filter>
     </ClInclude>
