@@ -108,6 +108,20 @@ void M2Config::Load()
     inipp::get_value(ini.sections["Patches"], "EnableMosaic", bPatchesEnableMosaic);
     inipp::get_value(ini.sections["Patches"], "RestoreGhosts", bPatchesRestoreGhosts);
     inipp::get_value(ini.sections["Patches"], "RestoreMedicine", bPatchesRestoreMedicine);
+    {
+        // Tri-state, and it accepts a bool for anyone who assumes one: `true`
+        // is the game's own text, which is what the old RestoreBrightnessText
+        // meant, and `false` leaves the collection's version alone.
+        std::string mode;
+        if (inipp::get_value(ini.sections["Patches"], "BrightnessText", mode)) {
+            for (auto &c : mode) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if      (mode == "fixed")                        eBrightnessText = M2BrightnessText::Fixed;
+            else if (mode == "original" || mode == "true")    eBrightnessText = M2BrightnessText::Original;
+            else if (mode == "collection" || mode == "false") eBrightnessText = M2BrightnessText::Collection;
+            else spdlog::warn("[Config] BrightnessText: '{}' is not one of fixed / original /"
+                              " collection, keeping the default.", mode);
+        }
+    }
     inipp::get_value(ini.sections["Patches"], "PreserveConfiguration", bPatchesPreserveConfiguration);
     inipp::get_value(ini.sections["Game"], "StageSelect", bGameStageSelect);
     inipp::get_value(ini.sections["Game"], "EnglishText", bGameEnglishText);
@@ -174,6 +188,9 @@ void M2Config::Load()
     spdlog::info("[Config] bPatchesEnableMosaic: {}", bPatchesEnableMosaic);
     spdlog::info("[Config] bPatchesRestoreGhosts: {}", bPatchesRestoreGhosts);
     spdlog::info("[Config] bPatchesRestoreMedicine: {}", bPatchesRestoreMedicine);
+    spdlog::info("[Config] eBrightnessText: {}",
+        eBrightnessText == M2BrightnessText::Fixed    ? "fixed"    :
+        eBrightnessText == M2BrightnessText::Original ? "original" : "collection");
     spdlog::info("[Config] bPatchesPreserveConfiguration: {}", bPatchesPreserveConfiguration);
     spdlog::info("[Config] bGameStageSelect: {}", bGameStageSelect);
     spdlog::info("[Config] bGameEnglishText: {}", bGameEnglishText);
