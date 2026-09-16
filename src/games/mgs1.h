@@ -73,6 +73,13 @@ public:
             MGS1_KetchupPatches = MGS1_BrightnessTextPatches();
         }
 
+        // Every watch below is keyed to Integral - title 99, its version and its
+        // disk - and reports only while that image is the running one. These are
+        // raw disc-image offsets with nothing title-specific about them, so an
+        // unkeyed watch would log another release's patch under an Integral
+        // label. Registered here because Load() runs before the title is known;
+        // the key is checked when each collection patch is submitted.
+
         // Report what the collection writes into Integral's `option` stage. It
         // patches the stage's GCL script at one place - disc 1's is
         // disc1_16F8E024_patch.bin, stage offset 152460, i.e. tag 6 (the script
@@ -84,10 +91,10 @@ public:
         //     span = the retail `option` stage, sectors 27136..27210, through
         //     (lba + fo / 2048) * 2352 + 24 + fo % 2048, with STAGE.DIR at LBA
         //     136654 on disc 1 and 105178 on disc 2.
-        SQHook<Squirk::Standard>::SetPatchWatch(0x16F634B8ull, 0x16F8E5C8ull,
-            "Integral disc 1 option stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x128C92F8ull, 0x128F4408ull,
-            "Integral disc 2 option stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x16F634B8ull, 0x16F8E5C8ull, "Integral disc 1 option stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x128C92F8ull, 0x128F4408ull, "Integral disc 2 option stage");
         // The MISSION LOG stage (`abst`, sectors 139..218 on both discs) was
         // ported on 2026-09-05 (en_abst) and relocated into DUMMY3M, so the
         // collection's patch below now lands on a stage the game no longer
@@ -96,48 +103,48 @@ public:
         // stage sector +51 - the disc-change abstract's block in the script
         // chunk, which the port now fills with USA's eight strings. Whether a
         // _PS5-suffixed patch is applied on Windows at all is still unseen.
-        SQHook<Squirk::Standard>::SetPatchWatch(0x132D51C8ull, 0x133030C8ull,
-            "Integral disc 1 abst stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x0EF3F538ull, 0x0EF6D438ull,
-            "Integral disc 2 abst stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x132D51C8ull, 0x133030C8ull, "Integral disc 1 abst stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x0EF3F538ull, 0x0EF6D438ull, "Integral disc 2 abst stage");
         // The collection also patches the three other disc-swap text copies
         // (`change`, `demosel`, `title` - named files disc1_18345E07,
         // disc1_18412A95, disc1_18412BD8, disc1_1822B55D) two bytes before the
         // records en_menu / en_menu2 write there, and six places in `camera`
         // (en_camsave). Mapped 2026-09-05 from a filtered log; the watches show
         // what they write and whether the port's records are overlapped.
-        SQHook<Squirk::Standard>::SetPatchWatch(0x18341268ull, 0x18346518ull,
-            "Integral disc 1 change stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x183F6078ull, 0x18416C28ull,
-            "Integral disc 1 demosel stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x181E7788ull, 0x1825C9C8ull,
-            "Integral disc 1 title stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x16F8E5C8ull, 0x16FA42E8ull,
-            "Integral disc 1 camera stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x13CA70A8ull, 0x13CAC358ull,
-            "Integral disc 2 change stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x13D5BEB8ull, 0x13D7CA68ull,
-            "Integral disc 2 demosel stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x13B4D5C8ull, 0x13BC2808ull,
-            "Integral disc 2 title stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x128F4408ull, 0x1290A128ull,
-            "Integral disc 2 camera stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x18341268ull, 0x18346518ull, "Integral disc 1 change stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x183F6078ull, 0x18416C28ull, "Integral disc 1 demosel stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x181E7788ull, 0x1825C9C8ull, "Integral disc 1 title stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 0,
+            0x16F8E5C8ull, 0x16FA42E8ull, "Integral disc 1 camera stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x13CA70A8ull, 0x13CAC358ull, "Integral disc 2 change stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x13D5BEB8ull, 0x13D7CA68ull, "Integral disc 2 demosel stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x13B4D5C8ull, 0x13BC2808ull, "Integral disc 2 title stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "INTEGRAL", 1,
+            0x128F4408ull, 0x1290A128ull, "Integral disc 2 camera stage");
         // Integral's VR-DISC (title 99, version VR-DISK; a separate image, so
         // these offsets are small). The English port (tools/integral-english/
         // vr_*.py, 2026-09-06) patches these stages IN PLACE; the option stage
         // in particular keeps its sectors so the collection's KEY CONFIG
         // interception keeps landing - these watches show where that patch is
         // and whether any collection patch overlaps the port's records.
-        SQHook<Squirk::Standard>::SetPatchWatch(0x0005E7EB0ull, 0x000611D60ull,
-            "Integral VR-DISK option stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x000611D60ull, 0x000627A80ull,
-            "Integral VR-DISK camera stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x00315B1C0ull, 0x0031B5430ull,
-            "Integral VR-DISK vrtitle stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x004C26BA0ull, 0x004C6D5B0ull,
-            "Integral VR-DISK movie stage");
-        SQHook<Squirk::Standard>::SetPatchWatch(0x000CFA6E0ull, 0x000D5D320ull,
-            "Integral VR-DISK vrsave stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "VR-DISK", 0,
+            0x0005E7EB0ull, 0x000611D60ull, "Integral VR-DISK option stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "VR-DISK", 0,
+            0x000611D60ull, 0x000627A80ull, "Integral VR-DISK camera stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "VR-DISK", 0,
+            0x00315B1C0ull, 0x0031B5430ull, "Integral VR-DISK vrtitle stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "VR-DISK", 0,
+            0x004C26BA0ull, 0x004C6D5B0ull, "Integral VR-DISK movie stage");
+        SQHook<Squirk::Standard>::SetPatchWatch(99, "VR-DISK", 0,
+            0x000CFA6E0ull, 0x000D5D320ull, "Integral VR-DISK vrsave stage");
 
         if (M2Config::bPatchesDisableFont) {
             for (auto & MGS1_TextureWhitelist_Font : MGS1_TextureWhitelist_Fonts) {

@@ -288,9 +288,10 @@ void SQHook<Q>::SetPatchRangeBlacklist(unsigned title, unsigned disk, uint64_t s
 }
 
 template <Squirk Q>
-void SQHook<Q>::SetPatchWatch(uint64_t start, uint64_t end, std::string label)
+void SQHook<Q>::SetPatchWatch(unsigned title, std::string version, unsigned disk,
+    uint64_t start, uint64_t end, std::string label)
 {
-    PatchWatches.push_back({ start, end, label });
+    PatchWatches.push_back({ { title, disk, start, end }, version, label });
 }
 
 template <Squirk Q>
@@ -631,10 +632,14 @@ SQInteger SQHook<Q>::SQNative_entryCdRomPatch(HSQUIRRELVM<Q> v)
     }
 
     // Watches first: a watch is a report, and must see the patch whether or
-    // not a filter below then drops it.
+    // not a filter below then drops it. Scoped to the running release the way
+    // the range blacklist below is - the offset window alone means nothing
+    // until you know which image it is an offset into. Title and disk decide
+    // it cheaply; the version is only asked for once a window has matched.
     for (auto &watch : PatchWatches)
     {
-        if (offset < watch.start || offset >= watch.end) continue;
+        if (!watch.range.matches(SQGlobals<Q>::GetTitle(), SQGlobals<Q>::GetDisk(), offset)) continue;
+        if (watch.version != SQSystemData<Q>::SettingETC::GetVersion()) continue;
         std::string hex;
         for (size_t i = 0; i < buffer.size() && i < 256; i++) {
             hex += fmt::format("{:02x}", buffer[i]);

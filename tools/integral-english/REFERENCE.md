@@ -970,8 +970,11 @@ list, and the failure mode is silent.
 data** — the content comes from the file, so MGSM2Fix's hook cannot read it, and
 no amount of staring at patch names would have revealed what it does.
 
-`SQHook::SetPatchWatch(start, end, label)` reports any CD-ROM patch landing in a
-disc-image range — offset, length and leading bytes — and then lets it through.
+`SQHook::SetPatchWatch(title, version, disk, start, end, label)` reports any
+CD-ROM patch landing in a disc-image range — offset, length and leading bytes
+— and then lets it through, for the one release the watch names. The offsets
+are raw disc-image offsets, so without that key another title's patch landing
+in the same window would be reported under this one's label.
 Registered for both discs' option stages in `mgs1.h`. It was that watch which
 caught the *second*, previously invisible patch in the same stage: 24 inline
 bytes at `0x16f665ac`, which is overlay `+8964` = `0x800C550C`, the stub above.
