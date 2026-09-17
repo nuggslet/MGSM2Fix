@@ -40,6 +40,44 @@ If any of that fails it stops and writes nothing at all, and says why.
 It will also offer to make English the power-on language. That is optional and
 it is not about this port's text - see LANGUAGE below.
 
+IF YOU HAVE NO DUMP: THE COLLECTION'S OWN COPY
+
+mkimage.py can read the disc out of a Master Collection installation instead
+of a dump. All three Integral images sit inside windata/dlc/dlc_japan.bin, and
+they are the same discs. This is about where the image comes from, not where
+you play it: what comes out is still a raw PlayStation disc image, for a
+burner or an emulator, and it is still the wrong thing to install into the
+collection's mods folder.
+
+  py mkimage.py --collection --disc 1 --exe SLPM_862.47 --ppfs <this folder>       --output "MGS Integral English (Disc 1).bin" --cue
+
+--disc is 1, 2 or vr and is required here, because all three images live in
+the one container and it cannot work out which you meant. --game points at the
+installation; without it the collection is found through Steam.
+
+--exe is required too, and that is not a formality. The collection hollows out
+every executable: the file's ISO extent is zero-filled, while keeping the
+parity of the sector it used to be. Those bytes are nowhere in the
+installation, so you supply the disc's own executable - SLPM_862.47 on disc 1,
+SLPM_862.48 on disc 2, SLPM_862.49 on the VR disc - and mkimage.py refuses
+without one rather than write an image that cannot boot. The repository's
+build instructions call the same files int1.exe and int2.exe; what you name
+yours does not matter, only that the bytes are the disc's own.
+
+Nothing else differs. Measured on all three discs, a Redump dump and the
+collection's copy are identical except in those extents, and the block check
+at 0x9320 agrees between them. Building disc 1 both ways - from the dump, and
+from the collection with SLPM_862.47 supplied - produced two files with the
+same SHA-256. The length matches too: the container pads between images to a
+2048-byte boundary, which is not a sector boundary, so the span is floored to
+whole 2352-byte sectors, which is the Redump length exactly. All three checks
+above still run.
+
+What this does not do is save you from needing the disc. The executable can
+only come from a real pressing, so anyone who can satisfy --exe has almost
+certainly got the dump that --redump wants. What it saves is keeping three
+600 MB images: one executable per disc is enough to rebuild them.
+
 APPLYING BY HAND INSTEAD
 
 Any PPF3 tool will do it, but you take on three things mkimage.py does for

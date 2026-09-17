@@ -1,17 +1,18 @@
 # Integral English patches
 
-This branch ports existing USA English text into Integral's story and VR discs.
+This port brings existing USA English text into Integral's story and VR discs.
 Integral-only material without an English counterpart stays Japanese. This is
 a text port, not a complete translation. The patch files are built from the
 user's game data; the source checkout does not contain ready-to-install PPFs.
 
 ## Install the collection version
 
-1. Obtain an ASI built from this branch and the matching
-   `Integral-English-collection.zip`. Upstream MGSM2Fix releases alone do not
-   provide this branch's patch controls. Contributors can build both using
-   [BUILDING.md](BUILDING.md); the branch CI provides the ASI artifact only.
-2. Install the ASI loader and this branch's ASI as described in the root
+1. Obtain an MGSM2Fix build carrying the patch controls, and the matching
+   `Integral-English-collection.zip`. The controls are in upstream `master`;
+   the current tagged releases predate them, so until the next release use a
+   CI build of `master` or build it yourself. The patch ZIP is never
+   distributed — build it from your own game data with [BUILDING.md](BUILDING.md).
+2. Install the ASI loader and the ASI as described in the root
    [installation instructions](../../README.md#installation). If using CI,
    its artifact includes the loader. A local ASI build needs a loader installed.
 3. Extract the patch ZIP's `mods` folder into the Master Collection MGS1 folder.
@@ -50,6 +51,12 @@ Build with `--variant raw` and follow `PACKAGE-README-raw.txt` in the resulting
 package. It includes the English grenade correction and sector EDC/ECC. It is
 not an ASI/INI-controlled collection package. Never install its patches into
 the collection's mods folder.
+
+[mkimage.py](mkimage.py) writes the patched image from that package, taking the
+disc either from a Redump dump (`--redump`) or from a Master Collection
+installation (`--collection`, which also needs that disc's own executable,
+since the collection zero-fills the extent). Both sources have been measured to
+produce the same image; `PACKAGE-README-raw.txt` covers both.
 
 ## Project information
 
