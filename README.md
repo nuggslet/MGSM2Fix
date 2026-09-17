@@ -81,19 +81,27 @@ Once all of the Master Collection patches have been identified and grouped (plea
 
 Additional mod formats may be supported in future.
 
-## Integral English text (this branch)
-This branch (`integral-english-text`) adds a port of MGS1 (USA)'s English text into
-**MGS Integral** (the Japanese-only version bundled as MGS1's Integral DLC), for
-players who own the Master Collection but not the USA release. Nothing is
-translated — every string is copied verbatim from the USA disc — and it ships as
-Ketchup PPF3 mods, so it needs this branch's build of MGSM2Fix (`EnglishText = true`
-in **MGSM2Fix.ini**) plus a small number of general fixes (see **UPSTREAM.md**)
-that this branch carries ahead of upstream.
+## Integral English text
+MGSM2Fix includes a port of MGS1 (USA)'s English text into **MGS Integral** (the
+Japanese-only version bundled as MGS1's Integral DLC). Nothing is translated —
+every string is copied verbatim from the USA disc, and Integral-only material
+with no English counterpart stays Japanese.
 
-The port's tooling, technical record and build instructions live in
-[`tools/integral-english/`](tools/integral-english/README.md) — start with
-[`tools/integral-english/NextSteps.md`](tools/integral-english/NextSteps.md) if
-you are picking this up cold.
+It ships as Ketchup PPF3 mods, built from your own game data rather than
+distributed here — the tooling and instructions are in the source repository,
+under [`tools/integral-english/`](tools/integral-english/README.md).
+With the package's `mods` folder in place, `IntegralEnglishPatch`,
+`IntegralVREnglishPatch` and `GrenadeDelayFix` in **MGSM2Fix.ini** enable it;
+`EnglishText` selects Integral's own subtitle language, which is a separate
+setting.
+
+### Patched PlayStation disc images
+The same port can also produce an English Integral disc image for real
+hardware or other emulators, built from either a 1:1 (Redump.org) dump of the
+original discs or the disc data inside your Master Collection installation —
+no Master Collection or MGSM2Fix needed to play the result. That tooling ships
+with the source rather than with releases: download the source and read
+[`tools/integral-english/PACKAGE-README-raw.txt`](tools/integral-english/PACKAGE-README-raw.txt).
 
 ## Known Issues
 Please report any issues you see.
