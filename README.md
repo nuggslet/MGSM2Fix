@@ -95,12 +95,20 @@ With the package's `mods` folder in place, `IntegralEnglishPatch`,
 `EnglishText` selects Integral's own subtitle language, which is a separate
 setting.
 
+M2Fix releases include **M2FixGUI.exe**. It edits `MGSM2Fix.ini`, and its
+Patch & Disc Builder creates selected Story/VR English patches, the grenade
+display fix, or BIN/CUE images from an MGS1 Master Collection installation or
+unpatched Integral Redump images. PPF builds can install the selected files into
+the game folder when enabled before building. See the
+[M2FixGUI guide](tools/integral-english/BUILDER.md) for supported inputs and
+options.
+
 ### Patched PlayStation disc images
-The same port can also produce an English Integral disc image for real
-hardware or other emulators, built from either a 1:1 (Redump.org) dump of the
-original discs or the disc data inside your Master Collection installation —
-no Master Collection or MGSM2Fix needed to play the result. That tooling ships
-with the source rather than with releases: download the source and read
+The same port can produce an English Integral disc image for real hardware or
+other emulators, built from either a 1:1 (Redump.org) dump of the original discs
+or the disc data inside your Master Collection installation — no Master
+Collection or MGSM2Fix needed to play the result. The release's M2FixGUI builds
+these images; the source also includes the lower-level tooling and details in
 [`tools/integral-english/PACKAGE-README-raw.txt`](tools/integral-english/PACKAGE-README-raw.txt).
 
 ## Known Issues

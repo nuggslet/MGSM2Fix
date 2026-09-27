@@ -65,7 +65,7 @@ import workdir
 from portio import BLOCKCHECK_AT, BLOCKCHECK_LEN, image_offset, read_ppf
 from iso import Disc
 
-# The collection concatenates the three Integral images into one container.
+# The collection stores Integral AND other Japanese images in this container.
 CONTAINER = 'windata/dlc/dlc_japan.bin'
 DISCS = {
     '1':  dict(base=0x00000000, exe='/MGS/SLPM_862.47;1', folder='mods/INTEGRAL/INTEGRAL/0',
@@ -75,6 +75,21 @@ DISCS = {
     'vr': dict(base=0x57592000, exe='/MGS/SLPM_862.49;1', folder='mods/INTEGRAL/VR-DISK',
                label='Integral VR disc (SLPM-86249)'),
 }
+
+
+def collection_size(image, disc):
+    """Read the archive member length; the last Integral image is not EOF."""
+    from m2archive import Archive
+    member = 'system/roms/integral_disc%s-washed.bin' % ('3' if disc == 'vr' else disc)
+    entries = [(offset, size) for name, (offset, size) in Archive(str(image)).files.items()
+               if name.lower() == member]
+    if len(entries) != 1:
+        raise ValueError('Steam archive index does not identify ' + member)
+    offset, size = entries[0]
+    if (offset != DISCS[disc]['base'] or size <= 0 or size % cdecc.SECTOR
+            or offset + size > os.path.getsize(image)):
+        raise ValueError('Unsupported or truncated Steam disc extent: ' + member)
+    return size
 
 
 def blockcheck_of_image(path, base=0):
@@ -263,23 +278,25 @@ def main(argv=None):
                 "retail file will not boot. A Redump dump of this disc supplies "
                 "it (extract %s)." % spec['exe'])
         data = open(args.exe, 'rb').read()
+        from rebuild import EXE_HASHES, VR_EXE_HASHES
+        expected_hash = (VR_EXE_HASHES['vrint.exe'] if args.disc == 'vr'
+                         else EXE_HASHES['int%s.exe' % args.disc])
+        if hashlib.sha256(data).hexdigest() != expected_hash:
+            parser.error('--exe is not the supported retail executable for this disc')
         substitutes.add(exe_lba(image, base, spec['exe']), data,
                         os.path.basename(args.exe))
         print('executable  : %s, %d bytes, sha256 %s'
               % (args.exe, len(data), hashlib.sha256(data).hexdigest()))
 
     lba, exe_size = exe_extent(image, base, spec['exe'])
+    if args.collection and len(data) != exe_size:
+        parser.error('retail executable size does not match its disc extent')
 
     size = os.path.getsize(image) - base
     if args.collection:
-        # The container holds the next image right after this one, and pads to
-        # a 2048-byte boundary between them - which is not a sector boundary, so
-        # the gap is up to a sector longer than the disc. Flooring to whole
-        # 2352-byte sectors removes exactly that padding: it reproduces the
-        # Redump length of all three discs to the byte.
-        others = [d['base'] for d in DISCS.values() if d['base'] > base]
-        if others:
-            size = min(others) - base
+        size = collection_size(image, args.disc)
+    if args.redump and size % cdecc.SECTOR:
+        parser.error('Redump BIN length is not a whole number of 2352-byte sectors')
     size -= size % cdecc.SECTOR
     print('disc        : %s' % spec['label'])
     print('source      : %s%s' % (image, '' if not base else ' @ 0x%X' % base))
@@ -358,6 +375,9 @@ def main(argv=None):
     out = os.path.abspath(args.output)
     if os.path.exists(out):
         raise SystemExit('STOP: %s exists; refusing to overwrite it' % out)
+    cue = os.path.splitext(out)[0] + '.cue'
+    if args.cue and os.path.exists(cue):
+        raise SystemExit('STOP: %s exists; refusing to overwrite it' % cue)
 
     bad, failures, patched = [], [], {}
     with open(image, 'rb') as handle:
@@ -403,8 +423,10 @@ def main(argv=None):
         print('parity out  : all %d touched sectors verify after patching' % len(changed))
 
     # --- write it ---------------------------------------------------------
+    created = False
     try:
-        with open(image, 'rb') as src, open(out, 'wb') as dst:
+        with open(image, 'rb') as src, open(out, 'xb') as dst:
+            created = True
             src.seek(base)
             left = size
             while left:
@@ -424,7 +446,7 @@ def main(argv=None):
                     at = (sector - start) * 2048
                     dst.write(data[at:at + 2048].ljust(2048, b'\0'))
     except BaseException:
-        if os.path.exists(out):
+        if created and os.path.exists(out):
             os.unlink(out)
         raise
     written = sum(len(p) for path in paths for _, p in read_ppf(path))
@@ -434,7 +456,7 @@ def main(argv=None):
 
     if args.cue:
         cue = os.path.splitext(out)[0] + '.cue'
-        with open(cue, 'w', newline='\r\n') as handle:
+        with open(cue, 'x', newline='\r\n') as handle:
             handle.write('FILE "%s" BINARY\n  TRACK 01 MODE2/2352\n'
                          '    INDEX 01 00:00:00\n' % os.path.basename(out))
         print('cue         : %s' % cue)

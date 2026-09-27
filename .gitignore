@@ -366,6 +366,7 @@ FodyWeavers.xsd
 MGSM2Fix/
 MGSM2Fix.zip
 dist/
+build/M2FixBuilder/
 M2Install.yml
 
 # bridge.py (Squirrel debugger client) runtime files
@@ -378,3 +379,9 @@ tools/integral-english/bridge.log
 tools/integral-english/reference/
 tools/integral-english/*.png
 tools/integral-english/*.jpg
+build/M2FixGUI/
+
+# Native GUI build output
+/build/M2FixGUI-native/
+/build/compile-native.cmd
+/tools/M2FixGUI/recipes.lzms

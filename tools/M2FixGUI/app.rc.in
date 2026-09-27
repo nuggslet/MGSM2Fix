@@ -1,0 +1,4 @@
+#include <windows.h>
+101 RCDATA "@CMAKE_CURRENT_BINARY_DIR@/recipes.lzms"
+102 RCDATA "@CMAKE_CURRENT_SOURCE_DIR@/../../MGSM2Fix.ini"
+103 RCDATA "@CMAKE_CURRENT_SOURCE_DIR@/../integral-english/CREDITS.md"

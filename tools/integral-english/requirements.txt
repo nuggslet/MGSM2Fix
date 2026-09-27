@@ -1,2 +1,4 @@
 Pillow
 ninja
+Jinja2
+lz4==4.4.4

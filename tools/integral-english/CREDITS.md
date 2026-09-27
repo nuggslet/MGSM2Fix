@@ -102,3 +102,50 @@ choose one or change the repository's licence.
   `m2archive.py` decodes the archive in place so the collection's CD-ROM
   patches can be compared with the port's; it extracts nothing into this
   repository.
+
+## Standalone release builder
+
+M2FixGUI now uses maintainer-prepared binary differences. Its committed
+`release-recipes.zip` includes differences for the compiled overlays described
+above, and retail boot restoration differences against Steam startup snapshots.
+No complete disc images, SDK, decomp source tree or complete retail executables
+are bundled. This changes the earlier developer-only distribution workflow:
+end users no longer fetch or compile the decomp themselves. The original source
+attribution and unresolved upstream licensing noted above still apply; binary
+differences do not establish a new license or resolve those terms.
+
+## Native Windows GUI dependencies
+
+The native GUI uses Windows system APIs and statically linked miniz 3.0.2
+(https://github.com/richgel999/miniz/tree/3.0.2), plus the repository's nlohmann/json.
+The miniz source is vendored under `tools/M2FixGUI/vendor/miniz`.
+Windows LZMS compression changes only the recipe storage format; decompression
+restores the exact original recipe contents.
+
+### miniz license
+
+```text
+Copyright 2013-2014 RAD Game Tools and Valve Software
+Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
+
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+```
