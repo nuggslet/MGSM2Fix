@@ -5,13 +5,20 @@ Integral-only material without an English counterpart stays Japanese. This is
 a text port, not a complete translation. The patch files are built from the
 user's game data; the source checkout does not contain ready-to-install PPFs.
 
+The Windows [M2FixGUI](BUILDER.md), included with M2Fix releases, builds patches
+or English BIN/CUE images from a Steam installation with Integral DLC, or
+unpatched Integral Redump images.
+Choose your source, output type and destination in its window. Release-prepared
+binary differences handle patch generation and Steam boot restoration internally;
+no SDK, decomp checkout, Python or separately extracted boot files are needed.
+
 ## Install the collection version
 
-1. Obtain an MGSM2Fix build carrying the patch controls, and the matching
+1. Obtain an MGSM2Fix build carrying the patch controls and the matching
    `Integral-English-collection.zip`. The controls are in upstream `master`;
-   the current tagged releases predate them, so until the next release use a
-   CI build of `master` or build it yourself. The patch ZIP is never
-   distributed — build it from your own game data with [BUILDING.md](BUILDING.md).
+   tagged releases may predate them, so use a recent CI build or build it
+   yourself with [BUILDING.md](BUILDING.md). CI provides the ASI and builder;
+   users create the installable PPF package locally.
 2. Install the ASI loader and the ASI as described in the root
    [installation instructions](../../README.md#installation). If using CI,
    its artifact includes the loader. A local ASI build needs a loader installed.
@@ -52,11 +59,11 @@ package. It includes the English grenade correction and sector EDC/ECC. It is
 not an ASI/INI-controlled collection package. Never install its patches into
 the collection's mods folder.
 
-[mkimage.py](mkimage.py) writes the patched image from that package, taking the
-disc either from a Redump dump (`--redump`) or from a Master Collection
-installation (`--collection`, which also needs that disc's own executable,
-since the collection zero-fills the extent). Both sources have been measured to
-produce the same image; `PACKAGE-README-raw.txt` covers both.
+The lower-level [mkimage.py](mkimage.py) tool can also write a patched image
+from a Redump dump or a Master Collection installation. The collection route
+requires that disc's own retail executable because the game installation
+zero-fills its extent; M2FixGUI restores it using verified release recipes.
+See [PACKAGE-README-raw.txt](PACKAGE-README-raw.txt) for the command-line details.
 
 ## Project information
 

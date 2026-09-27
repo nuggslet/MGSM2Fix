@@ -255,6 +255,9 @@ def main():
     text = generator.read_text(encoding='utf-8')
     marker = 'time_before = time.time()'
     assert text.count(marker) == 1
+    # Ninja emits shell commands; quote the interpreter/standalone launcher
+    # when its installation path contains spaces. Only the isolated export changes.
+    text = text.replace('{sys.executable}', '{subprocess.list2cmdline([sys.executable])}')
     generator.write_text(text.split(marker)[0]+'sys.exit(0)\n',encoding='utf-8')
     run([sys.executable,'build.py','--psyq_path',psyq,'--variant','main_exe'],decomp/'build',env,log)
     run([sys.executable,'-m','ninja','-j','2','../obj/preope.bin','../obj/option.bin','../obj/abst.bin'],decomp/'build',env,log)

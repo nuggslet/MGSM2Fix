@@ -39,6 +39,9 @@ jobs:
     - name: Self-test (data-free - PPF emitter, PCX codec, width model, load-delay scanner)
       run: py tools\integral-english\selftest.py
 
+    - name: Release builder tests
+      run: py tools\integral-english\test_builder.py
+
     - name: Compile-check every tool script
       shell: bash
       run: |
@@ -130,6 +133,21 @@ jobs:
     - name: Build Release (x86)
       run: msbuild MGSM2Fix.sln -t:rebuild -verbosity:diag -property:Configuration=Release -property:Platform=x86 -property:PlatformToolset=v143
 
+    - name: Set up builder Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        architecture: 'x64'
+
+    - name: Build standalone patch and disc tool
+      run: |
+        python -m pip install -r tools/integral-english/requirements.txt
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        cmd /c tools\M2FixGUI\build.cmd
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $env:M2FIX_BUILDER_EXE = (Resolve-Path dist/M2FixGUI.exe).Path
+        python tools/integral-english/test_builder.py
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     - name: Package
       run: |
         cp .\x64\Release\MGSM2Fix.asi .\dist\MGSM2Fix64.asi

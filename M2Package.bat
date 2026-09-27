@@ -62,6 +62,12 @@ if exist dist\ (
 )
 md dist\
 
+REM Single-file GUI patch/disc builder (see tools\integral-english\BUILDER.md).
+call tools\M2FixGUI\build.cmd
+if errorlevel 1 (
+    echo [ERROR] Native GUI build failed. Check Visual Studio C++ tools, CMake and Python.
+    exit /b 1
+)
 echo --------------------------------------------------------
 if defined GITHUB_WORKSPACE (
     echo [INFO] GITHUB_WORKSPACE detected — copying ASI Loader files…
