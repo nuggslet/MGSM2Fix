@@ -64,6 +64,7 @@ public:
     static inline bool bInternalBorderless;
     static inline int iInternalHeight;
     static inline bool bInternalWidescreen;
+    static inline bool bColorCorrectionEnabled;
     static inline std::optional<bool> bAnalog;
     static inline std::optional<bool> bSwapSticks;
     static inline bool bRemoveDeadzone;

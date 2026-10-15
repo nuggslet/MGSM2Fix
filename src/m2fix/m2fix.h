@@ -11,6 +11,9 @@
 
 #include "config.h"
 #include "borderless.h"
+#include "dx11.h"
+#include "dx9.h"
+#include "color_correction.hpp"
 
 #include "versionchecker.h"
 
@@ -114,6 +117,14 @@ public:
 
             EPI::LoadInstance();
             SQHook<>::LoadInstance();
+
+            static DX11 dx11;
+            DX11::LoadInstance(&dx11);
+
+            static DX9 dx9;
+            DX9::LoadInstance(&dx9);
+
+            ColorCorrection::Setup();
 
             if (M2Config::bExternalEnabled) Config::LoadInstance();
             if (M2Config::bExternalBorderless) Borderless::LoadInstance();

@@ -44,6 +44,15 @@ public:
 		return SQEmuTask().Invoke<void>(__func__, enable);
 	}
 
+	static SQBool GetPause()
+	{
+		return SQEmuTask().Invoke<SQBool>(__func__);
+	}
+	static void SetPause(SQBool enable)
+	{
+		return SQEmuTask().Invoke<void>(__func__, enable);
+	}
+
 	static SQBool GetScanline() {
 		return SQEmuTask().Invoke<SQBool>(__func__);
 	}
@@ -120,3 +129,25 @@ template SQEmuTask<Squirk::Standard>;
 template SQEmuTask<Squirk::AlignObject>;
 template SQEmuTask<Squirk::StandardShared>;
 template SQEmuTask<Squirk::AlignObjectShared>;
+
+
+inline bool SQEmuTask_IsPaused()
+{
+	static bool (*pauseCheck)() = nullptr;
+
+	if (!pauseCheck)
+	{
+		if (Sqrat::DefaultVM<Squirk::Standard>::Get()) // Detect + cache which Squirk variant the game actually uses.
+			pauseCheck = []() -> bool { return SQEmuTask<Squirk::Standard>::GetPause(); };
+		else if (Sqrat::DefaultVM<Squirk::AlignObject>::Get())
+			pauseCheck = []() -> bool { return SQEmuTask<Squirk::AlignObject>::GetPause(); };
+		else if (Sqrat::DefaultVM<Squirk::StandardShared>::Get())
+			pauseCheck = []() -> bool { return SQEmuTask<Squirk::StandardShared>::GetPause(); };
+		else if (Sqrat::DefaultVM<Squirk::AlignObjectShared>::Get())
+			pauseCheck = []() -> bool { return SQEmuTask<Squirk::AlignObjectShared>::GetPause(); };
+		else
+			return false;
+	}
+
+	return pauseCheck();
+}
