@@ -64,3 +64,8 @@ using namespace StdExt;
 #include "spdlog/sinks/wincolor_sink.h"
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
+
+
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
+

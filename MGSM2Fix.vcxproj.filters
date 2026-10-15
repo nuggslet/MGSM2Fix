@@ -99,6 +99,12 @@
     <ClCompile Include="src\modules\epi.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="src\modules\dx9.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\color_correction.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
     <ClCompile Include="src\modules\sqhook.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -351,6 +357,12 @@
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="src\modules\epi.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\dx9.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\color_correction.hpp">
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="src\modules\sqhook.h">
